@@ -66,7 +66,7 @@ mdeditor.prototype.markdownToHtml = function (md) {
                 }
 
                 // 有序列表
-                if (/^\d\.+\s?.+$/.test($1)) {
+                if (/^\d+\.\s?.+$/.test($1)) {
                     return me.handleOrderList($1);
                 }
 
@@ -129,8 +129,9 @@ mdeditor.prototype.handleOrderList = function (txt) {
     var me = this;
     txt = me.handleLink(txt);
     txt = me.handleInlineCode(txt);
+    var no = txt.substring(0, txt.indexOf('.'));
     txt = txt.replace(/^\d+\.\s?/, '');
-    return '<div class="md-ol">' + txt + '</div>';
+    return '<div class="md-ol"><span class="md-ol-no">' + no + '.</span>' + txt + '</div>';
 };
 
 
