@@ -64,19 +64,19 @@
     border-radius: 3px;
 }
 
-.mdeditor-html .md-ul,
-.mdeditor-html .md-ol {
+.mdeditor-html .md-ul {
     display: list-item;
     margin-left: 3em;
-}
-
-.mdeditor-html .md-ul {
     list-style-type: disc;
 }
 
 .mdeditor-html .md-ol {
-    display: list-item;
-    list-style-type: decimal;
+    margin-left: 3em;
+}
+
+.mdeditor-html .md-ol .md-ol-no {
+    margin-right: 8px;
+    margin-left: -20px;
 }
 
 .mdeditor-html img {
