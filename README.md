@@ -4,6 +4,11 @@
 ### 使用方法见博客
 [http://www.qinshenxue.com/article.aspx?id=36](http://www.qinshenxue.com/article.aspx?id=36)
 
+
+##更新日志
+### 2015-11-09
+增加a链接新窗口打开语法，见下方gif图演示
+
 ## 已支持语法
 ### 标题
 ![](readme/h16.gif)
@@ -11,6 +16,7 @@
 ![](readme/p.gif)
 ### 链接
 ![](readme/a.gif)
+![](readme/a_blank.gif)
 ### 列表（无序列表，有序列表）
 ![](readme/ul.gif)
 ![](readme/ol.gif)

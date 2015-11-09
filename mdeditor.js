@@ -136,10 +136,17 @@ mdeditor.prototype.handleOrderList = function (txt) {
 
 
 mdeditor.prototype.handleLink = function (txt) {
+    var targetBlankReg = /.*(?=\,\s*_blank)/;
     return txt.replace(/\[.*?\]\(.*?\)/g, function (txt) {
+        var target = '_self';
+        var targetBlankMatch = txt.match(targetBlankReg);
+        if (targetBlankMatch) {
+            target = '_blank';
+            txt = targetBlankMatch[0] + ')';
+        }
         var linkText = txt.substring(1, txt.indexOf(']'));
         var linkUrl = txt.substring(txt.indexOf('(') + 1, txt.length - 1);
-        return '<a href="' + linkUrl + '">' + linkText + '</a>';
+        return '<a href="' + linkUrl + '" target="' + target + '">' + linkText + '</a>';
     });
 };
 
