@@ -1,13 +1,53 @@
 #mdeditor
-### 演示地址
+## 演示地址
 [http://www.qinshenxue.com/demo/mdeditor/index.html](http://www.qinshenxue.com/demo/mdeditor/index.html)
-### 使用方法见博客
-[http://www.qinshenxue.com/article.aspx?id=36](http://www.qinshenxue.com/article.aspx?id=36)
+## API
+
+```
+<div id="wrap">
+
+</div>
+<script>
+    var mdeditor = mdeditor({
+        id: 'wrap'
+    });
+</script>
+```
+
+### getHTML
+获取markdown转义后的HTML代码
+```
+<script>
+    var mdeditor = mdeditor({
+        id: 'wrap'
+    });
+    mdeditor.getHTML();
+</script>
+```
+
+### getMarkdown
+获取markdown内容
+```
+<script>
+    var mdeditor = mdeditor({
+        id: 'wrap'
+    });
+    mdeditor.getMarkdown();
+</script>
+```
+
+
+
 
 
 ##更新日志
+### 2015-11-10
+增加获取HTML接口`getHTML`、获取markdown内容接口`getMarkdown`
 ### 2015-11-09
 增加a链接新窗口打开语法，见下方gif图演示
+
+
+
 
 ## 已支持语法
 ### 标题
