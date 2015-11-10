@@ -3,6 +3,7 @@
 [http://www.qinshenxue.com/demo/mdeditor/index.html](http://www.qinshenxue.com/demo/mdeditor/index.html)
 ## API
 
+### 初始化实例（传入id情况）
 ```
 <div id="wrap">
 
@@ -13,6 +14,21 @@
     });
 </script>
 ```
+
+### 初始化实例（不传任何参数）
+用于一些只想单独用mdeditor的api的场景
+比如要把一些markdown语法文本转义html内容
+
+```
+<div id="wrap">
+
+</div>
+<script>
+    var mdeditor = mdeditor();
+    mdeditor.markdownToHtml('#要转义的markdown语法文本');
+</script>
+```
+
 
 ### getHTML
 获取markdown转义后的HTML代码
@@ -56,7 +72,8 @@
 2. 增加获取markdown内容接口`getMarkdown`
 3. 增加设置markdown内容接口`setMarkdown`
 4. 解决行内代码中带html标签无法正常显示的bug
-5. 优化部分css样式代码
+5. 增加初始化实例的两种场景（传参和不传参数）
+6. 优化部分css样式代码
 
 ### 2015-11-09
 1. 增加a链接新窗口打开语法，见下方gif图演示

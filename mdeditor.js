@@ -5,24 +5,26 @@ var mdeditor = function (options) {
 mdeditor.prototype.init = function (options) {
 
     var me = this;
+    if (options && options.id) {
+        var wrap = this.getDom(options.id);
 
-    var wrap = this.getDom(options.id);
+        var html = '<textarea id="mdeditor"></textarea><div id="mdeditor-html" class="mdeditor-html"></div>';
 
-    var html = '<textarea id="mdeditor"></textarea><div id="mdeditor-html" class="mdeditor-html"></div>';
+        wrap.innerHTML = html;
 
-    wrap.innerHTML = html;
+        var editor = this.getDom('mdeditor');
+        var editorHtml = this.getDom('mdeditor-html');
 
-    var editor = this.getDom('mdeditor');
-    var editorHtml = this.getDom('mdeditor-html');
+        editor.addEventListener('input', function () {
+            var txt = this.value;
+            me.markdownToHtml(txt);
+        });
 
-    editor.addEventListener('input', function () {
-        var txt = this.value;
-        me.markdownToHtml(txt);
-    });
+        me.editor = editor;
+        me.editorHtml = editorHtml;
+    }
+    return me;
 
-    this.editor = editor;
-    this.editorHtml = editorHtml;
-    return this;
 };
 
 mdeditor.prototype.init.prototype = mdeditor.prototype;
@@ -34,18 +36,28 @@ mdeditor.prototype.getDom = function (_id) {
 
 // 获取markdown内容
 mdeditor.prototype.getMarkdown = function () {
-    return this.editor.value;
+    if (this.editor) {
+        return this.editor.value;
+    } else {
+        return null;
+    }
 };
 
 // 设置markdown内容
 mdeditor.prototype.setMarkdown = function (markdown) {
-    this.editor.value = markdown;
-    this.markdownToHtml(markdown);
+    if (this.editor) {
+        this.editor.value = markdown;
+    }
+    return this.markdownToHtml(markdown);
 };
 
 // 获取markdown转义后的HTML代码
 mdeditor.prototype.getHTML = function () {
-    return this.editorHtml.innerHTML;
+    if (this.editorHtml) {
+        return this.editorHtml.innerHTML;
+    } else {
+        return '';
+    }
 };
 
 mdeditor.prototype.markdownToHtml = function (md) {
@@ -95,7 +107,10 @@ mdeditor.prototype.markdownToHtml = function (md) {
         }
 
     });
-    this.editorHtml.innerHTML = html;
+    if (this.editorHtml) {
+        this.editorHtml.innerHTML = html;
+    }
+    return html;
 };
 
 
