@@ -52,13 +52,13 @@
 
 ##更新日志
 ### 2015-11-10
-增加获取HTML接口`getHTML`
-增加获取markdown内容接口`getMarkdown`
-增加设置markdown内容接口`setMarkdown`
-解决行内代码中带html标签无法正常显示的bug
-优化部分css样式代码
+1. 增加获取HTML接口`getHTML`
+2. 增加获取markdown内容接口`getMarkdown`
+3. 增加设置markdown内容接口`setMarkdown`
+4. 解决行内代码中带html标签无法正常显示的bug
+5. 优化部分css样式代码
 ### 2015-11-09
-增加a链接新窗口打开语法，见下方gif图演示
+1. 增加a链接新窗口打开语法，见下方gif图演示
 
 
 
