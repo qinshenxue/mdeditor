@@ -32,6 +32,16 @@ mdeditor.prototype.getDom = function (_id) {
     return document.getElementById(_id);
 };
 
+// 获取markdown内容
+mdeditor.prototype.getMarkdown = function () {
+    return this.editor.value;
+};
+
+// 获取markdown转义后的HTML代码
+mdeditor.prototype.getHTML = function () {
+    return this.editorHtml.innerHTML;
+};
+
 mdeditor.prototype.markdownToHtml = function (md) {
     var me = this;
     var flag = '';
