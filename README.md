@@ -35,6 +35,16 @@
     mdeditor.getMarkdown();
 </script>
 ```
+### setMarkdown
+设置markdown内容
+```
+<script>
+    var mdeditor = mdeditor({
+        id: 'wrap'
+    });
+    mdeditor.setMarkdown('#markdown内容');
+</script>
+```
 
 
 
@@ -42,7 +52,11 @@
 
 ##更新日志
 ### 2015-11-10
-增加获取HTML接口`getHTML`、获取markdown内容接口`getMarkdown`
+增加获取HTML接口`getHTML`
+增加获取markdown内容接口`getMarkdown`
+增加设置markdown内容接口`setMarkdown`
+解决行内代码中带html标签无法正常显示的bug
+优化部分css样式代码
 ### 2015-11-09
 增加a链接新窗口打开语法，见下方gif图演示
 
