@@ -37,6 +37,12 @@ mdeditor.prototype.getMarkdown = function () {
     return this.editor.value;
 };
 
+// 设置markdown内容
+mdeditor.prototype.setMarkdown = function (markdown) {
+    this.editor.value = markdown;
+    this.markdownToHtml(markdown);
+};
+
 // 获取markdown转义后的HTML代码
 mdeditor.prototype.getHTML = function () {
     return this.editorHtml.innerHTML;
@@ -180,8 +186,10 @@ mdeditor.prototype.handleCode = function (arr) {
 };
 
 mdeditor.prototype.handleInlineCode = function (txt) {
+    var me = this;
     return txt.replace(/\`.+?\`/g, function (txt) {
         var inlineCode = txt.substring(1, txt.length - 1);
+        inlineCode = me.replaceHtmlTag(inlineCode);
         return '<span class="md-inline-code">' + inlineCode + '</span>';
     });
 };
