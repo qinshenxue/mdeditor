@@ -3,7 +3,7 @@
 [http://www.qinshenxue.com/demo/mdeditor/index.html](http://www.qinshenxue.com/demo/mdeditor/index.html)
 ## API
 
-### 初始化实例（传入id情况）
+### 初始化实例（传入参数id）
 ```
 <div id="wrap">
 
@@ -15,7 +15,7 @@
 </script>
 ```
 
-### 初始化实例（不传任何参数）
+### 初始化实例（不传参数）
 用于一些只想单独用mdeditor的api的场景
 比如要把一些markdown语法文本转义html内容
 
