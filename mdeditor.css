@@ -1,17 +1,18 @@
 
-#mdeditor,
-#mdeditor-html {
+.mdeditor,
+.mdeditor-html {
     display: block;
-    width: 50%;
+    box-sizing: border-box;
     height: inherit;
     min-height: 200px;
     padding: 10px;
+    font-size: 14px;
     border: 1px solid #ccc;
-    box-sizing: border-box;
 }
 
-#mdeditor {
+.mdeditor {
     float: left;
+    width: 50%;
     line-height: 1.5em;
     resize: none;
     outline: none;
@@ -20,21 +21,23 @@
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
     -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
     -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
-    transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s
+    transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
 }
 
-#mdeditor:focus {
+.mdeditor:focus {
     border-color: #66afe9;
     outline: 0;
     -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6);
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6)
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6);
 }
 
-#mdeditor-html {
-    margin-left: 50%;
-    font-size: 14px;
+.mdeditor-html {
     background: #fff;
     overflow-y: auto;
+}
+
+.mdeditor-html.preview {
+    border: 0;
 }
 
 .mdeditor-html h1,
@@ -45,11 +48,42 @@
 .mdeditor-html h6 {
     margin-top: 20px;
     margin-bottom: 10px;
+    font-weight: 700;
+    color: #555;
+}
+
+.mdeditor-html h1 {
+    font-size: 2.4em;
+    color: #333;
+}
+
+.mdeditor-html h2 {
+    margin-top: 30px;
+    margin-bottom: 20px;
+    font-size: 1.7142em;
+    color: #333;
+}
+
+.mdeditor-html h3 {
+    font-size: 1.3571em;
+    color: #555;
+}
+
+.mdeditor-html h4 {
+    font-size: 1.1428em;
+}
+
+.mdeditor-html h5 {
+    font-size: 1em;
+}
+
+.mdeditor-html h6 {
+    font-size: 0.8571em;
 }
 
 .mdeditor-html p {
     margin: 0 0 10px;
-    line-height: 1.5em;
+    line-height: 1.7em;
 }
 
 .mdeditor-html .md-inline-code,
@@ -63,7 +97,6 @@
     border: 1px solid #ccc;
     color: #c7254e;
     background-color: #f9f2f4;
-    border-radius: 3px;
 }
 
 .mdeditor-html .md-ul {
@@ -91,6 +124,7 @@
     margin: 0;
     background: #f6f6f6;
     border: 1px solid #ddd;
+    border-radius: 0;
 }
 
 .mdeditor-html .md-code ol {
@@ -107,6 +141,3 @@
 .mdeditor-html .md-code-line-even {
     background: #eee;
 }
-
-
-
