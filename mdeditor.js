@@ -8,7 +8,7 @@ mdeditor.prototype.init = function (options) {
     if (options && options.id) {
         var wrap = this.getDom(options.id);
 
-        var html = '<textarea id="mdeditor"></textarea><div id="mdeditor-html" class="mdeditor-html"></div>';
+        var html = '<textarea id="mdeditor" class="mdeditor"></textarea><div id="mdeditor-html" class="mdeditor-html"></div>';
 
         wrap.innerHTML = html;
 
