@@ -68,6 +68,11 @@ mdeditor.prototype.markdownToHtml = function (md) {
     // 逐行分析
     var html = md.replace(/^.+$/mg, function ($1) {
 
+        if (/^\s*\[TOC\]\s*$/.test($1)) {
+            me.toc = [];
+            return '';
+        }
+
         // 遇到代码其实标记，标记为代码
         if (/^\`{3}.+$/.test($1)) {
             flag = 'code';
@@ -107,33 +112,43 @@ mdeditor.prototype.markdownToHtml = function (md) {
         }
 
     });
+
+    if (me.toc) {
+        me.toc.unshift('<div class="mdeditor-toc" id="mdeditor-toc">');
+        me.toc.push('</div>');
+        html = me.toc.join('') + html;
+    }
     if (this.editorHtml) {
         this.editorHtml.innerHTML = html;
     }
+
     return html;
 };
 
 
 mdeditor.prototype.handleText = function (txt) {
 
+    var me = this;
     /* 超链接处理 */
     txt = this.handleLink(txt);
 
     /* 行内代码处理 */
     txt = this.handleInlineCode(txt);
 
-    if (/^#{1}(?!#).+$/.test(txt)) {
-        return '<h1>' + txt.replace(/#+\s*/, '') + '</h1>';
-    } else if (/^#{2}(?!#).+$/.test(txt)) {
-        return '<h2>' + txt.replace(/#+\s*/, '') + '</h2>';
-    } else if (/^#{3}(?!#).+$/.test(txt)) {
-        return '<h3>' + txt.replace(/#+\s*/, '') + '</h3>';
-    } else if (/^#{4}(?!#).+$/.test(txt)) {
-        return '<h4>' + txt.replace(/#+\s*/, '') + '</h4>';
-    } else if (/^#{5}(?!#).+$/.test(txt)) {
-        return '<h5>' + txt.replace(/#+\s*/, '') + '</h5>';
-    } else if (/^#{6}(?!#).+$/.test(txt)) {
-        return '<h6>' + txt.replace(/#+\s*/, '') + '</h6>';
+
+    if (/^#{1,6}.+$/.test(txt)) {
+
+        var titleMatches = txt.match(/#{1,6}(?=.+)/);
+
+        var hno = titleMatches[0].length;
+
+        var htxt = txt.substr(hno);
+
+        if (me.toc) {
+            me.handleTOC(hno, htxt, htxt);
+        }
+        return '<h' + hno + ' id="' + htxt + '" >' + htxt + '</h' + hno + '>';
+
     } else {
         return '<p>' + txt + '</p>';
     }
@@ -141,6 +156,10 @@ mdeditor.prototype.handleText = function (txt) {
     return '';
 };
 
+mdeditor.prototype.handleTOC = function (hno, anchor, txt) {
+    var me = this;
+    me.toc.push('<a class="mdeditor-toc-' + hno + '" href="#' + anchor + '">' + txt + '</a>');
+};
 
 mdeditor.prototype.handleImg = function (txt) {
     var alt = txt.substring(txt.indexOf('[') + 1, txt.indexOf(']'));

@@ -40,6 +40,52 @@
     border: 0;
 }
 
+.mdeditor-html .mdeditor-toc {
+    color: #337ab7;
+    font-size: 14px;
+    line-height: 1.5em;
+}
+
+.mdeditor-html .mdeditor-toc a,
+.mdeditor-html .mdeditor-toc a:link {
+    display: block;
+    text-decoration: none;
+    color: #337ab7;
+}
+
+.mdeditor-html .mdeditor-toc-1 {
+    font-size: 16px;
+    text-indent: 1em;
+}
+
+.mdeditor-html .mdeditor-toc-2 {
+    text-indent: 2em;
+}
+
+.mdeditor-html .mdeditor-toc-3 {
+    text-indent: 3em;
+}
+
+.mdeditor-html .mdeditor-toc-4 {
+    text-indent: 4em;
+}
+
+.mdeditor-html .mdeditor-toc-5 {
+    text-indent: 5em;
+}
+
+.mdeditor-html .mdeditor-toc-6 {
+    text-indent: 6em;
+}
+
+.mdeditor-html .mdeditor-toc a:visited {
+    color: inherit;
+}
+
+.mdeditor-html .mdeditor-toc a:hover {
+    color: #00f;
+}
+
 .mdeditor-html h1,
 .mdeditor-html h2,
 .mdeditor-html h3,
@@ -53,7 +99,7 @@
 }
 
 .mdeditor-html h1 {
-    font-size: 2.4em;
+    font-size: 2em;
     color: #333;
 }
 
