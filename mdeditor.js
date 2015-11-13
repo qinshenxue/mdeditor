@@ -141,7 +141,16 @@ mdeditor.prototype.markdownToHtml = function (md) {
         me.toc.unshift('<div class="mdeditor-toc" id="mdeditor-toc">');
         me.toc.push('</div>');
         html = me.toc.join('') + html;
+        me.toc = null;
+    } else {
+        var $toc = me.getDom('mdeditor-toc');
+        console.log($toc);
+
+        if ($toc) {
+            $toc.remove();
+        }
     }
+
     if (this.editorHtml) {
         this.editorHtml.innerHTML = html;
     }
