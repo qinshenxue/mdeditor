@@ -172,6 +172,7 @@
 
 .mdeditor-ul,
 .mdeditor-ol{
+    padding: 0 2em;
     line-height: 1.7em;
 }
 
