@@ -20,6 +20,7 @@
 <script>
     var mdeditor = mdeditor({
         id: 'textarea的id', // 必须的
+        name:'输入框name属性值',
         placeholder: '与html5中的placeholder同义，兼容性也相同'
     });
 </script>
