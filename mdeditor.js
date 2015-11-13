@@ -97,8 +97,8 @@ mdeditor.prototype.markdownToHtml = function (md) {
             return '';
         }
 
-        // 遇到代码其实标记，标记为代码
-        if (/^\`{3}.+$/.test($1)) {
+        // 遇到代码起始标记，标记为代码
+        if (flag == '' && flag != 'code' && /^\`{3}.*$/.test($1)) {
             flag = 'code';
             return ''
         }
@@ -107,7 +107,7 @@ mdeditor.prototype.markdownToHtml = function (md) {
         switch (flag) {
             case 'code':
                 // 处理代码
-                if (/^\`{3}$/.test($1)) {
+                if (/^\`{3}.*$/.test($1)) {
                     flag = '';
                     var codeHtml = me.handleCode(code);
                     code = [];
