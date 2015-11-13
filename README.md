@@ -14,6 +14,16 @@
     });
 </script>
 ```
+#### 带参数完整配置项
+
+```
+<script>
+    var mdeditor = mdeditor({
+        id: 'textarea的id', // 必须的
+        placeholder: '与html5中的placeholder同义，兼容性也相同'
+    });
+</script>
+```
 
 ### 初始化实例（不传参数）
 用于一些只想单独用mdeditor的api的场景
@@ -67,6 +77,10 @@
 
 
 ##更新日志
+
+### 2015-11-13
+1. 增加设置输入框placeholder的配置选项，以及相应增加了一些私有接口
+
 ### 2015-11-12
 1. 优化标题的匹配正则
 2. 新增TOC目录语法

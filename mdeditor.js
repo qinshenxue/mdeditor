@@ -4,12 +4,19 @@ var mdeditor = function (options) {
 
 mdeditor.prototype.init = function (options) {
 
+
     var me = this;
     if (options && options.id) {
+        var defaults = {
+            id: '',
+            placeholder: ''
+        };
+        me.copy(defaults, options);
         var wrap = this.getDom(options.id);
 
-        var html = '<textarea id="mdeditor" class="mdeditor"></textarea><div id="mdeditor-html" class="mdeditor-html"></div>';
+        var html = '<textarea id="mdeditor" class="mdeditor" placeholder="{placeholder}"></textarea><div id="mdeditor-html" class="mdeditor-html"></div>';
 
+        html = me.formatString(html, defaults);
         wrap.innerHTML = html;
 
         var editor = this.getDom('mdeditor');
@@ -24,12 +31,27 @@ mdeditor.prototype.init = function (options) {
         me.editorHtml = editorHtml;
     }
     return me;
-
 };
 
 mdeditor.prototype.init.prototype = mdeditor.prototype;
 
+// 格式化字符串
+mdeditor.prototype.formatString = function (format, data) {
+    return format.replace(/{\w+}/g, function ($1) {
+        var key = $1.substr(1, $1.length - 2);
+        return data[key];
+    });
+};
 
+// js浅拷贝
+mdeditor.prototype.copy = function (source, dest) {
+    for (var name in dest) {
+        source[name] = dest[name];
+    }
+    return source;
+};
+
+// 获取dom元素
 mdeditor.prototype.getDom = function (_id) {
     return document.getElementById(_id);
 };
@@ -60,6 +82,7 @@ mdeditor.prototype.getHTML = function () {
     }
 };
 
+// markdown语法文本转义为html
 mdeditor.prototype.markdownToHtml = function (md) {
     var me = this;
     var flag = '';
@@ -125,7 +148,7 @@ mdeditor.prototype.markdownToHtml = function (md) {
     return html;
 };
 
-
+// 格式化
 mdeditor.prototype.handleText = function (txt) {
 
     var me = this;
@@ -156,6 +179,7 @@ mdeditor.prototype.handleText = function (txt) {
     return '';
 };
 
+// 格式化目录语法
 mdeditor.prototype.handleTOC = function (hno, anchor, txt) {
     var me = this;
     me.toc.push('<a class="mdeditor-toc-' + hno + '" href="#' + anchor + '">' + txt + '</a>');
@@ -167,7 +191,7 @@ mdeditor.prototype.handleImg = function (txt) {
     return '<img alt="' + alt + '" src="' + src + '">';
 };
 
-
+// 格式化无序列表
 mdeditor.prototype.handleUnorderedList = function (txt) {
     var me = this;
     txt = me.handleLink(txt);
@@ -175,6 +199,8 @@ mdeditor.prototype.handleUnorderedList = function (txt) {
     txt = txt.replace(/^\.\s?/, '');
     return '<div class="md-ul">' + txt + '</div>';
 };
+
+// 格式化有序列表
 mdeditor.prototype.handleOrderList = function (txt) {
     var me = this;
     txt = me.handleLink(txt);
@@ -184,7 +210,7 @@ mdeditor.prototype.handleOrderList = function (txt) {
     return '<div class="md-ol"><span class="md-ol-no">' + no + '.</span>' + txt + '</div>';
 };
 
-
+// 格式化链接
 mdeditor.prototype.handleLink = function (txt) {
     var targetBlankReg = /.*(?=\,\s*_blank)/;
     return txt.replace(/\[.*?\]\(.*?\)/g, function (txt) {
@@ -200,6 +226,7 @@ mdeditor.prototype.handleLink = function (txt) {
     });
 };
 
+// 格式化代码段
 mdeditor.prototype.handleCode = function (arr) {
     var codeHtml = [];
     codeHtml.push('<ol>');
@@ -219,6 +246,7 @@ mdeditor.prototype.handleCode = function (arr) {
     return codeHtml.join('');
 };
 
+// 格式化行内代码
 mdeditor.prototype.handleInlineCode = function (txt) {
     var me = this;
     return txt.replace(/\`.+?\`/g, function (txt) {
@@ -228,6 +256,7 @@ mdeditor.prototype.handleInlineCode = function (txt) {
     });
 };
 
+// 替换html标签
 mdeditor.prototype.replaceHtmlTag = function (txt) {
     return txt.replace(/\</g, '&lt;').replace(/\>/, '&gt;')
 };
