@@ -36,6 +36,11 @@ mdeditor.prototype.init = function (options) {
 
 mdeditor.prototype.init.prototype = mdeditor.prototype;
 
+mdeditor.prototype.regApi = {
+    ul: /^[\.\-\*]\s?.+$/,
+    ol: /^\d+\.\s?.+$/
+};
+
 // 格式化字符串
 mdeditor.prototype.formatString = function (format, data) {
     return format.replace(/{\w+}/g, function ($1) {
@@ -87,10 +92,12 @@ mdeditor.prototype.getHTML = function () {
 mdeditor.prototype.markdownToHtml = function (md) {
     var me = this;
     var flag = '';
-    var code = [];
+    var arr = [];
 
     // 逐行分析
     var html = md.replace(/^.+$/mg, function ($1) {
+
+        var preHtml = '';
 
         if (/^\s*\[TOC\]\s*$/.test($1)) {
             me.toc = [];
@@ -103,36 +110,55 @@ mdeditor.prototype.markdownToHtml = function (md) {
             return ''
         }
 
+        if (flag == '' && flag != 'ul' && me.regApi.ul.test($1)) {
+            flag = 'ul';
+            arr.push('<ul class="mdeditor-ul">');
+        } else if (flag == 'ul' && !me.regApi.ul.test($1)) {
+            arr.push('</ul>');
+            preHtml = arr.join('');
+            flag = '';
+            arr = [];
+        }
+
+        if (flag == '' && flag != 'ol' && me.regApi.ol.test($1)) {
+            flag = 'ol';
+            arr.push(preHtml);
+            arr.push('<ol class="mdeditor-ol">');
+        } else if (flag == 'ol' && !me.regApi.ol.test($1)) {
+            arr.push('</ol>');
+            preHtml = arr.join('');
+            flag = '';
+            arr = [];
+        }
 
         switch (flag) {
             case 'code':
                 // 处理代码
                 if (/^\`{3}.*$/.test($1)) {
                     flag = '';
-                    var codeHtml = me.handleCode(code);
-                    code = [];
+                    var codeHtml = me.handleCode(arr);
+                    arr = [];
                     return '<pre class="md-code">' + codeHtml + '</pre>';
                 } else {
-                    code.push(me.replaceHtmlTag($1));
+                    arr.push(me.replaceHtmlTag($1));
                     return '';
                 }
+            case 'ul':
+                arr.push('<li>');
+                arr.push(me.handleUnorderedList($1));
+                arr.push('</li>');
+                return '';
+            case 'ol':
+                arr.push('<li>');
+                arr.push(me.handleOrderList($1));
+                arr.push('</li>');
+                return '';
             case '':
-                // 无序列表
-                if (/^\.\s?.+$/.test($1) || /^\*\s?.+$/.test($1) || /^\-\s?.+$/.test($1)) {
-                    return me.handleUnorderedList($1);
-                }
-
-                // 有序列表
-                if (/^\d+\.\s?.+$/.test($1)) {
-                    return me.handleOrderList($1);
-                }
-
                 // 图片处理
                 if (/\!\[.*?\]\(.*?\)/g.test($1)) {
-                    return me.handleImg($1);
+                    return preHtml + me.handleImg($1);
                 }
-
-                return me.handleText($1);
+                return preHtml + me.handleText($1);
         }
 
     });
@@ -147,6 +173,14 @@ mdeditor.prototype.markdownToHtml = function (md) {
         if ($toc) {
             $toc.remove();
         }
+    }
+
+    if (flag == 'ul') {
+        arr.push('</ul>');
+        html += arr.join('');
+    } else if (flag == 'ol') {
+        arr.push('</ol>');
+        html += arr.join('');
     }
 
     if (this.editorHtml) {
@@ -204,11 +238,9 @@ mdeditor.prototype.handleUnorderedList = function (txt) {
     var me = this;
     txt = me.handleLink(txt);
     txt = me.handleInlineCode(txt);
-    txt = txt.replace(/^\.\s?/, '');
-    txt = txt.replace(/^\-\s?/, '');
-    txt = txt.replace(/^\*\s?/, '');
+    txt = txt.replace(/^[\.\*\-]\s*/, '');
 
-    return '<div class="md-ul">' + txt + '</div>';
+    return txt;
 };
 
 // 格式化有序列表
@@ -216,9 +248,8 @@ mdeditor.prototype.handleOrderList = function (txt) {
     var me = this;
     txt = me.handleLink(txt);
     txt = me.handleInlineCode(txt);
-    var no = txt.substring(0, txt.indexOf('.'));
-    txt = txt.replace(/^\d+\.\s?/, '');
-    return '<div class="md-ol"><span class="md-ol-no">' + no + '.</span>' + txt + '</div>';
+    txt = txt.replace(/^\d+\.\s*/, '');
+    return txt;
 };
 
 // 格式化链接

@@ -170,19 +170,9 @@
     background-color: #f9f2f4;
 }
 
-.mdeditor-html .md-ul {
-    display: list-item;
-    margin-left: 3em;
-    list-style-type: disc;
-}
-
-.mdeditor-html .md-ol {
-    margin-left: 3em;
-}
-
-.mdeditor-html .md-ol .md-ol-no {
-    margin-right: 8px;
-    margin-left: -20px;
+.mdeditor-ul,
+.mdeditor-ul{
+    line-height: 1.7em;
 }
 
 .mdeditor-html img {
