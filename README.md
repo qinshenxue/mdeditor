@@ -1,4 +1,4 @@
-#mdeditor（7.16k）
+#mdeditor
 ## 演示地址
 [http://www.qinshenxue.com/demo/mdeditor/index.html](http://www.qinshenxue.com/demo/mdeditor/index.html)
 ## API
