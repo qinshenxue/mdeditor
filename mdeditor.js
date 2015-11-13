@@ -9,12 +9,13 @@ mdeditor.prototype.init = function (options) {
     if (options && options.id) {
         var defaults = {
             id: '',
-            placeholder: ''
+            placeholder: '',
+            name: ''
         };
         me.copy(defaults, options);
         var wrap = this.getDom(options.id);
 
-        var html = '<textarea id="mdeditor" class="mdeditor" placeholder="{placeholder}"></textarea><div id="mdeditor-html" class="mdeditor-html"></div>';
+        var html = '<textarea id="mdeditor" class="mdeditor" name="{name}" placeholder="{placeholder}"></textarea><div id="mdeditor-html" class="mdeditor-html"></div>';
 
         html = me.formatString(html, defaults);
         wrap.innerHTML = html;
