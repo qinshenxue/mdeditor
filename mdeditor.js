@@ -110,26 +110,32 @@ mdeditor.prototype.markdownToHtml = function (md) {
             return ''
         }
 
-        if (flag == '' && flag != 'ul' && me.regApi.ul.test($1)) {
-            flag = 'ul';
-            arr.push('<ul class="mdeditor-ul">');
-        } else if (flag == 'ul' && !me.regApi.ul.test($1)) {
+        if (flag == 'ul' && !me.regApi.ul.test($1)) {
             arr.push('</ul>');
             preHtml = arr.join('');
             flag = '';
             arr = [];
         }
 
-        if (flag == '' && flag != 'ol' && me.regApi.ol.test($1)) {
-            flag = 'ol';
-            arr.push(preHtml);
-            arr.push('<ol class="mdeditor-ol">');
-        } else if (flag == 'ol' && !me.regApi.ol.test($1)) {
+        if (flag == 'ol' && !me.regApi.ol.test($1)) {
             arr.push('</ol>');
             preHtml = arr.join('');
             flag = '';
             arr = [];
         }
+
+        if (flag == '' && flag != 'ul' && me.regApi.ul.test($1)) {
+            flag = 'ul';
+            arr.push(preHtml);
+            arr.push('<ul class="mdeditor-ul">');
+        }
+
+        if (flag == '' && flag != 'ol' && me.regApi.ol.test($1)) {
+            flag = 'ol';
+            arr.push(preHtml);
+            arr.push('<ol class="mdeditor-ol">');
+        }
+
 
         switch (flag) {
             case 'code':
