@@ -118,7 +118,7 @@ mdeditor.prototype.markdownToHtml = function (md) {
                 }
             case '':
                 // 无序列表
-                if (/^\.\s?.+$/.test($1)) {
+                if (/^\.\s?.+$/.test($1) || /^\*\s?.+$/.test($1) || /^\-\s?.+$/.test($1)) {
                     return me.handleUnorderedList($1);
                 }
 
@@ -205,6 +205,9 @@ mdeditor.prototype.handleUnorderedList = function (txt) {
     txt = me.handleLink(txt);
     txt = me.handleInlineCode(txt);
     txt = txt.replace(/^\.\s?/, '');
+    txt = txt.replace(/^\-\s?/, '');
+    txt = txt.replace(/^\*\s?/, '');
+
     return '<div class="md-ul">' + txt + '</div>';
 };
 
