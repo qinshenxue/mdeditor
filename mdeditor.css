@@ -31,8 +31,33 @@
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6);
 }
 
+.mdeditor::-webkit-scrollbar,
+.mdeditor-html::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.mdeditor::-webkit-scrollbar-track-piece,
+.mdeditor-html::-webkit-scrollbar-track-piece {
+    background: #dedede;
+    border-radius: 5px;
+}
+
+.mdeditor::-webkit-scrollbar-thumb,
+.mdeditor-html::-webkit-scrollbar-thumb {
+    background: #999;
+    border-radius: 5px;
+}
+
+.mdeditor::-webkit-scrollbar-thumb:hover,
+.mdeditor-html::-webkit-scrollbar-thumb:hover {
+    background: #888;
+    border-radius: 5px;
+}
+
 .mdeditor-html {
     background: #fff;
+    border-left: 0;
     overflow-y: auto;
 }
 
