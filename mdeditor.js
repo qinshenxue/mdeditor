@@ -144,8 +144,6 @@ mdeditor.prototype.markdownToHtml = function (md) {
         me.toc = null;
     } else {
         var $toc = me.getDom('mdeditor-toc');
-        console.log($toc);
-
         if ($toc) {
             $toc.remove();
         }
