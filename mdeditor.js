@@ -109,11 +109,6 @@ mdeditor.prototype.markdownToHtml = function (md) {
             return '';
         }
 
-        // 遇到代码起始标记，标记为代码
-        if (flag == '' && flag != 'code' && me.regApi.code.test($1)) {
-            flag = 'code';
-            return '';
-        }
 
         if (flag == 'ul' && !me.regApi.ul.test($1)) {
             arr.push('</ul>');
@@ -128,6 +123,14 @@ mdeditor.prototype.markdownToHtml = function (md) {
             flag = '';
             arr = [];
         }
+
+        // 遇到代码起始标记，标记为代码
+        if (flag == '' && flag != 'code' && me.regApi.code.test($1)) {
+            flag = 'code';
+            arr.push(preHtml);
+            return '';
+        }
+
 
         if (flag == '' && flag != 'ul' && me.regApi.ul.test($1)) {
             flag = 'ul';
@@ -145,11 +148,12 @@ mdeditor.prototype.markdownToHtml = function (md) {
         switch (flag) {
             case 'code':
                 // 处理代码
-                if (/^\`{3}.*$/.test($1)) {
+                if (flag == 'code' && /^\`{3}.*$/.test($1)) {
                     flag = '';
+                    preHtml = arr.shift();
                     var codeHtml = me.handleCode(arr);
                     arr = [];
-                    return '<pre class="md-code">' + codeHtml + '</pre>';
+                    return preHtml + '<pre class="mdeditor-code">' + codeHtml + '</pre>';
                 } else {
                     arr.push(me.replaceHtmlTag($1));
                     return '';

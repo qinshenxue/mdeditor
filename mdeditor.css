@@ -171,7 +171,7 @@
 }
 
 .mdeditor-ul,
-.mdeditor-ol{
+.mdeditor-ol {
     padding: 0 2em;
     line-height: 1.7em;
 }
@@ -181,7 +181,7 @@
     border: 0;
 }
 
-.mdeditor-html .md-code {
+.mdeditor-html .mdeditor-code {
     padding: 0;
     margin: 20px 0;
     background: #f6f6f6;
@@ -189,12 +189,12 @@
     border-radius: 0;
 }
 
-.mdeditor-html .md-code ol {
+.mdeditor-html .mdeditor-code ol {
     margin: 20px 5px;
     color: #888;
 }
 
-.mdeditor-html .md-code li {
+.mdeditor-html .mdeditor-code li {
     line-height: 1.7em;
     list-style: inherit;
     color: #333;
