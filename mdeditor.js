@@ -37,8 +37,13 @@ mdeditor.prototype.init = function (options) {
 mdeditor.prototype.init.prototype = mdeditor.prototype;
 
 mdeditor.prototype.regApi = {
+    code: /^\`{3}.*$/,
     ul: /^[\.\-\*]\s?.+$/,
-    ol: /^\d+\.\s?.+$/
+    ol: /^\d+\.\s?.+$/,
+    toc: /^\s*\[TOC\]\s*$/,
+    img: /\!\[.*?\]\(.*?\)/g,
+    title: /^#{1,6}.+$/,
+    blockquote: /^\>\s+.+$/
 };
 
 // 格式化字符串
@@ -99,15 +104,15 @@ mdeditor.prototype.markdownToHtml = function (md) {
 
         var preHtml = '';
 
-        if (/^\s*\[TOC\]\s*$/.test($1)) {
+        if (me.regApi.toc.test($1)) {
             me.toc = [];
             return '';
         }
 
         // 遇到代码起始标记，标记为代码
-        if (flag == '' && flag != 'code' && /^\`{3}.*$/.test($1)) {
+        if (flag == '' && flag != 'code' && me.regApi.code.test($1)) {
             flag = 'code';
-            return ''
+            return '';
         }
 
         if (flag == 'ul' && !me.regApi.ul.test($1)) {
@@ -161,7 +166,7 @@ mdeditor.prototype.markdownToHtml = function (md) {
                 return '';
             case '':
                 // 图片处理
-                if (/\!\[.*?\]\(.*?\)/g.test($1)) {
+                if (me.regApi.img.test($1)) {
                     return preHtml + me.handleImg($1);
                 }
                 return preHtml + me.handleText($1);
@@ -207,7 +212,7 @@ mdeditor.prototype.handleText = function (txt) {
     txt = this.handleInlineCode(txt);
 
 
-    if (/^#{1,6}.+$/.test(txt)) {
+    if (me.regApi.title.test(txt)) {
 
         var titleMatches = txt.match(/#{1,6}(?=.+)/);
 
