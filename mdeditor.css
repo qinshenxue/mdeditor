@@ -182,24 +182,30 @@
 }
 
 .mdeditor-html .mdeditor-code {
-    padding: 0;
+    padding:0 0 0 10px;
     margin: 20px 0;
-    background: #f6f6f6;
-    border: 1px solid #ddd;
     border-radius: 0;
+    background: #eee;
+    border:1px solid #e6e6e6;
 }
 
 .mdeditor-html .mdeditor-code ol {
-    margin: 20px 5px;
-    color: #888;
+    margin: 0 0 0 35px;
+    padding:0;
+    color: #aaa;
 }
 
 .mdeditor-html .mdeditor-code li {
-    line-height: 1.7em;
+    padding-left:15px;
+    line-height: 2em;
     list-style: inherit;
-    color: #333;
+    background: #f6f6f6;
 }
 
-.mdeditor-html .md-code-line-even {
-    background: #eee;
+.mdeditor-html .mdeditor-code li code{
+    color:#222;
+}
+
+.mdeditor-html .mdeditor-code li.md-code-line-even {
+    background: #f2f2f2;
 }
