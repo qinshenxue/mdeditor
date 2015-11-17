@@ -196,16 +196,32 @@
 }
 
 .mdeditor-html .mdeditor-code li {
-    padding-left:15px;
+    padding:0 15px;
     line-height: 2em;
     list-style: inherit;
     background: #f6f6f6;
 }
 
 .mdeditor-html .mdeditor-code li code{
+    font-size: 15px;
     color:#222;
+    word-wrap: break-word;
 }
 
 .mdeditor-html .mdeditor-code li.md-code-line-even {
     background: #f2f2f2;
+}
+
+
+
+.css-property-name{
+    color:#00f;
+    font-weight: bold;
+}
+.css-property-value{
+    color:#008000;
+    font-weight: bold;
+}
+.css-semicolon{
+    color:#000;
 }
