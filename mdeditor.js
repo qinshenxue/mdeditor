@@ -100,24 +100,24 @@ mdeditor.prototype.markdownToHtml = function (md) {
     var arr = [];
 
     // 逐行分析
-    var html = md.replace(/^.+$/mg, function ($1) {
+    var html = md.replace(/^.+$/mg, function (txt) {
 
         var preHtml = '';
 
-        if (me.regApi.toc.test($1)) {
+        if (me.regApi.toc.test(txt)) {
             me.toc = [];
             return '';
         }
 
 
-        if (flag == 'ul' && !me.regApi.ul.test($1)) {
+        if (flag == 'ul' && !me.regApi.ul.test(txt)) {
             arr.push('</ul>');
             preHtml = arr.join('');
             flag = '';
             arr = [];
         }
 
-        if (flag == 'ol' && !me.regApi.ol.test($1)) {
+        if (flag == 'ol' && !me.regApi.ol.test(txt)) {
             arr.push('</ol>');
             preHtml = arr.join('');
             flag = '';
@@ -125,20 +125,21 @@ mdeditor.prototype.markdownToHtml = function (md) {
         }
 
         // 遇到代码起始标记，标记为代码
-        if (flag == '' && flag != 'code' && me.regApi.code.test($1)) {
+        if (flag == '' && flag != 'code' && me.regApi.code.test(txt)) {
             flag = 'code';
+            me.codeType = txt.replace(/[`\s]/g, '');
             arr.push(preHtml);
             return '';
         }
 
 
-        if (flag == '' && flag != 'ul' && me.regApi.ul.test($1)) {
+        if (flag == '' && flag != 'ul' && me.regApi.ul.test(txt)) {
             flag = 'ul';
             arr.push(preHtml);
             arr.push('<ul class="mdeditor-ul">');
         }
 
-        if (flag == '' && flag != 'ol' && me.regApi.ol.test($1)) {
+        if (flag == '' && flag != 'ol' && me.regApi.ol.test(txt)) {
             flag = 'ol';
             arr.push(preHtml);
             arr.push('<ol class="mdeditor-ol">');
@@ -148,32 +149,28 @@ mdeditor.prototype.markdownToHtml = function (md) {
         switch (flag) {
             case 'code':
                 // 处理代码
-                if (flag == 'code' && /^\`{3}.*$/.test($1)) {
+                if (flag == 'code' && /^\`{3}.*$/.test(txt)) {
                     flag = '';
                     preHtml = arr.shift();
                     var codeHtml = me.handleCode(arr);
                     arr = [];
                     return preHtml + '<pre class="mdeditor-code">' + codeHtml + '</pre>';
                 } else {
-                    arr.push(me.replaceHtmlTag($1));
+                    arr.push(me.replaceHtmlTag(txt));
                     return '';
                 }
             case 'ul':
-                arr.push('<li>');
-                arr.push(me.handleUnorderedList($1));
-                arr.push('</li>');
+                arr.push(me.handleUnorderedList(txt));
                 return '';
             case 'ol':
-                arr.push('<li>');
-                arr.push(me.handleOrderList($1));
-                arr.push('</li>');
+                arr.push(me.handleOrderList(txt));
                 return '';
             case '':
                 // 图片处理
-                if (me.regApi.img.test($1)) {
-                    return preHtml + me.handleImg($1);
+                if (me.regApi.img.test(txt)) {
+                    return preHtml + me.handleImg(txt);
                 }
-                return preHtml + me.handleText($1);
+                return preHtml + me.handleText(txt);
         }
 
     });
@@ -254,8 +251,7 @@ mdeditor.prototype.handleUnorderedList = function (txt) {
     txt = me.handleLink(txt);
     txt = me.handleInlineCode(txt);
     txt = txt.replace(/^[\.\*\-]\s*/, '');
-
-    return txt;
+    return '<li>' + txt + '</li>';
 };
 
 // 格式化有序列表
@@ -264,7 +260,7 @@ mdeditor.prototype.handleOrderList = function (txt) {
     txt = me.handleLink(txt);
     txt = me.handleInlineCode(txt);
     txt = txt.replace(/^\d+\.\s*/, '');
-    return txt;
+    return '<li>' + txt + '</li>';
 };
 
 // 格式化链接
@@ -285,6 +281,7 @@ mdeditor.prototype.handleLink = function (txt) {
 
 // 格式化代码段
 mdeditor.prototype.handleCode = function (arr) {
+    var me = this;
     var codeHtml = [];
     codeHtml.push('<ol>');
     for (var i = 0, j = arr.length; i < j; i++) {
@@ -295,12 +292,23 @@ mdeditor.prototype.handleCode = function (arr) {
             codeHtml.push('<li class="md-code-line-odd">');
         }
         codeHtml.push('<code>');
-        codeHtml.push(codeLine);
+        codeHtml.push(me.handleCodeType(codeLine));
         codeHtml.push('</code>');
         codeHtml.push('</li>');
     }
     codeHtml.push('</ol>');
     return codeHtml.join('');
+};
+mdeditor.prototype.handleCodeType = function (txt) {
+    var me = this;
+
+    switch (me.codeType.toLocaleLowerCase()) {
+        case 'css':
+            return txt.replace(/([a-zA-Z-]+:)([^;]+)(;?)/, '<span class="css-property-name">$1</span><span class="css-property-value">$2</span><span class="css-semicolon">$3</span>');
+        default:
+            return txt;
+    }
+
 };
 
 // 格式化行内代码
