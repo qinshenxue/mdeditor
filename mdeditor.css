@@ -193,7 +193,7 @@
 }
 
 .mdeditor-html .mdeditor-code li {
-    padding-left: 20px;
+    padding:0 20px;
     line-height: 2em;
     list-style: inherit;
     background: #272822;
@@ -201,6 +201,7 @@
 
 .mdeditor-html .mdeditor-code li code {
     color: #efefef;
+    word-break: break-word;
 }
 
 .mdeditor-html .mdeditor-code li.md-code-line-first {
