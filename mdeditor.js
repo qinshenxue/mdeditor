@@ -295,7 +295,7 @@ mdeditor.prototype.handleCode = function (arr) {
 
         codeHtml.push('<li class="' + codeLineCls + '">');
         codeHtml.push('<code>');
-        codeHtml.push(codeLine);
+        codeHtml.push(me.handleCodeType(codeLine));
         codeHtml.push('</code>');
         codeHtml.push('</li>');
     }
