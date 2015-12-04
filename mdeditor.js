@@ -307,7 +307,7 @@ mdeditor.prototype.handleCodeType = function (txt) {
 
     switch (me.codeType.toLocaleLowerCase()) {
         case 'css':
-            return txt.replace(/([a-zA-Z-]+:)([^;]+)(;?)/, '<span class="css-property-name">$1</span><span class="css-property-value">$2</span><span class="css-semicolon">$3</span>');
+            return txt.replace(/([a-zA-Z-]+:)([^;]+)(;?)/g, '<span class="css-property-name">$1</span><span class="css-property-value">$2</span><span class="css-semicolon">$3</span>');
         default:
             return txt;
     }
