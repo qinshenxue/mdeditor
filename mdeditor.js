@@ -41,7 +41,7 @@ mdeditor.prototype.regApi = {
     ul: /^[\.\-\*]\s?.+$/,
     ol: /^\d+\.\s?.+$/,
     toc: /^\s*\[TOC\]\s*$/,
-    img: /\!\[.*?\]\(.*?\)/g,
+    img: /\!\[(.*?)\]\((.*?)\)/g,
     title: /^#{1,6}.+$/,
     blockquote: /^\>\s+.+$/
 };
@@ -235,14 +235,14 @@ mdeditor.prototype.handleText = function (txt) {
 
 // 格式化目录语法
 mdeditor.prototype.handleTOC = function (hno, anchor, txt) {
-    var me = this;
-    me.toc.push('<a class="mdeditor-toc-' + hno + '" href="#' + anchor + '">' + txt + '</a>');
+    this.toc.push('<a class="mdeditor-toc-' + hno + '" href="#' + anchor + '">' + txt + '</a>');
 };
 
 mdeditor.prototype.handleImg = function (txt) {
-    var alt = txt.substring(txt.indexOf('[') + 1, txt.indexOf(']'));
-    var src = txt.substring(txt.indexOf('(') + 1, txt.length - 1);
-    return '<img alt="' + alt + '" src="' + src + '">';
+    var me = this;
+    return '<p class="mdeditor-img">' + txt.replace(me.regApi.img, function (match, $1, $2) {
+            return '<img alt="' + $1 + '" src="' + $2 + '">';
+        }) + '</p>';
 };
 
 // 格式化无序列表
@@ -266,16 +266,13 @@ mdeditor.prototype.handleOrderList = function (txt) {
 // 格式化链接
 mdeditor.prototype.handleLink = function (txt) {
     var targetBlankReg = /.*(?=\,\s*_blank)/;
-    return txt.replace(/\[.*?\]\(.*?\)/g, function (txt) {
+    return txt.replace(/\[(.*?)\]\((.*?)\)/g, function (txt, $1, $2) {
         var target = '_self';
         var targetBlankMatch = txt.match(targetBlankReg);
         if (targetBlankMatch) {
             target = '_blank';
-            txt = targetBlankMatch[0] + ')';
         }
-        var linkText = txt.substring(1, txt.indexOf(']'));
-        var linkUrl = txt.substring(txt.indexOf('(') + 1, txt.length - 1);
-        return '<a href="' + linkUrl + '" target="' + target + '">' + linkText + '</a>';
+        return '<a href="' + $2 + '" target="' + target + '">' + $1 + '</a>';
     });
 };
 
@@ -286,13 +283,19 @@ mdeditor.prototype.handleCode = function (arr) {
     codeHtml.push('<ol>');
     for (var i = 0, j = arr.length; i < j; i++) {
         var codeLine = arr[i];
+        var codeLineCls = "md-code-line-odd";
         if (i % 2 == 0) {
-            codeHtml.push('<li class="md-code-line-even">');
-        } else {
-            codeHtml.push('<li class="md-code-line-odd">');
+            codeLineCls = "md-code-line-even";
         }
+        if (i == 0) {
+            codeLineCls += ' md-code-line-first';
+        } else if (i == j - 1) {
+            codeLineCls += ' md-code-line-last';
+        }
+
+        codeHtml.push('<li class="' + codeLineCls + '">');
         codeHtml.push('<code>');
-        codeHtml.push(me.handleCodeType(codeLine));
+        codeHtml.push(codeLine);
         codeHtml.push('</code>');
         codeHtml.push('</li>');
     }
