@@ -154,7 +154,7 @@ mdeditor.prototype.markdownToHtml = function (md) {
                     preHtml = arr.shift();
                     var codeHtml = me.handleCode(arr);
                     arr = [];
-                    return preHtml + '<pre class="mdeditor-code">' + codeHtml + '</pre>';
+                    return preHtml + '<pre class="mdeditor-code mdeditor-code-' + me.codeType.toLowerCase() + '">' + codeHtml + '</pre>';
                 } else {
                     arr.push(me.replaceHtmlTag(txt));
                     return '';

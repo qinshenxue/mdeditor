@@ -213,6 +213,7 @@
 }
 
 .css-property-name {
+    font-style:italic;
     color: #66D9EF;
 }
 
