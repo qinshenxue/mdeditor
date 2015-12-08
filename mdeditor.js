@@ -10,7 +10,8 @@ mdeditor.prototype.init = function (options) {
         var defaults = {
             id: '',
             placeholder: '',
-            name: ''
+            name: '',
+            aTarget: '_blank'
         };
         me.copy(defaults, options);
         var wrap = this.getDom(options.id);
@@ -28,6 +29,7 @@ mdeditor.prototype.init = function (options) {
             me.markdownToHtml(txt);
         });
 
+        me.options = defaults;
         me.editor = editor;
         me.editorHtml = editorHtml;
     }
@@ -43,7 +45,9 @@ mdeditor.prototype.regApi = {
     toc: /^\s*\[TOC\]\s*$/,
     img: /\!\[(.*?)\]\((.*?)\)/g,
     title: /^#{1,6}.+$/,
-    blockquote: /^\>\s+.+$/
+    a: /\[(.*?)\]\((.*?)\)/g,
+    b: /\*\*(.+?)\*\*/g,
+    inlinecode: /\`(.+?)\`/g
 };
 
 // 格式化字符串
@@ -204,33 +208,24 @@ mdeditor.prototype.markdownToHtml = function (md) {
 
 // 格式化
 mdeditor.prototype.handleText = function (txt) {
-
     var me = this;
-    /* 超链接处理 */
-    txt = this.handleLink(txt);
-
-    /* 行内代码处理 */
-    txt = this.handleInlineCode(txt);
-
-
     if (me.regApi.title.test(txt)) {
-
-        var titleMatches = txt.match(/#{1,6}(?=.+)/);
-
-        var hno = titleMatches[0].length;
-
-        var htxt = txt.substr(hno);
-
-        if (me.toc) {
-            me.handleTOC(hno, htxt, htxt);
-        }
-        return '<h' + hno + ' id="' + htxt + '" >' + htxt + '</h' + hno + '>';
-
+        return txt.replace(/(#{1,6})(.+)/, function (match, $1, $2) {
+            var hno = $1.length;
+            if (me.toc) {
+                me.handleTOC(hno, $2, $2);
+            }
+            return '<h' + hno + ' id="' + $2 + '" >' + $2 + '</h' + hno + '>';
+        });
     } else {
+        /* 行内代码处理 */
+        txt = me.handleInlineCode(txt);
+        /* 超链接处理 */
+        txt = me.handleLink(txt);
+        /* 粗体 */
+        txt = me.handleBold(txt);
         return '<p>' + txt + '</p>';
     }
-
-    return '';
 };
 
 // 格式化目录语法
@@ -240,9 +235,17 @@ mdeditor.prototype.handleTOC = function (hno, anchor, txt) {
 
 mdeditor.prototype.handleImg = function (txt) {
     var me = this;
-    return '<p class="mdeditor-img">' + txt.replace(me.regApi.img, function (match, $1, $2) {
-            return '<img alt="' + $1 + '" src="' + $2 + '">';
-        }) + '</p>';
+    txt = txt.replace(me.regApi.img, function (match, $1, $2) {
+        return '<img alt="' + $1 + '" src="' + $2 + '">';
+    });
+    return '<p class="mdeditor-img">' + txt + '</p>';
+};
+
+mdeditor.prototype.handleBold = function (txt) {
+    var me = this;
+    return txt.replace(me.regApi.b, function (match, $1) {
+        return '<b>' + $1 + '</b>';
+    });
 };
 
 // 格式化无序列表
@@ -250,6 +253,7 @@ mdeditor.prototype.handleUnorderedList = function (txt) {
     var me = this;
     txt = me.handleLink(txt);
     txt = me.handleInlineCode(txt);
+    txt = me.handleBold(txt);
     txt = txt.replace(/^[\.\*\-]\s*/, '');
     return '<li>' + txt + '</li>';
 };
@@ -259,20 +263,17 @@ mdeditor.prototype.handleOrderList = function (txt) {
     var me = this;
     txt = me.handleLink(txt);
     txt = me.handleInlineCode(txt);
+    txt = me.handleBold(txt);
     txt = txt.replace(/^\d+\.\s*/, '');
     return '<li>' + txt + '</li>';
 };
 
 // 格式化链接
 mdeditor.prototype.handleLink = function (txt) {
-    var targetBlankReg = /.*(?=\,\s*_blank)/;
-    return txt.replace(/\[(.*?)\]\((.*?)\)/g, function (txt, $1, $2) {
-        var target = '_self';
-        var targetBlankMatch = txt.match(targetBlankReg);
-        if (targetBlankMatch) {
-            target = '_blank';
-        }
-        return '<a href="' + $2 + '" target="' + target + '">' + $1 + '</a>';
+    var me = this;
+    return txt.replace(me.regApi.a, function (txt, $1, $2) {
+        $1 = me.handleBold($1);
+        return '<a href="' + $2 + '" target="' + me.options.aTarget + '">' + $1 + '</a>';
     });
 };
 
@@ -317,14 +318,12 @@ mdeditor.prototype.handleCodeType = function (txt) {
 // 格式化行内代码
 mdeditor.prototype.handleInlineCode = function (txt) {
     var me = this;
-    return txt.replace(/\`.+?\`/g, function (txt) {
-        var inlineCode = txt.substring(1, txt.length - 1);
-        inlineCode = me.replaceHtmlTag(inlineCode);
-        return '<span class="md-inline-code">' + inlineCode + '</span>';
+    return txt.replace(me.regApi.inlinecode, function (txt, $1) {
+        return '<span class="md-inline-code">' + me.replaceHtmlTag($1) + '</span>';
     });
 };
 
 // 替换html标签
 mdeditor.prototype.replaceHtmlTag = function (txt) {
-    return txt.replace(/\</g, '&lt;').replace(/\>/, '&gt;')
+    return txt.replace(/\</g, '&lt;').replace(/\>/, '&gt;');
 };

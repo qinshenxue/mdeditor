@@ -21,7 +21,8 @@
     var mdeditor = mdeditor({
         id: '容器的id', // 必须的
         name:'输入框name属性值',
-        placeholder: '与html5中的placeholder同义，兼容性也相同'
+        placeholder: '与html5中的placeholder同义，兼容性也相同',
+        aTarget: '_blank' // a链接target属性值
     });
 </script>
 ```
@@ -78,6 +79,13 @@
 
 
 ##更新日志
+
+### 2015-12-08
+1. 增加粗体语法
+2. 去掉a链接新窗口打开语法（为了和标准保持一致），改为配置项配置，默认aTarget配置为'_blank'
+3. 优化部分正则匹配
+
+
 ### 2015-12-04
 1. 修复连续多个图片一起时不能正常解析的bug，图片改为用p标签包裹，img标签去掉block样式，改为默认行内样式，允许多个图片一行显示。
 2. 修改代码块的样式，改为黑色背景。（注意：整体的css样式自己可以随意修改，改成自己想要的。）
