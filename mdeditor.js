@@ -1,329 +1,252 @@
-var mdeditor = function (options) {
-    return new mdeditor.prototype.init(options);
-};
+(function (window) {
+    var mdeditor = function (options) {
+        return new mdeditor.prototype.init(options);
+    };
+    mdeditor.prototype = {
+        init: function (options) {
+            var me = this;
+            if (options && options.id) {
+                var defaults = {
+                    id: '',
+                    placeholder: '',
+                    name: '',
+                    aTarget: '_blank'
+                };
+                me.copy(defaults, options);
 
-mdeditor.prototype.init = function (options) {
+                var wrap = this.getDom(options.id);
 
+                var html = '<textarea id="mdeditor" class="mdeditor" name="{name}" placeholder="{placeholder}"></textarea><div id="mdeditor-html" class="mdeditor-html"></div>';
 
-    var me = this;
-    if (options && options.id) {
-        var defaults = {
-            id: '',
-            placeholder: '',
-            name: '',
-            aTarget: '_blank'
-        };
-        me.copy(defaults, options);
-        var wrap = this.getDom(options.id);
+                html = me.formatString(html, defaults);
+                wrap.innerHTML = html;
 
-        var html = '<textarea id="mdeditor" class="mdeditor" name="{name}" placeholder="{placeholder}"></textarea><div id="mdeditor-html" class="mdeditor-html"></div>';
+                var editor = this.getDom('mdeditor');
+                var editor2Html = this.getDom('mdeditor-html');
 
-        html = me.formatString(html, defaults);
-        wrap.innerHTML = html;
+                editor.addEventListener('input', function () {
+                    var txt = this.value;
+                    me.markdownToHtml(txt);
+                });
 
-        var editor = this.getDom('mdeditor');
-        var editorHtml = this.getDom('mdeditor-html');
-
-        editor.addEventListener('input', function () {
-            var txt = this.value;
-            me.markdownToHtml(txt);
-        });
-
-        me.options = defaults;
-        me.editor = editor;
-        me.editorHtml = editorHtml;
-    }
-    return me;
-};
-
-mdeditor.prototype.init.prototype = mdeditor.prototype;
-
-mdeditor.prototype.regApi = {
-    code: /^\`{3}.*$/,
-    ul: /^[\.\-\*]\s?.+$/,
-    ol: /^\d+\.\s?.+$/,
-    toc: /^\s*\[TOC\]\s*$/,
-    img: /\!\[(.*?)\]\((.*?)\)/g,
-    title: /^#{1,6}.+$/,
-    a: /\[(.*?)\]\((.*?)\)/g,
-    b: /\*\*(.+?)\*\*/g,
-    inlinecode: /\`(.+?)\`/g
-};
-
-// 格式化字符串
-mdeditor.prototype.formatString = function (format, data) {
-    return format.replace(/{\w+}/g, function ($1) {
-        var key = $1.substr(1, $1.length - 2);
-        return data[key];
-    });
-};
-
-// js浅拷贝
-mdeditor.prototype.copy = function (source, dest) {
-    for (var name in dest) {
-        source[name] = dest[name];
-    }
-    return source;
-};
-
-// 获取dom元素
-mdeditor.prototype.getDom = function (_id) {
-    return document.getElementById(_id);
-};
-
-// 获取markdown内容
-mdeditor.prototype.getMarkdown = function () {
-    if (this.editor) {
-        return this.editor.value;
-    } else {
-        return null;
-    }
-};
-
-// 设置markdown内容
-mdeditor.prototype.setMarkdown = function (markdown) {
-    if (this.editor) {
-        this.editor.value = markdown;
-    }
-    return this.markdownToHtml(markdown);
-};
-
-// 获取markdown转义后的HTML代码
-mdeditor.prototype.getHTML = function () {
-    if (this.editorHtml) {
-        return this.editorHtml.innerHTML;
-    } else {
-        return '';
-    }
-};
-
-// markdown语法文本转义为html
-mdeditor.prototype.markdownToHtml = function (md) {
-    var me = this;
-    var flag = '';
-    var arr = [];
-
-    // 逐行分析
-    var html = md.replace(/^.+$/mg, function (txt) {
-
-        var preHtml = '';
-
-        if (me.regApi.toc.test(txt)) {
-            me.toc = [];
-            return '';
-        }
-
-
-        if (flag == 'ul' && !me.regApi.ul.test(txt)) {
-            arr.push('</ul>');
-            preHtml = arr.join('');
-            flag = '';
-            arr = [];
-        }
-
-        if (flag == 'ol' && !me.regApi.ol.test(txt)) {
-            arr.push('</ol>');
-            preHtml = arr.join('');
-            flag = '';
-            arr = [];
-        }
-
-        // 遇到代码起始标记，标记为代码
-        if (flag == '' && flag != 'code' && me.regApi.code.test(txt)) {
-            flag = 'code';
-            me.codeType = txt.replace(/[`\s]/g, '');
-            arr.push(preHtml);
-            return '';
-        }
-
-
-        if (flag == '' && flag != 'ul' && me.regApi.ul.test(txt)) {
-            flag = 'ul';
-            arr.push(preHtml);
-            arr.push('<ul class="mdeditor-ul">');
-        }
-
-        if (flag == '' && flag != 'ol' && me.regApi.ol.test(txt)) {
-            flag = 'ol';
-            arr.push(preHtml);
-            arr.push('<ol class="mdeditor-ol">');
-        }
-
-
-        switch (flag) {
-            case 'code':
-                // 处理代码
-                if (flag == 'code' && /^\`{3}.*$/.test(txt)) {
-                    flag = '';
-                    preHtml = arr.shift();
-                    var codeHtml = me.handleCode(arr);
-                    arr = [];
-                    return preHtml + '<pre class="mdeditor-code mdeditor-code-' + me.codeType.toLowerCase() + '">' + codeHtml + '</pre>';
-                } else {
-                    arr.push(me.replaceHtmlTag(txt));
-                    return '';
-                }
-            case 'ul':
-                arr.push(me.handleUnorderedList(txt));
-                return '';
-            case 'ol':
-                arr.push(me.handleOrderList(txt));
-                return '';
-            case '':
-                // 图片处理
-                if (me.regApi.img.test(txt)) {
-                    return preHtml + me.handleImg(txt);
-                }
-                return preHtml + me.handleText(txt);
-        }
-
-    });
-
-    if (me.toc) {
-        me.toc.unshift('<div class="mdeditor-toc" id="mdeditor-toc">');
-        me.toc.push('</div>');
-        html = me.toc.join('') + html;
-        me.toc = null;
-    } else {
-        var $toc = me.getDom('mdeditor-toc');
-        if ($toc) {
-            $toc.remove();
-        }
-    }
-
-    if (flag == 'ul') {
-        arr.push('</ul>');
-        html += arr.join('');
-    } else if (flag == 'ol') {
-        arr.push('</ol>');
-        html += arr.join('');
-    }
-
-    if (this.editorHtml) {
-        this.editorHtml.innerHTML = html;
-    }
-
-    return html;
-};
-
-// 格式化
-mdeditor.prototype.handleText = function (txt) {
-    var me = this;
-    if (me.regApi.title.test(txt)) {
-        return txt.replace(/(#{1,6})(.+)/, function (match, $1, $2) {
-            var hno = $1.length;
-            if (me.toc) {
-                me.handleTOC(hno, $2, $2);
+                me.options = defaults;
+                me.editor = editor;
+                me.editor2Html = editor2Html;
             }
-            return '<h' + hno + ' id="' + $2 + '" >' + $2 + '</h' + hno + '>';
-        });
-    } else {
-        /* 行内代码处理 */
-        txt = me.handleInlineCode(txt);
-        /* 超链接处理 */
-        txt = me.handleLink(txt);
-        /* 粗体 */
-        txt = me.handleBold(txt);
-        return '<p>' + txt + '</p>';
-    }
-};
+            return me;
+        },
 
-// 格式化目录语法
-mdeditor.prototype.handleTOC = function (hno, anchor, txt) {
-    this.toc.push('<a class="mdeditor-toc-' + hno + '" href="#' + anchor + '">' + txt + '</a>');
-};
+        regLib: {
+            code: /^\`{3}.*$/,
+            ul: /^[\.\-\*]\s?.+$/,
+            ol: /^\d+\.\s?.+$/,
+            toc: /^\s*\[TOC\]\s*$/,
+            img: /\!\[(.*?)\]\((.*?)\)/g,
+            title: /^#{1,6}.+$/,
+            a: /\[(.*?)\]\((.*?)\)/g,
+            b: /\*\*(.+?)\*\*/g,
+            inlinecode: /\`(.+?)\`/g
+        },
 
-mdeditor.prototype.handleImg = function (txt) {
-    var me = this;
-    txt = txt.replace(me.regApi.img, function (match, $1, $2) {
-        return '<img alt="' + $1 + '" src="' + $2 + '">';
-    });
-    return '<p class="mdeditor-img">' + txt + '</p>';
-};
+        formatString: function (format, data) {
+            return format.replace(/{\w+}/g, function ($1) {
+                var key = $1.substr(1, $1.length - 2);
+                return data[key];
+            });
+        },
 
-mdeditor.prototype.handleBold = function (txt) {
-    var me = this;
-    return txt.replace(me.regApi.b, function (match, $1) {
-        return '<b>' + $1 + '</b>';
-    });
-};
+        copy: function (source, dest) {
+            for (var name in dest) {
+                source[name] = dest[name];
+            }
+            return source;
+        },
 
-// 格式化无序列表
-mdeditor.prototype.handleUnorderedList = function (txt) {
-    var me = this;
-    txt = me.handleLink(txt);
-    txt = me.handleInlineCode(txt);
-    txt = me.handleBold(txt);
-    txt = txt.replace(/^[\.\*\-]\s*/, '');
-    return '<li>' + txt + '</li>';
-};
+        getDom: function (_id) {
+            return document.getElementById(_id);
+        },
 
-// 格式化有序列表
-mdeditor.prototype.handleOrderList = function (txt) {
-    var me = this;
-    txt = me.handleLink(txt);
-    txt = me.handleInlineCode(txt);
-    txt = me.handleBold(txt);
-    txt = txt.replace(/^\d+\.\s*/, '');
-    return '<li>' + txt + '</li>';
-};
+        getMarkdown: function () {
+            if (this.editor) {
+                return this.editor.value;
+            } else {
+                return null;
+            }
+        },
 
-// 格式化链接
-mdeditor.prototype.handleLink = function (txt) {
-    var me = this;
-    return txt.replace(me.regApi.a, function (txt, $1, $2) {
-        $1 = me.handleBold($1);
-        return '<a href="' + $2 + '" target="' + me.options.aTarget + '">' + $1 + '</a>';
-    });
-};
+        setMarkdown: function (markdown) {
+            if (this.editor) {
+                this.editor.value = markdown;
+            }
+            return this.markdownToHtml(markdown);
+        },
 
-// 格式化代码段
-mdeditor.prototype.handleCode = function (arr) {
-    var me = this;
-    var codeHtml = [];
-    codeHtml.push('<ol>');
-    for (var i = 0, j = arr.length; i < j; i++) {
-        var codeLine = arr[i];
-        var codeLineCls = "md-code-line-odd";
-        if (i % 2 == 0) {
-            codeLineCls = "md-code-line-even";
-        }
-        if (i == 0) {
-            codeLineCls += ' md-code-line-first';
-        } else if (i == j - 1) {
-            codeLineCls += ' md-code-line-last';
-        }
+        getHTML: function () {
+            if (this.editor2Html) {
+                return this.editor2Html.innerHTML;
+            } else {
+                return '';
+            }
+        },
 
-        codeHtml.push('<li class="' + codeLineCls + '">');
-        codeHtml.push('<code>');
-        codeHtml.push(me.handleCodeType(codeLine));
-        codeHtml.push('</code>');
-        codeHtml.push('</li>');
-    }
-    codeHtml.push('</ol>');
-    return codeHtml.join('');
-};
-mdeditor.prototype.handleCodeType = function (txt) {
-    var me = this;
+        markdownToHtml: function (md) {
+            var me = this;
+            var rows = md.match(/.+/mg) || [];
+            var html = [];
+            var flag = '';
+            var codeType = '';
+            var rowsCount = rows.length;
+            var rowsStart = 0;
+            var toc = null;
+            if (rowsCount && me.regLib.toc.test(rows[0])) {
+                rowsStart = 1;
+                toc = ['<div class="mdeditor-toc">'];
+            }
+            for (var i = rowsStart; i < rowsCount; i++) {
+                var row = rows[i];
+                switch (flag) {
+                    case 'ol':
+                        if (!me.regLib.ol.test(row)) {
+                            i--;
+                            flag = '';
+                            html.push('</ol>');
+                        } else {
+                            html.push(me.handleOrderList(row));
+                            if (i == rowsCount - 1) {
+                                html.push('</ol>');
+                            }
+                        }
+                        break;
+                    case 'ul':
+                        if (!me.regLib.ul.test(row)) {
+                            i--;
+                            flag = '';
+                            html.push('</ul>');
+                        } else {
+                            html.push(me.handleUnorderedList(row));
+                            if (i == rowsCount - 1) {
+                                html.push('</ul>');
+                            }
+                        }
+                        break;
+                    case 'code':
+                        if (me.regLib.code.test(row)) {
+                            flag = '';
+                            html.push('</code>');
+                            html.push('</pre>');
+                        } else {
+                            html.push('<li>' + me.handleCodeType(codeType, row) + '</li>');
+                        }
+                        break;
+                    default :
+                        if (me.regLib.title.test(row)) {
+                            html.push(me.handleTitle(row, toc));
+                        } else if (me.regLib.ol.test(row)) {
+                            i--;
+                            flag = 'ol';
+                            html.push('<ol>');
+                        } else if (me.regLib.ul.test(row)) {
+                            i--;
+                            flag = 'ul';
+                            html.push('<ul>');
+                        } else if (me.regLib.code.test(row)) {
+                            flag = 'code';
+                            codeType = row.replace(/[`\s]/g, '');
+                            html.push('<pre class="mdeditor-code mdeditor-code-' + codeType.toLowerCase() + '">');
+                            html.push('<ol>');
+                        } else if (me.regLib.img.test(row)) {
+                            html.push(me.handleImg(row));
+                        } else {
+                            html.push(me.handleParagraph(row));
+                        }
+                        break;
+                }
+            }
 
-    switch (me.codeType.toLocaleLowerCase()) {
-        case 'css':
-            return txt.replace(/([a-zA-Z-]+:)([^;]+)(;?)/g, '<span class="css-property-name">$1</span><span class="css-property-value">$2</span><span class="css-semicolon">$3</span>');
-        default:
+            html = (toc ? toc.join('') + '</div>' : '') + html.join('');
+
+            if (this.editor2Html) {
+                this.editor2Html.innerHTML = html;
+            }
+            return html;
+        },
+
+        handleTitle: function (txt, toc) {
+            var me = this;
+            return txt.replace(/(#{1,6})(.+)/, function (match, $1, $2) {
+                var hno = $1.length;
+                if (toc) {
+                    toc.push('<a class="mdeditor-toc-' + hno + '" href="#' + $2 + '">' + $2 + '</a>');
+                }
+                return '<h' + hno + ' id="' + $2 + '" >' + $2 + '</h' + hno + '>';
+            });
+        },
+
+        handleParagraph: function (txt) {
+            return '<p>' + this.handleInlineSet(txt) + '</p>';
+        },
+
+        handleInlineSet: function (txt) {
+            txt = this.replaceHtmlTag(txt);
+            txt = this.handleInlineCode(txt);
+            txt = this.handleLink(txt);
+            txt = this.handleBold(txt);
             return txt;
-    }
+        },
 
-};
+        handleImg: function (txt) {
+            return '<p class="mdeditor-img">' + txt.replace(this.regLib.img, function (match, $1, $2) {
+                    return '<img alt="' + $1 + '" src="' + $2 + '">';
+                }) + '</p>';
+        },
 
-// 格式化行内代码
-mdeditor.prototype.handleInlineCode = function (txt) {
-    var me = this;
-    return txt.replace(me.regApi.inlinecode, function (txt, $1) {
-        return '<span class="md-inline-code">' + me.replaceHtmlTag($1) + '</span>';
-    });
-};
+        handleLink: function (txt) {
+            var me = this;
+            return txt.replace(me.regLib.a, function (txt, $1, $2) {
+                $1 = me.handleBold($1);
+                return '<a href="' + $2 + '" target="' + me.options.aTarget + '">' + $1 + '</a>';
+            });
+        },
 
-// 替换html标签
-mdeditor.prototype.replaceHtmlTag = function (txt) {
-    return txt.replace(/\</g, '&lt;').replace(/\>/, '&gt;');
-};
+        handleBold: function (txt) {
+            var me = this;
+            return txt.replace(me.regLib.b, function (match, $1) {
+                return '<b>' + $1 + '</b>';
+            });
+        },
+
+        handleInlineCode: function (txt) {
+            var me = this;
+            return txt.replace(me.regLib.inlinecode, function (txt, $1) {
+                return '<span class="md-inline-code">' + me.replaceHtmlTag($1) + '</span>';
+            });
+        },
+
+        handleUnorderedList: function (txt) {
+            txt = txt.replace(/^[\.\*\-]\s*/, '');
+            txt = this.handleInlineSet(txt);
+            return '<li>' + txt + '</li>';
+        },
+
+        handleOrderList: function (txt) {
+            txt = txt.replace(/^\d+\.\s*/, '');
+            txt = this.handleInlineSet(txt);
+            return '<li>' + txt + '</li>';
+        },
+
+        handleCodeType: function (codeType, txt) {
+            switch (codeType) {
+                case 'css':
+                    return txt.replace(/([a-zA-Z-]+:)([^;]+)(;?)/g, '<span class="css-property-name">$1</span><span class="css-property-value">$2</span><span class="css-semicolon">$3</span>');
+                default:
+                    return txt;
+            }
+        },
+
+        replaceHtmlTag: function (txt) {
+            return txt.replace(/\</g, '&lt;').replace(/\>/, '&gt;');
+        }
+    };
+    mdeditor.prototype.init.prototype = mdeditor.prototype;
+    window.mdeditor = mdeditor;
+})(window);
