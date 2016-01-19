@@ -129,9 +129,9 @@
 }
 
 .mdeditor-html h2 {
-    margin-top: 50px;
-    margin-bottom: 30px;
-    font-size: 32px;
+    margin-top: 30px;
+    margin-bottom: 20px;
+    font-size: 28px;
 }
 
 .mdeditor-html h3 {
@@ -152,29 +152,31 @@
 
 .mdeditor-html p {
     font-size: 16px;
-    line-height: 2em;
-    margin-bottom: 20px;
+    line-height: 1.9em;
+    margin-bottom: 18px;
 }
 
-.mdeditor-html .md-inline-code,
+.mdeditor-html .mdeditor-inline-code,
 .mdeditor-html pre,
 .mdeditor-html code {
     font-family: "YaHei Consolas Hybrid", Consolas, "Meiryo UI", "Malgun Gothic", "Segoe UI", "Trebuchet MS", Helvetica, monospace, monospace;
 }
 
-.mdeditor-html .md-inline-code {
+.mdeditor-html .mdeditor-inline-code {
     padding: 3px 5px;
     margin: 0 2px;
     border: 1px solid #ccc;
     color: #c7254e;
     background-color: #f9f2f4;
     white-space: nowrap;
+    -webkit-border-radius:4px;
+    border-radius: 4px;
 }
 
 .mdeditor-ul,
 .mdeditor-ol {
     padding: 0 2em;
-    line-height: 1.7em;
+    line-height: 2em;
 }
 
 .mdeditor-html .mdeditor-code {
@@ -204,11 +206,11 @@
     word-break: break-word;
 }
 
-.mdeditor-html .mdeditor-code li.md-code-line-first {
+.mdeditor-html .mdeditor-code li.mdeditor-code-line-first {
     padding-top: 10px;
 }
 
-.mdeditor-html .mdeditor-code li.md-code-line-last {
+.mdeditor-html .mdeditor-code li.mdeditor-code-line-last {
     padding-bottom: 10px;
 }
 
