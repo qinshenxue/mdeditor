@@ -135,7 +135,7 @@
                             html.push('</code>');
                             html.push('</pre>');
                         } else {
-                            html.push('<li>' + me.handleCodeType(codeType, row) + '</li>');
+                            html.push('<li><div>' + me.handleCodeType(codeType, row) + '</div></li>');
                         }
                         break;
                     default :
