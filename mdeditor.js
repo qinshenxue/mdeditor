@@ -144,11 +144,11 @@
                         } else if (me.regLib.ol.test(row)) {
                             i--;
                             flag = 'ol';
-                            html.push('<ol>');
+                            html.push('<ol  class="mdeditor-ol">');
                         } else if (me.regLib.ul.test(row)) {
                             i--;
                             flag = 'ul';
-                            html.push('<ul>');
+                            html.push('<ul  class="mdeditor-ul">');
                         } else if (me.regLib.code.test(row)) {
                             flag = 'code';
                             codeType = row.replace(/[`\s]/g, '');
@@ -218,7 +218,7 @@
         handleInlineCode: function (txt) {
             var me = this;
             return txt.replace(me.regLib.inlinecode, function (txt, $1) {
-                return '<span class="md-inline-code">' + me.replaceHtmlTag($1) + '</span>';
+                return '<span class="mdeditor-inline-code">' + me.replaceHtmlTag($1) + '</span>';
             });
         },
 
