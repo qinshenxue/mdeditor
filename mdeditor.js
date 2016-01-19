@@ -5,13 +5,14 @@
     mdeditor.prototype = {
         init: function (options) {
             var me = this;
+            var defaults = {
+                id: '',
+                placeholder: '',
+                name: '',
+                aTarget: '_blank'
+            };
             if (options && options.id) {
-                var defaults = {
-                    id: '',
-                    placeholder: '',
-                    name: '',
-                    aTarget: '_blank'
-                };
+
                 me.copy(defaults, options);
 
                 var wrap = this.getDom(options.id);
@@ -28,11 +29,10 @@
                     var txt = this.value;
                     me.markdownToHtml(txt);
                 });
-
-                me.options = defaults;
                 me.editor = editor;
                 me.editor2Html = editor2Html;
             }
+            me.options = defaults;
             return me;
         },
 
