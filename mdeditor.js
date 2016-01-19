@@ -104,6 +104,7 @@
             }
             for (var i = rowsStart; i < rowsCount; i++) {
                 var row = rows[i];
+                row = me.replaceHtmlTag(row);
                 switch (flag) {
                     case 'ol':
                         if (!me.regLib.ol.test(row)) {
@@ -187,7 +188,6 @@
         },
 
         handleInlineSet: function (txt) {
-            txt = this.replaceHtmlTag(txt);
             txt = this.handleInlineCode(txt);
             txt = this.handleLink(txt);
             txt = this.handleBold(txt);
@@ -218,7 +218,7 @@
         handleInlineCode: function (txt) {
             var me = this;
             return txt.replace(me.regLib.inlinecode, function (txt, $1) {
-                return '<span class="mdeditor-inline-code">' + me.replaceHtmlTag($1) + '</span>';
+                return '<span class="mdeditor-inline-code">' + $1 + '</span>';
             });
         },
 
