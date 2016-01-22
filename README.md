@@ -162,3 +162,5 @@
 ![](readme/inlinecode.gif)
 ### 代码块
 ![](readme/code.gif)
+### 表格
+![](readme/table.png)
