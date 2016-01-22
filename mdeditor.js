@@ -45,7 +45,12 @@
             title: /^#{1,6}.+$/,
             a: /\[(.*?)\]\((.*?)\)/g,
             b: /\*\*(.+?)\*\*/g,
-            inlinecode: /\`(.+?)\`/g
+            inline_code: /\`(.+?)\`/g,
+            table: /^(\|[^|]+)+\|$/,
+            table_td_align: /^(\|\s*:?-+:?\s*)+\|$/,
+            table_td_align_left: /^\s*:-+\s*$/,
+            table_td_align_center: /^\s*:-+:\s*$/,
+            table_td_align_right: /^\s*-+:\s*$/
         },
 
         formatString: function (format, data) {
@@ -98,6 +103,7 @@
             var rowsCount = rows.length;
             var rowsStart = 0;
             var toc = null;
+            var tdAlign = [];
             if (rowsCount && me.regLib.toc.test(rows[0])) {
                 rowsStart = 1;
                 toc = ['<div class="mdeditor-toc">'];
@@ -105,6 +111,7 @@
             for (var i = rowsStart; i < rowsCount; i++) {
                 var row = rows[i];
                 row = me.replaceHtmlTag(row);
+                console.log(row);
                 switch (flag) {
                     case 'ol':
                         if (!me.regLib.ol.test(row)) {
@@ -139,6 +146,18 @@
                             html.push('<li><div>' + me.handleCodeType(codeType, row) + '</div></li>');
                         }
                         break;
+                    case 'table':
+                        if (!me.regLib.table.test(row)) {
+                            i--;
+                            flag = '';
+                            html.push('</table>');
+                        } else {
+                            html.push(me.handleTr(row, tdAlign));
+                            if (i == rowsCount - 1) {
+                                html.push('</table>');
+                            }
+                        }
+                        break;
                     default :
                         if (me.regLib.title.test(row)) {
                             html.push(me.handleTitle(row, toc));
@@ -155,6 +174,23 @@
                             codeType = row.replace(/[`\s]/g, '');
                             html.push('<pre class="mdeditor-code mdeditor-code-' + codeType.toLowerCase() + '">');
                             html.push('<ol>');
+                        } else if (me.regLib.table.test(row)) {
+                            if (i != rowsCount - 1 && me.regLib.table_td_align.test(rows[i + 1])) {
+                                flag = 'table';
+                                html.push('<table class="mdeditor-table"><tr>');
+                                var tdArr = row.match(/[^|]+/g);
+                                tdAlign = me.handleTdAlign(rows[i + 1]);
+                                for (var m = 0, n = tdArr.length; m < n; m++) {
+                                    html.push('<th align="' + tdAlign[m] + '">' + tdArr[m] + '</th>');
+                                }
+                                html.push('</tr>');
+                                i++;
+                                if (i == rowsCount - 1) {
+                                    html.push('</table>');
+                                }
+                            } else {
+                                html.push(me.handleParagraph(row));
+                            }
                         } else if (me.regLib.img.test(row)) {
                             html.push(me.handleImg(row));
                         } else {
@@ -166,10 +202,36 @@
 
             html = (toc ? toc.join('') + '</div>' : '') + html.join('');
 
+            console.log(html);
             if (this.editor2Html) {
                 this.editor2Html.innerHTML = html;
             }
             return html;
+        },
+
+        handleTr: function (txt, align) {
+            var arr = txt.match(/[^|]+/g);
+            var tr = '<tr>';
+            for (var i = 0, j = arr.length; i < j; i++) {
+                tr += '<td align="' + align[i] + '">' + this.handleInlineSet(arr[i]) + '</td>';
+            }
+            tr += '</tr>';
+            return tr;
+        },
+
+        handleTdAlign: function (txt) {
+            var arr = txt.match(/[^|]+/g);
+            var align = [];
+            for (var i = 0, j = arr.length; i < j; i++) {
+                if (this.regLib.table_td_align_right.test(arr[i])) {
+                    align.push('right');
+                } else if (this.regLib.table_td_align_center.test(arr[i])) {
+                    align.push('center');
+                } else {
+                    align.push('left');
+                }
+            }
+            return align;
         },
 
         handleTitle: function (txt, toc) {
@@ -217,7 +279,7 @@
 
         handleInlineCode: function (txt) {
             var me = this;
-            return txt.replace(me.regLib.inlinecode, function (txt, $1) {
+            return txt.replace(me.regLib.inline_code, function (txt, $1) {
                 return '<span class="mdeditor-inline-code">' + $1 + '</span>';
             });
         },
