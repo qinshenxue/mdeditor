@@ -4,7 +4,6 @@ var gulp = require('gulp'),
 
 gulp.task('compress', function () {
     return gulp.src('mdeditor.js')
-        .pipe(gulp.dest('./'))
         .pipe(uglify())
         .pipe(rename({extname: ".min.js"}))
         .pipe(gulp.dest('./'));
