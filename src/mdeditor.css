@@ -40,12 +40,12 @@
 .mdeditor::-webkit-scrollbar-track-piece,
 .mdeditor-html::-webkit-scrollbar-track-piece {
     background: #dedede;
-    border-radius: 4px;
 }
 
 .mdeditor::-webkit-scrollbar-thumb,
 .mdeditor-html::-webkit-scrollbar-thumb {
     background: #aaa;
+    border-radius: 4px;
 }
 
 .mdeditor::-webkit-scrollbar-thumb:hover,

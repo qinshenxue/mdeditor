@@ -28,6 +28,25 @@
                 editor.addEventListener('input', function () {
                     var txt = this.value;
                     me.markdownToHtml(txt);
+                    editor.scrollTop = editor.scrollHeight - editor2Html.clientHeight;
+                    editor2Html.scrollTop = editor2Html.scrollHeight - editor2Html.clientHeight;
+                });
+                var mousePosition = '';
+                editor.addEventListener('scroll', function () {
+                    if (mousePosition == 'editor') {
+                        editor2Html.scrollTop = editor.scrollTop / (editor.scrollHeight - editor.clientHeight) * (editor2Html.scrollHeight - editor2Html.clientHeight);
+                    }
+                });
+                editor2Html.addEventListener('scroll', function () {
+                    if (mousePosition == 'editor2Html') {
+                        editor.scrollTop = editor2Html.scrollTop / (editor2Html.scrollHeight - editor2Html.clientHeight) * (editor.scrollHeight - editor.clientHeight);
+                    }
+                });
+                editor.addEventListener('mousemove', function (e) {
+                    mousePosition = 'editor';
+                });
+                editor2Html.addEventListener('mousemove', function () {
+                    mousePosition = 'editor2Html';
                 });
                 me.editor = editor;
                 me.editor2Html = editor2Html;
@@ -110,7 +129,6 @@
             for (var i = rowsStart; i < rowsCount; i++) {
                 var row = rows[i];
                 row = me.replaceHtmlTag(row);
-                console.log(row);
                 switch (flag) {
                     case 'ol':
                         if (!me.regLib.ol.test(row)) {
@@ -201,7 +219,6 @@
 
             html = (toc ? toc.join('') + '</div>' : '') + html.join('');
 
-            console.log(html);
             if (this.editor2Html) {
                 this.editor2Html.innerHTML = html;
             }
