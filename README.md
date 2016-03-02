@@ -1,6 +1,6 @@
 #mdeditor
 ## 演示地址
-[http://www.qinshenxue.com/demo/mdeditor/index.html](http://www.qinshenxue.com/demo/mdeditor/index.html)
+[http://mdeditor.qinshenxue.com](http://mdeditor.qinshenxue.com)
 ## API
 
 ### 初始化实例（传入参数id）
