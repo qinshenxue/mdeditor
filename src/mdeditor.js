@@ -17,7 +17,7 @@
 
                 var wrap = this.getDom(options.id);
 
-                var html = '<textarea id="mdeditor" class="mdeditor" name="{name}" placeholder="{placeholder}"></textarea><div id="mdeditor-html" class="mdeditor-html"></div>';
+                var html = '<textarea id="mdeditor" class="mdeditor" name="{{name}}" placeholder="{{placeholder}}"></textarea><div id="mdeditor-html" class="mdeditor-html"></div>';
 
                 html = me.formatString(html, defaults);
                 wrap.innerHTML = html;
@@ -54,9 +54,8 @@
         },
 
         formatString: function (format, data) {
-            return format.replace(/{\w+}/g, function ($1) {
-                var key = $1.substr(1, $1.length - 2);
-                return data[key];
+            return format.replace(/{{(\w+)}}/g, function (m, c) {
+                return data[c];
             });
         },
 
@@ -181,7 +180,7 @@
                                 var tdArr = row.match(/[^|]+/g);
                                 tdAlign = me.handleTdAlign(rows[i + 1]);
                                 for (var m = 0, n = tdArr.length; m < n; m++) {
-                                    html.push('<th align="' + tdAlign[m] + '">' + tdArr[m] + '</th>');
+                                    html.push('<th style="text-align:' + tdAlign[m] + '">' + tdArr[m] + '</th>');
                                 }
                                 html.push('</tr>');
                                 i++;
@@ -213,7 +212,7 @@
             var arr = txt.match(/[^|]+/g);
             var tr = '<tr>';
             for (var i = 0, j = arr.length; i < j; i++) {
-                tr += '<td align="' + align[i] + '">' + this.handleInlineSet(arr[i]) + '</td>';
+                tr += '<td style="text-align:' + align[i] + '">' + this.handleInlineSet(arr[i]) + '</td>';
             }
             tr += '</tr>';
             return tr;
