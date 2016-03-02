@@ -8,8 +8,8 @@
             font-family: Helvetica, Arial, "Hiragino Sans GB", "Microsoft Yahei", "微软雅黑", STHeiti, "华文细黑", sans-serif;
         }
 
-        #wrap{
-            height:400px;
+        #wrap {
+            height: 400px;
         }
 
     </style>
@@ -25,14 +25,13 @@
 </div>
 
 
-<script src="../dist/mdeditor.min.js"></script>
+<script src="../src/mdeditor.js"></script>
 
 <script>
-    var mdeditor = mdeditor({
+    var editor = mdeditor({
         id: 'wrap',
-        placeholder:'请输入markdown语法文本，右边同步预览html'
+        placeholder: '请输入markdown语法文本，右边同步预览html'
     });
-    console.log(mdeditor);
 </script>
 </body>
 </html>
