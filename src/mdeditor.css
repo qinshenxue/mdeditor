@@ -33,26 +33,24 @@
 
 .mdeditor::-webkit-scrollbar,
 .mdeditor-html::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
 }
 
 .mdeditor::-webkit-scrollbar-track-piece,
 .mdeditor-html::-webkit-scrollbar-track-piece {
     background: #dedede;
-    border-radius: 5px;
+    border-radius: 4px;
 }
 
 .mdeditor::-webkit-scrollbar-thumb,
 .mdeditor-html::-webkit-scrollbar-thumb {
-    background: #999;
-    border-radius: 5px;
+    background: #aaa;
 }
 
 .mdeditor::-webkit-scrollbar-thumb:hover,
 .mdeditor-html::-webkit-scrollbar-thumb:hover {
-    background: #888;
-    border-radius: 5px;
+    background: #999;
 }
 
 .mdeditor-html {
@@ -122,6 +120,7 @@
     margin-bottom: 10px;
     font-weight: normal;
     color: #000;
+    line-height: 1.4em;
 }
 
 .mdeditor-html h1 {
@@ -130,12 +129,11 @@
 
 .mdeditor-html h2 {
     margin-top: 30px;
-    margin-bottom: 20px;
     font-size: 28px;
 }
 
 .mdeditor-html h3 {
-    font-size: 24px;
+    font-size: 22px;
 }
 
 .mdeditor-html h4 {
@@ -151,9 +149,9 @@
 }
 
 .mdeditor-html p {
-    font-size: 16px;
-    line-height: 1.9em;
-    margin-bottom: 18px;
+    font-size: 14px;
+    line-height: 1.8em;
+    margin-bottom: 10px;
 }
 
 .mdeditor-html .mdeditor-inline-code,
@@ -163,14 +161,14 @@
 }
 
 .mdeditor-html .mdeditor-inline-code {
-    padding: 3px 5px;
+    padding: 2px 5px;
     margin: 0 2px;
     border: 1px solid #ccc;
     color: #c7254e;
     background-color: #f9f2f4;
     white-space: nowrap;
-    -webkit-border-radius: 4px;
-    border-radius: 4px;
+    -webkit-border-radius: 2px;
+    border-radius: 2px;
 }
 
 .mdeditor-ul,
@@ -181,24 +179,30 @@
 
 .mdeditor-html .mdeditor-code {
     padding: 0 0 0 10px;
-    margin: 20px 0;
+    margin: 10px 0;
     border-radius: 0;
-    background: #3C3C37;
     border: 0;
     font-size: 14px;
 }
 
 .mdeditor-html .mdeditor-code ol {
-    margin: 0 0 0 50px;
-    padding: 0;
+    margin: 0;
     color: #aaa;
 }
 
 .mdeditor-html .mdeditor-code li {
     padding: 0 20px;
-    line-height: 2em;
+    line-height: 1.7em;
     list-style: inherit;
-    background: #272822;
+    background: #f4f4f4;
+}
+
+.mdeditor-html .mdeditor-code li > div {
+    color: #000;
+}
+
+.mdeditor-html .mdeditor-code li:nth-child(2n) {
+    background: #eee;
 }
 
 .mdeditor-html .mdeditor-code li code {
@@ -234,13 +238,15 @@
 
 .css-property-name {
     font-style: italic;
-    color: #66D9EF;
+    color: #0000FF;
+    font-weight: bold;
 }
 
 .css-property-value {
-    color: #E6DB74;
+    color: #008000;
+    font-weight: bold;
 }
 
 .css-semicolon {
-    color: #eee;
+    color: #000;
 }
