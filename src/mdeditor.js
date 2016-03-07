@@ -3,6 +3,7 @@
         return new mdeditor.prototype.init(options);
     };
     mdeditor.prototype = {
+        constructor: mdeditor,
         init: function (options) {
             var me = this;
             var defaults = {
