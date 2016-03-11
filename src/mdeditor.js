@@ -29,8 +29,6 @@
                 editor.addEventListener('input', function () {
                     var txt = this.value;
                     me.markdownToHtml(txt);
-                    editor.scrollTop = editor.scrollHeight - editor2Html.clientHeight;
-                    editor2Html.scrollTop = editor2Html.scrollHeight - editor2Html.clientHeight;
                 });
                 var mousePosition = '';
                 editor.addEventListener('scroll', function () {
