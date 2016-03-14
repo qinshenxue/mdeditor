@@ -56,7 +56,7 @@
 
         regLib: {
             code: /^\`{3}.*$/,
-            ul: /^[\.\-\*]\s?.+$/,
+            ul: /^[\.\-\*]\s+.+$/,
             ol: /^\d+\.\s?.+$/,
             toc: /^\s*\[TOC\]\s*$/,
             img: /\!\[(.*?)\]\((.*?)\)/g,
@@ -207,8 +207,6 @@
                             } else {
                                 html.push(me.handleParagraph(row));
                             }
-                        } else if (me.regLib.img.test(row)) {
-                            html.push(me.handleImg(row));
                         } else {
                             html.push(me.handleParagraph(row));
                         }
@@ -265,6 +263,7 @@
         },
 
         handleInlineSet: function (txt) {
+            txt = this.handleImg(txt);
             txt = this.handleInlineCode(txt);
             txt = this.handleLink(txt);
             txt = this.handleBold(txt);
@@ -272,9 +271,9 @@
         },
 
         handleImg: function (txt) {
-            return '<p class="mdeditor-img">' + txt.replace(this.regLib.img, function (match, $1, $2) {
-                    return '<img alt="' + $1 + '" src="' + $2 + '">';
-                }) + '</p>';
+            return txt.replace(this.regLib.img, function (match, $1, $2) {
+                return '<img class="mdeditor-img" alt="' + $1 + '" src="' + $2 + '">';
+            });
         },
 
         handleLink: function (txt) {
