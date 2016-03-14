@@ -2,83 +2,15 @@
 ## 演示地址
 [http://mdeditor.qinshenxue.com](http://mdeditor.qinshenxue.com)
 ## API
-
-### 初始化实例（传入参数id）
-```
-<div id="wrap">
-
-</div>
-<script>
-    var mdeditor = mdeditor({
-        id: 'wrap'
-    });
-</script>
-```
-#### 带参数完整配置项
-
-```
-<script>
-    var mdeditor = mdeditor({
-        id: '容器的id', // 必须的
-        name:'输入框name属性值',
-        placeholder: '与html5中的placeholder同义，兼容性也相同',
-        aTarget: '_blank' // a链接target属性值
-    });
-</script>
-```
-
-### 初始化实例（不传参数）
-用于一些只想单独用mdeditor的api的场景
-比如要把一些markdown语法文本转义html内容
-
-```
-<div id="wrap">
-
-</div>
-<script>
-    var mdeditor = mdeditor();
-    mdeditor.markdownToHtml('#要转义的markdown语法文本');
-</script>
-```
-
-
-### getHTML
-获取markdown转义后的HTML代码
-```
-<script>
-    var mdeditor = mdeditor({
-        id: 'wrap'
-    });
-    mdeditor.getHTML();
-</script>
-```
-
-### getMarkdown
-获取markdown内容
-```
-<script>
-    var mdeditor = mdeditor({
-        id: 'wrap'
-    });
-    mdeditor.getMarkdown();
-</script>
-```
-### setMarkdown
-设置markdown内容
-```
-<script>
-    var mdeditor = mdeditor({
-        id: 'wrap'
-    });
-    mdeditor.setMarkdown('#markdown内容');
-</script>
-```
-
-
-
-
+[http://mdeditor.qinshenxue.com](http://mdeditor.qinshenxue.com)
 
 ##更新日志
+### 2016-03-14
+1. 修复 粗体语法和无序列表语法冲突bug
+2. 修复 图片与其他行内语法并存时其他语法无效 的bug
+3. 修改代码块无法自动换行的样式
+4. 调整ul、ol的行间距等以增加更好的阅读体验
+
 ### 2016-03-02
 1. 增加目录结构
 2. 修复表格头对齐无效的bug
