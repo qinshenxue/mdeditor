@@ -57,6 +57,7 @@
     background: #fff;
     border-left: 0;
     overflow-y: auto;
+    color:#555;
 }
 
 .mdeditor-html.preview {
@@ -119,7 +120,7 @@
     margin-top: 20px;
     margin-bottom: 10px;
     font-weight: normal;
-    color: #000;
+    color: #444;
     line-height: 1.4em;
 }
 
