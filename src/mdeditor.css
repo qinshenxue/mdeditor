@@ -154,20 +154,20 @@
     margin-bottom: 10px;
 }
 
-.mdeditor-html .mdeditor-img{
+.mdeditor-html .mdeditor-img {
     font-size: 0;
 }
 
 .mdeditor-html .mdeditor-inline-code,
 .mdeditor-html pre,
 .mdeditor-html code {
-    font-family: "YaHei Consolas Hybrid", Consolas, "Meiryo UI", "Malgun Gothic", "Segoe UI", "Trebuchet MS", Helvetica, monospace, monospace;
+    font-family: Source Code Pro, Consolas, Menlo, Monaco, Courier New, monospace;
 }
 
 .mdeditor-html .mdeditor-inline-code {
     padding: 2px 5px;
     margin: 0 2px;
-    border: 1px solid #ccc;
+    border: 1px solid #eee;
     color: #c7254e;
     background-color: #f9f2f4;
     white-space: nowrap;
@@ -183,7 +183,7 @@
 
 .mdeditor-ul li,
 .mdeditor-ol li {
-    margin-bottom: 5px;
+    margin-bottom: 2px;
     line-height: 1.7em;
 }
 
