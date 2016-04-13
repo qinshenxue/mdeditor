@@ -249,6 +249,10 @@
     border: 1px solid #ddd;
 }
 
+.mdeditor-table tr:nth-child(2n+1) td {
+    background: #f8f8f8;
+}
+
 .css-property-name {
     font-style: italic;
     color: #0000FF;
