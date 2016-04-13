@@ -57,7 +57,7 @@
     background: #fff;
     border-left: 0;
     overflow-y: auto;
-    color:#555;
+    color: #555;
 }
 
 .mdeditor-html.preview {
@@ -232,6 +232,7 @@
 
 .mdeditor-table {
     width: 100%;
+    margin-bottom: 10px;
     border-collapse: collapse;
     border-spacing: 0;
 }
