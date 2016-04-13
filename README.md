@@ -5,6 +5,9 @@
 [http://mdeditor.qinshenxue.com](http://mdeditor.qinshenxue.com)
 
 ##更新日志
+### 2016-04-13
+1. 修改css样式
+
 ### 2016-03-14
 1. 修复 粗体语法和无序列表语法冲突bug
 2. 修复 图片与其他行内语法并存时其他语法无效 的bug
