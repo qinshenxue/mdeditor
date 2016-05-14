@@ -314,13 +314,15 @@
             switch (codeType) {
                 case 'css':
                     return txt.replace(/([a-zA-Z-]+:)([^;]+)(;?)/g, '<span class="css-property-name">$1</span><span class="css-property-value">$2</span><span class="css-semicolon">$3</span>');
+                case 'xml':
+                    return txt.replace(/(&lt;\/?)(\w+)(.*?)(&gt;)/g, '<span class="xml-lt">$1</span><span class="xml-tag-name">$2</span><span class="xml-tag-attr">$3</span><span class="xml-gt">$4</span>');
                 default:
                     return txt;
             }
         },
 
         replaceHtmlTag: function (txt) {
-            return txt.replace(/\</g, '&lt;').replace(/\>/, '&gt;');
+            return txt.replace(/\</g, '&lt;').replace(/\>/g, '&gt;');
         }
     };
     mdeditor.prototype.init.prototype = mdeditor.prototype;
