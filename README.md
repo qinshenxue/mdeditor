@@ -1,7 +1,5 @@
 #mdeditor
-## 演示地址
-[http://mdeditor.qinshenxue.com](http://mdeditor.qinshenxue.com)
-## API
+## 演示地址及API
 [http://mdeditor.qinshenxue.com](http://mdeditor.qinshenxue.com)
 
 ##更新日志
