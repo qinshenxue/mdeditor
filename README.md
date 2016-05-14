@@ -5,6 +5,11 @@
 [http://mdeditor.qinshenxue.com](http://mdeditor.qinshenxue.com)
 
 ##更新日志
+
+### 2016-05-14
+1. 代码段增加对xml的高亮显示
+2. 优化CSS，提升阅读体验
+
 ### 2016-04-13
 1. 修改css样式
 
