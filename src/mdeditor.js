@@ -310,10 +310,11 @@
             return '<li>' + txt + '</li>';
         },
 
+        /* 高亮各种代码类型 */
         handleCodeType: function (codeType, txt) {
             switch (codeType) {
                 case 'css':
-                    return txt.replace(/([a-zA-Z-]+:)([^;]+)(;?)/g, '<span class="css-property-name">$1</span><span class="css-property-value">$2</span><span class="css-semicolon">$3</span>');
+                    return txt.replace(/([a-zA-Z-]+:)([^;\{]+)(;)/g, '<span class="css-property-name">$1</span><span class="css-property-value">$2</span><span class="css-semicolon">$3</span>');
                 case 'xml':
                     return txt.replace(/(&lt;\/?)(\w+)(.*?)(&gt;)/g, '<span class="xml-lt">$1</span><span class="xml-tag-name">$2</span><span class="xml-tag-attr">$3</span><span class="xml-gt">$4</span>');
                 default:
