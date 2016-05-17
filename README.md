@@ -3,6 +3,10 @@
 [http://mdeditor.qinshenxue.com](http://mdeditor.qinshenxue.com)
 
 ##更新日志
+
+### 2016-05-17 周二
+1. 代码段增加对js的高亮显示，目前仅支持js关键字，字符串，注释。类型为\`\`\`javascript
+
 ### 2016-05-14 周日
 1. 修复CSS代码段对伪类显示的bug
 
