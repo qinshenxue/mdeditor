@@ -313,6 +313,8 @@
         /* 高亮各种代码类型 */
         handleCodeType: function (codeType, txt) {
             switch (codeType) {
+                case 'javascript':
+                    return this.highlightJs(txt);
                 case 'css':
                     return txt.replace(/([a-zA-Z-]+:)([^;\{]+)(;)/g, '<span class="css-property-name">$1</span><span class="css-property-value">$2</span><span class="css-semicolon">$3</span>');
                 case 'xml':
@@ -320,6 +322,32 @@
                 default:
                     return txt;
             }
+        },
+
+        highlightJs: function (txt) {
+            var keywords = ['break',
+                'case', 'catch', 'continue',
+                'default', 'delete', 'do',
+                'else', 'finally', 'for', 'function',
+                'if', 'in', 'instanceof',
+                'new',
+                'return',
+                'switch',
+                'this', 'throw', 'try', 'typeof',
+                'var', 'void',
+                'while', 'with'
+            ];
+
+            var keywordReg = new RegExp('\\b(' + keywords.join('|') + ')\\b', 'g');
+            return txt.replace(/('|").*?('|")/g, function (v) {
+                return '<span class="js-string">' + v + '</span>';
+            }).replace(keywordReg, function (v) {
+                return '<span class="js-keyword">' + v + '</span>';
+            }).replace(/\/\/.+$/, function (v) {
+                return '<span class="js-line-comment">' + v + '</span>';
+            });
+
+
         },
 
         replaceHtmlTag: function (txt) {
