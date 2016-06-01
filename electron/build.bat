@@ -1,1 +1,1 @@
-electron-packager . test --platform=win32 --arch=x64 --version=1.2.0
+electron-packager . mdeditor --platform=win32 --arch=x64 --version=1.2.0
