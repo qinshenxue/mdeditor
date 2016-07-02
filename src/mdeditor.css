@@ -170,7 +170,7 @@
     padding:0 0 0 10px;
     overflow: hidden;
     background: #f1f1f1;
-    border-left:10px solid #ddd;
+    border-left:8px solid #ddd;
 }
 .mdeditor-ol, .mdeditor-ul {
     padding-left: 40px;
