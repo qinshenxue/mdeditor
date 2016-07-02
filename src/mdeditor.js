@@ -122,7 +122,7 @@
                     if (!this.regLib.blockquote.test(rows[i])) {
                         break;
                     }
-                    var row = rows[i].replace(/>/, '');
+                    var row = this.replaceHtmlTag(rows[i]).replace(/>/, '');
                     if (this.regLib.ul.test(row)) {
                         var ul = this.handleUl(rows, i, />/);
                         html = html.concat(ul.html);
@@ -149,7 +149,7 @@
             if (this.regLib.ul.test(reg ? rows[start].replace(reg, '') : rows[start])) {
                 html.push('<ul class="mdeditor-ul">');
                 for (; i < rows.length; i++) {
-                    var row = rows[i];
+                    var row = this.replaceHtmlTag(rows[i]);
                     if (reg) {
                         row = row.replace(reg, '');
                     }
@@ -174,7 +174,7 @@
             if (this.regLib.ol.test(reg ? rows[start].replace(reg, '') : rows[start])) {
                 html.push('<ol class="mdeditor-ol">');
                 for (; i < rows.length; i++) {
-                    var row = rows[i];
+                    var row = this.replaceHtmlTag(rows[i]);
                     if (reg) {
                         row = row.replace(reg, '');
                     }
@@ -204,7 +204,7 @@
                 html.push('<ol>');
                 i++;
                 for (; i < rows.length; i++) {
-                    var row = rows[i];
+                    var row = this.replaceHtmlTag(rows[i]);
                     if (this.regLib.code.test(row)) {
                         break;
                     }
@@ -267,8 +267,6 @@
             for (var i = rowsStart; i < rowsCount; i++) {
                 var row = rows[i];
 
-                row = me.replaceHtmlTag(row);
-
                 if (me.regLib.title.test(row)) {
                     html.push(me.handleTitle(row, toc));
 
@@ -298,6 +296,7 @@
                     i = pre.index;
 
                 } else {
+                    row = me.replaceHtmlTag(row);
                     html.push(me.handleParagraph(row));
                 }
             }
