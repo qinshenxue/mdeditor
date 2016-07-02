@@ -16,6 +16,11 @@ c.on('ready', function() {
         c.end();
         console.log('js sync success');
     })
+    c.put('demo/index.html','/demo/mdeditor/index.html',function(err){
+        if(err) throw err;
+        c.end();
+        console.log('html sync success');
+    })
 
 });
 c.connect(syncConfig);
