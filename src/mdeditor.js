@@ -67,6 +67,7 @@
             i:/\*(.+?)\*/g,
             inline_code: /\`(.+?)\`/g,
             blockquote: /^>(.+?)$/,
+            iframe: /^\$\[(.*?)\]\((.*?)\)$/,
             table: /^(\|[^|]+)+\|$/,
             table_td_align: /^(\|\s*:?-+:?\s*)+\|$/,
             table_td_align_left: /^\s*:-+\s*$/,
@@ -112,6 +113,66 @@
             } else {
                 return '';
             }
+        },
+
+
+
+        markdownToHtml: function (md) {
+            var me = this;
+            var rows = md.match(/.+/mg) || [];
+            var html = [];
+            var rowsCount = rows.length;
+            var rowsStart = 0;
+            var toc = null;
+            if (rowsCount && me.regLib.toc.test(rows[0])) {
+                rowsStart = 1;
+                toc = ['<div class="mdeditor-toc">'];
+            }
+            for (var i = rowsStart; i < rowsCount; i++) {
+                var row = rows[i];
+
+                if (me.regLib.title.test(row)) {
+                    html.push(me.handleTitle(row, toc));
+
+                } else if (me.regLib.ul.test(row)) {
+                    var ul = me.handleUl(rows, i);
+                    html = html.concat(ul.html);
+                    i = ul.index;
+
+                } else if (me.regLib.ol.test(row)) {
+                    var ol = me.handleOl(rows, i);
+                    html = html.concat(ol.html);
+                    i = ol.index;
+
+                } else if (me.regLib.table.test(row)) {
+                    var table = me.handleTable(rows, i);
+                    html = html.concat(table.html);
+                    i = table.index;
+
+                } else if (me.regLib.blockquote.test(row)) {
+                    var blockquote = me.handleBlockquote(rows, i);
+                    html = html.concat(blockquote.html);
+                    i = blockquote.index;
+
+                } else if (me.regLib.code.test(row)) {
+                    var pre = me.handlePre(rows, i);
+                    html = html.concat(pre.html);
+                    i = pre.index;
+
+                }  else if (me.regLib.iframe.test(row)) {
+                    html.push(me.handleIframe(row));
+                } else {
+                    row = me.replaceHtmlTag(row);
+                    html.push(me.handleParagraph(row));
+                }
+            }
+
+            html = (toc ? toc.join('') + '</div>' : '') + html.join('');
+
+            if (this.editor2Html) {
+                this.editor2Html.innerHTML = html;
+            }
+            return html;
         },
 
         handleBlockquote: function (rows, start) {
@@ -254,62 +315,6 @@
             };
         },
 
-        markdownToHtml: function (md) {
-            var me = this;
-            var rows = md.match(/.+/mg) || [];
-            var html = [];
-            var rowsCount = rows.length;
-            var rowsStart = 0;
-            var toc = null;
-            if (rowsCount && me.regLib.toc.test(rows[0])) {
-                rowsStart = 1;
-                toc = ['<div class="mdeditor-toc">'];
-            }
-            for (var i = rowsStart; i < rowsCount; i++) {
-                var row = rows[i];
-
-                if (me.regLib.title.test(row)) {
-                    html.push(me.handleTitle(row, toc));
-
-                } else if (me.regLib.ul.test(row)) {
-                    var ul = me.handleUl(rows, i);
-                    html = html.concat(ul.html);
-                    i = ul.index;
-
-                } else if (me.regLib.ol.test(row)) {
-                    var ol = me.handleOl(rows, i);
-                    html = html.concat(ol.html);
-                    i = ol.index;
-
-                } else if (me.regLib.table.test(row)) {
-                    var table = me.handleTable(rows, i);
-                    html = html.concat(table.html);
-                    i = table.index;
-
-                } else if (me.regLib.blockquote.test(row)) {
-                    var blockquote = me.handleBlockquote(rows, i);
-                    html = html.concat(blockquote.html);
-                    i = blockquote.index;
-
-                } else if (me.regLib.code.test(row)) {
-                    var pre = me.handlePre(rows, i);
-                    html = html.concat(pre.html);
-                    i = pre.index;
-
-                } else {
-                    row = me.replaceHtmlTag(row);
-                    html.push(me.handleParagraph(row));
-                }
-            }
-
-            html = (toc ? toc.join('') + '</div>' : '') + html.join('');
-
-            if (this.editor2Html) {
-                this.editor2Html.innerHTML = html;
-            }
-            return html;
-        },
-
         handleTr: function (txt, align) {
             var arr = txt.match(/[^|]+/g);
             var tr = '<tr>';
@@ -362,6 +367,16 @@
         handleImg: function (txt) {
             return txt.replace(this.regLib.img, function (match, $1, $2) {
                 return '<img class="mdeditor-img" alt="' + $1 + '" src="' + $2 + '">';
+            });
+        },
+
+        handleIframe: function (txt) {
+            return txt.replace(this.regLib.iframe, function (match, $1, $2) {
+                var style = "";
+                if ($1!=''&&!isNaN($1)) {
+                    style = 'style="height:' + $1 + 'px"';
+                }
+                return '<iframe class="mdeditor-iframe" src="'+$2+'" '+style+'></iframe>';
             });
         },
 
