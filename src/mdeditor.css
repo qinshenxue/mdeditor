@@ -165,13 +165,15 @@
     -webkit-border-radius: 2px;
     border-radius: 2px;
 }
-.mdeditor-blockquote{
-    margin:0;
-    padding:0 0 0 10px;
+
+.mdeditor-blockquote {
+    margin: 0;
+    padding: 0 0 0 10px;
     overflow: hidden;
     background: #f1f1f1;
-    border-left:8px solid #ddd;
+    border-left: 8px solid #ddd;
 }
+
 .mdeditor-ol, .mdeditor-ul {
     padding-left: 40px;
     margin: 20px 0;
@@ -244,6 +246,12 @@
     background: #f8f8f8;
 }
 
+.mdeditor-iframe {
+    display: block;
+    width: 100%;
+    border: 0;
+}
+
 .css-property-name {
     font-style: italic;
     color: #00F;
@@ -281,7 +289,7 @@
     font-weight: bold;
 }
 
-.js-line-comment{
+.js-line-comment {
     color: #aaa;
     font-style: italic;
 }
