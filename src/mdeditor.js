@@ -64,6 +64,7 @@
             title: /^#{1,6}.+$/,
             a: /\[(.*?)\]\((.*?)\)/g,
             b: /\*\*(.+?)\*\*/g,
+            i:/\*(.+?)\*/g,
             inline_code: /\`(.+?)\`/g,
             blockquote: /^>(.+?)$/,
             table: /^(\|[^|]+)+\|$/,
@@ -354,6 +355,7 @@
             txt = this.handleInlineCode(txt);
             txt = this.handleLink(txt);
             txt = this.handleBold(txt);
+            txt = this.handelItalic(txt);
             return txt;
         },
 
@@ -375,6 +377,13 @@
             var me = this;
             return txt.replace(me.regLib.b, function (match, $1) {
                 return '<b>' + $1 + '</b>';
+            });
+        },
+
+        handelItalic:function(txt){
+            var me = this;
+            return txt.replace(me.regLib.i, function (match, $1) {
+                return '<i>' + $1 + '</i>';
             });
         },
 
