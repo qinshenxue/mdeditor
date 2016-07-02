@@ -1,5 +1,6 @@
 // 将最新文件同步到项目主页中
 var Client = require('ftp');
+// ftp的配置信息，包括host，user，password
 var syncConfig=require('./sync-config');
 
 var c = new Client();
