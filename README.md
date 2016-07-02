@@ -13,7 +13,7 @@
 - 添加版本号及说明
 - 增加引用语法`>引用`，引用内支持ul和ol
 - 增加斜体语法`*斜体*`
-- 增加私有语法插入iframe`$[iframe高度](iframe的src)`比如$[200](http://www.baidu.com)
+- 增加私有语法插入iframe`$[iframe高度](iframe的src)`比如$\[200](http://www.baidu.com)
 - 优化解析代码
 
 
