@@ -2,6 +2,7 @@
     var mdeditor = function (options) {
         return new mdeditor.prototype.init(options);
     };
+    mdeditor.version = '1.2.0';
     mdeditor.prototype = {
         constructor: mdeditor,
         init: function (options) {
@@ -64,6 +65,7 @@
             a: /\[(.*?)\]\((.*?)\)/g,
             b: /\*\*(.+?)\*\*/g,
             inline_code: /\`(.+?)\`/g,
+            blockquote: /^>(.+?)$/,
             table: /^(\|[^|]+)+\|$/,
             table_td_align: /^(\|\s*:?-+:?\s*)+\|$/,
             table_td_align_left: /^\s*:-+\s*$/,
@@ -111,106 +113,192 @@
             }
         },
 
+        handleBlockquote: function (rows, start) {
+            var html = [];
+            var i = start
+            if (this.regLib.blockquote.test(rows[start])) {
+                html.push('<blockquote class="mdeditor-blockquote">');
+                for (; i < rows.length; i++) {
+                    if (!this.regLib.blockquote.test(rows[i])) {
+                        break;
+                    }
+                    var row = rows[i].replace(/>/, '');
+                    if (this.regLib.ul.test(row)) {
+                        var ul = this.handleUl(rows, i, />/);
+                        html = html.concat(ul.html);
+                        i = ul.index;
+                    } else if (this.regLib.ol.test(row)) {
+                        var ol = this.handleOl(rows, i, />/);
+                        html = html.concat(ol.html);
+                        i = ol.index;
+                    } else {
+                        html.push(this.handleParagraph(row));
+                    }
+                }
+                html.push('</blockquote>');
+            }
+            return {
+                html: html,
+                index: i - 1
+            };
+        },
+
+        handleUl: function (rows, start, reg) {
+            var html = [];
+            var i = start;
+            if (this.regLib.ul.test(reg ? rows[start].replace(reg, '') : rows[start])) {
+                html.push('<ul class="mdeditor-ul">');
+                for (; i < rows.length; i++) {
+                    var row = rows[i];
+                    if (reg) {
+                        row = row.replace(reg, '');
+                    }
+                    if (!this.regLib.ul.test(row)) {
+                        break;
+                    }
+                    row = row.replace(/^[\.\*\-]\s*/, '');
+                    html.push('<li>' + this.handleInlineSet(row) + '</li>');
+
+                }
+                html.push('</ul>');
+            }
+            return {
+                html: html,
+                index: i - 1
+            };
+        },
+
+        handleOl: function (rows, start, reg) {
+            var html = [];
+            var i = start;
+            if (this.regLib.ol.test(reg ? rows[start].replace(reg, '') : rows[start])) {
+                html.push('<ol class="mdeditor-ol">');
+                for (; i < rows.length; i++) {
+                    var row = rows[i];
+                    if (reg) {
+                        row = row.replace(reg, '');
+                    }
+                    if (!this.regLib.ol.test(row)) {
+                        break;
+                    }
+                    row = row.replace(/^\d+\.\s*/, '');
+                    html.push('<li>' + this.handleInlineSet(row) + '</li>');
+
+                }
+                html.push('</ol>');
+            }
+            return {
+                html: html,
+                index: i - 1
+            };
+        },
+
+
+        handlePre: function (rows, start) {
+            var html = [];
+            var i = start;
+            var firstRow = rows[start];
+            if (this.regLib.code.test(firstRow)) {
+                var codeType = firstRow.replace(/[`\s]/g, '');
+                html.push('<pre class="mdeditor-code mdeditor-code-' + codeType.toLowerCase() + '">');
+                html.push('<ol>');
+                i++;
+                for (; i < rows.length; i++) {
+                    var row = rows[i];
+                    if (this.regLib.code.test(row)) {
+                        break;
+                    }
+                    html.push('<li><div>' + this.handleCodeType(codeType, row) + '</div></li>');
+                }
+                html.push('</ol>');
+                html.push('</pre>');
+            }
+            return {
+                html: html,
+                index: i
+            };
+        },
+
+        handleTable: function (rows, start) {
+            var html = [];
+            var i = start;
+            var firstRow = rows[start];
+            var nextRow = rows[start + 1];
+            if (nextRow && this.regLib.table.test(firstRow) && this.regLib.table_td_align.test(nextRow)) {
+
+                html.push('<table class="mdeditor-table">');
+                html.push('<tr>');
+                var tdArr = firstRow.match(/[^|]+/g);
+                var tdAlign = this.handleTdAlign(nextRow);
+                for (var m = 0, n = tdArr.length; m < n; m++) {
+                    html.push('<th style="text-align:' + tdAlign[m] + '">' + tdArr[m] + '</th>');
+                }
+                html.push('</tr>');
+
+                i += 2;
+
+                for (; i < rows.length; i++) {
+                    var row = rows[i];
+                    if (!this.regLib.table.test(row)) {
+                        break;
+                    }
+                    html.push(this.handleTr(row, tdAlign));
+                }
+
+                html.push('</table>');
+            }
+            return {
+                html: html,
+                index: i - 1
+            };
+        },
+
         markdownToHtml: function (md) {
             var me = this;
             var rows = md.match(/.+/mg) || [];
             var html = [];
-            var flag = '';
-            var codeType = '';
             var rowsCount = rows.length;
             var rowsStart = 0;
             var toc = null;
-            var tdAlign = [];
             if (rowsCount && me.regLib.toc.test(rows[0])) {
                 rowsStart = 1;
                 toc = ['<div class="mdeditor-toc">'];
             }
             for (var i = rowsStart; i < rowsCount; i++) {
                 var row = rows[i];
+
                 row = me.replaceHtmlTag(row);
-                switch (flag) {
-                    case 'ol':
-                        if (!me.regLib.ol.test(row)) {
-                            i--;
-                            flag = '';
-                            html.push('</ol>');
-                        } else {
-                            html.push(me.handleOrderList(row));
-                            if (i == rowsCount - 1) {
-                                html.push('</ol>');
-                            }
-                        }
-                        break;
-                    case 'ul':
-                        if (!me.regLib.ul.test(row)) {
-                            i--;
-                            flag = '';
-                            html.push('</ul>');
-                        } else {
-                            html.push(me.handleUnorderedList(row));
-                            if (i == rowsCount - 1) {
-                                html.push('</ul>');
-                            }
-                        }
-                        break;
-                    case 'code':
-                        if (me.regLib.code.test(row)) {
-                            flag = '';
-                            html.push('</code>');
-                            html.push('</pre>');
-                        } else {
-                            html.push('<li><div>' + me.handleCodeType(codeType, row) + '</div></li>');
-                        }
-                        break;
-                    case 'table':
-                        if (!me.regLib.table.test(row)) {
-                            i--;
-                            flag = '';
-                            html.push('</table>');
-                        } else {
-                            html.push(me.handleTr(row, tdAlign));
-                            if (i == rowsCount - 1) {
-                                html.push('</table>');
-                            }
-                        }
-                        break;
-                    default :
-                        if (me.regLib.title.test(row)) {
-                            html.push(me.handleTitle(row, toc));
-                        } else if (me.regLib.ol.test(row)) {
-                            i--;
-                            flag = 'ol';
-                            html.push('<ol  class="mdeditor-ol">');
-                        } else if (me.regLib.ul.test(row)) {
-                            i--;
-                            flag = 'ul';
-                            html.push('<ul  class="mdeditor-ul">');
-                        } else if (me.regLib.code.test(row)) {
-                            flag = 'code';
-                            codeType = row.replace(/[`\s]/g, '');
-                            html.push('<pre class="mdeditor-code mdeditor-code-' + codeType.toLowerCase() + '">');
-                            html.push('<ol>');
-                        } else if (me.regLib.table.test(row)) {
-                            if (i != rowsCount - 1 && me.regLib.table_td_align.test(rows[i + 1])) {
-                                flag = 'table';
-                                html.push('<table class="mdeditor-table"><tr>');
-                                var tdArr = row.match(/[^|]+/g);
-                                tdAlign = me.handleTdAlign(rows[i + 1]);
-                                for (var m = 0, n = tdArr.length; m < n; m++) {
-                                    html.push('<th style="text-align:' + tdAlign[m] + '">' + tdArr[m] + '</th>');
-                                }
-                                html.push('</tr>');
-                                i++;
-                                if (i == rowsCount - 1) {
-                                    html.push('</table>');
-                                }
-                            } else {
-                                html.push(me.handleParagraph(row));
-                            }
-                        } else {
-                            html.push(me.handleParagraph(row));
-                        }
-                        break;
+
+                if (me.regLib.title.test(row)) {
+                    html.push(me.handleTitle(row, toc));
+
+                } else if (me.regLib.ul.test(row)) {
+                    var ul = me.handleUl(rows, i);
+                    html = html.concat(ul.html);
+                    i = ul.index;
+
+                } else if (me.regLib.ol.test(row)) {
+                    var ol = me.handleOl(rows, i);
+                    html = html.concat(ol.html);
+                    i = ol.index;
+
+                } else if (me.regLib.table.test(row)) {
+                    var table = me.handleTable(rows, i);
+                    html = html.concat(table.html);
+                    i = table.index;
+
+                } else if (me.regLib.blockquote.test(row)) {
+                    var blockquote = me.handleBlockquote(rows, i);
+                    html = html.concat(blockquote.html);
+                    i = blockquote.index;
+
+                } else if (me.regLib.code.test(row)) {
+                    var pre = me.handlePre(rows, i);
+                    html = html.concat(pre.html);
+                    i = pre.index;
+
+                } else {
+                    html.push(me.handleParagraph(row));
                 }
             }
 
@@ -298,18 +386,6 @@
             });
         },
 
-        handleUnorderedList: function (txt) {
-            txt = txt.replace(/^[\.\*\-]\s*/, '');
-            txt = this.handleInlineSet(txt);
-            return '<li>' + txt + '</li>';
-        },
-
-        handleOrderList: function (txt) {
-            txt = txt.replace(/^\d+\.\s*/, '');
-            txt = this.handleInlineSet(txt);
-            return '<li>' + txt + '</li>';
-        },
-
         /* 高亮各种代码类型 */
         handleCodeType: function (codeType, txt) {
             switch (codeType) {
@@ -347,10 +423,12 @@
                 return '<span class="js-line-comment">' + v + '</span>';
             });
 
-
         },
 
         replaceHtmlTag: function (txt) {
+            if (this.regLib.blockquote.test(txt)) {
+                return '>' + txt.substr(1).replace(/\</g, '&lt;').replace(/\>/g, '&gt;')
+            }
             return txt.replace(/\</g, '&lt;').replace(/\>/g, '&gt;');
         }
     };

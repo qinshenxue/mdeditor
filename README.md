@@ -3,10 +3,15 @@
 [http://mdeditor.qinshenxue.com](http://mdeditor.qinshenxue.com)
 
 ##更新日志
+版本号（x.y.z）说明
+- x 有不兼容低版本更新
+- y 增加新api、语法
+- z 修复bug，优化代码
 
-V1.0.0
-- 添加版本号
-
+### V1.2.0
+- 添加版本号及说明
+- 增加引用<blockquote>语法`\>`，引用内支持ul和ol
+- 优化解析代码
 
 
 

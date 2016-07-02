@@ -52,12 +52,14 @@
     border-left: 0;
     overflow-y: auto;
     color: #333;
-    font-size: 16px;
+    font-size: 14px
 }
 
 .mdeditor-html.preview {
     border: 0;
     padding: 0;
+    letter-spacing: 0.02em;
+    -webkit-font-smoothing: antialiased;
 }
 
 .mdeditor-html .mdeditor-toc {
@@ -159,12 +161,19 @@
     font-size: 15px;
     background-color: #f9f2f4;
     word-break: break-word;
-    font-weight: bold;
+    font-weight: 700;
     -webkit-border-radius: 2px;
     border-radius: 2px;
 }
-
+.mdeditor-blockquote{
+    margin:0;
+    padding:0 0 0 10px;
+    overflow: hidden;
+    background: #f1f1f1;
+    border-left:10px solid #ddd;
+}
 .mdeditor-ol, .mdeditor-ul {
+    padding-left: 40px;
     margin: 20px 0;
 }
 
@@ -197,7 +206,7 @@
 .mdeditor-html .mdeditor-code li > div {
     white-space: pre-wrap;
     color: #666;
-    font-size: 15px;
+    font-size: 13px
 }
 
 .mdeditor-html .mdeditor-code li code {
