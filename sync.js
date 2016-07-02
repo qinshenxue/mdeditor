@@ -1,5 +1,4 @@
-
-
+// 将最新文件同步到项目主页中
 var Client = require('ftp');
 var syncConfig=require('./sync-config');
 
