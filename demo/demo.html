@@ -24,6 +24,69 @@
 
 </div>
 
+<script type="text/plain" style="display: none" id="md_source">## 标题
+# 一级标题
+## 二级标题
+### 三级标题
+#### 四级标题
+##### 五级标题
+###### 六级标题
+## 无序列表
+- 1
+- 2
+- 3
+* 1
+* 2
+* 3
+. 1
+. 2
+. 3
+## 有序列表
+1. 1
+2. 2
+3. 3
+### 引用
+>1. a
+>2. b
+>33. c
+>段落
+## 图片
+![前端路迹](http://www.qinshenxue.com/static/img/logo.jpg)
+## 链接
+[前端路迹](http://www.qinshenxue.com/)
+## 行内代码
+行内代码展示：`npm install`
+## 粗体
+粗体展示：**粗体**
+## 表格
+|1|2|3|4|
+|:--:|:--:|:--:|:--:|
+|1|2|3|4|
+|1|2|3|4|
+## 代码块
+``` css
+.mdeditor {
+    float: left;
+    width: 50%;
+    line-height: 1.5em;
+    resize: none;
+    outline: none;
+    border: 1px solid #ccc;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+}
+```
+``` xml
+<ul class="mdeditor-ol">
+    <li>原创markdown编辑器，基于textarea，同步预览html，不依赖任何插件，使用简单。</li>
+</ul>
+```
+``` javascript
+var a=1,b=2; // 注释
+function test(){
+	return "原创markdown编辑器，基于textarea，同步预览html，不依赖任何插件，使用简单。";
+}
+```
+</script>
 
 <script src="../src/mdeditor.js"></script>
 
@@ -32,6 +95,8 @@
         id: 'wrap',
         placeholder: '请输入markdown语法文本，右边同步预览html'
     });
+
+    editor.setMarkdown(document.getElementById('md_source').innerText);
 </script>
 </body>
 </html>
