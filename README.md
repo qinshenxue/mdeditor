@@ -4,17 +4,17 @@
 
 ##更新日志
 版本号（x.y.z）说明
-- x 有不兼容低版本更新
-- y 增加新api、语法
+- x 有不兼容的api或语法更新
+- y 增加新api、markdown语法
 - z 修复bug，优化代码
 
 ### V1.2.0
-2016-07-02
+2016-07-02 周六
 - 添加版本号及说明
 - 增加引用语法`>引用`，引用内支持ul和ol
 - 增加斜体语法`*斜体*`
 - 增加私有语法插入iframe`$[iframe高度](iframe的src)`比如$\[200](http://mdeditor.qinshenxue.com)
-- 优化解析代码
+- 优化markdown解析代码及css样式
 
 
 
