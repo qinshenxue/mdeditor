@@ -1,8 +1,8 @@
 mdeditor && mdeditor.addGrammar && mdeditor.addGrammar({
     reg: /^\$\[(.*?)\]\((.*?)\)$/,
-    handle: function (rows, i) {
+    handle: function (rows, i, that) {
         var row = rows[i];
-        row = row.replace(this.reg, function (match, $1, $2) {
+        row = row.replace(that.reg, function (match, $1, $2) {
             var style = "";
             if ($1 != '' && !isNaN($1)) {
                 style = 'style="height:' + $1 + 'px"';
