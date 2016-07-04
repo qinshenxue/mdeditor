@@ -423,9 +423,9 @@ $[200](about:blank)
     var editor = mdeditor({
         id: 'wrap'
     });
-    var start = Date.now();
+    var start = new Date().getTime();
     editor.setMarkdown($('#md_source').html());
-    $('#time-spend-count').text(Date.now() - start + 'ms');
+    $('#time-spend-count').text( new Date().getTime() - start + 'ms');
 
     $('#testMethod').on('show.bs.modal', function (e) {
         var $dialog = $(e.target);
