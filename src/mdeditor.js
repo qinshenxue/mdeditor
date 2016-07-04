@@ -3,6 +3,17 @@
         return new mdeditor.prototype.init(options);
     };
     mdeditor.version = '1.2.0';
+    mdeditor.getType = function (obj) {
+        return Object.prototype.toString.call(obj).split(/[\s\[\]]/)[2].toLowerCase();
+    };
+    mdeditor.addGrammar = function (grammar) {
+        grammar in mdeditor || (mdeditor.prototype.grammar = []);
+        if (this.getType(grammar) == 'array') {
+            mdeditor.prototype.grammar = mdeditor.prototype.grammar.concat(grammar);
+        } else {
+            mdeditor.prototype.grammar.push(grammar);
+        }
+    };
     mdeditor.prototype = {
         constructor: mdeditor,
         init: function (options) {
@@ -17,37 +28,43 @@
 
                 me.copy(defaults, options);
 
-                var wrap = this.getDom(options.id);
+                var wrap = this.getDom('#' + options.id);
 
-                var html = '<textarea id="mdeditor" class="mdeditor" name="{{name}}" placeholder="{{placeholder}}"></textarea><div id="mdeditor-html" class="mdeditor-html"></div>';
+                var html = '<textarea class="mdeditor" name="{{name}}" placeholder="{{placeholder}}"></textarea><div class="mdeditor-html"></div>';
 
                 html = me.formatString(html, defaults);
                 wrap.innerHTML = html;
 
-                var editor = this.getDom('mdeditor');
-                var editor2Html = this.getDom('mdeditor-html');
+                var editor = this.getDom('#' + defaults.id + ' .mdeditor');
+                var editor2Html = this.getDom('#' + defaults.id + ' .mdeditor-html');
 
-                editor.addEventListener('input', function () {
-                    var txt = this.value;
-                    me.markdownToHtml(txt);
-                });
+                if (editor.oninput === undefined) {
+                    editor.onkeyup = function () {
+                        me.markdownToHtml(this.value);
+                    };
+                } else {
+                    editor.oninput = function () {
+                        me.markdownToHtml(this.value);
+                    };
+                }
+
                 var mousePosition = '';
-                editor.addEventListener('scroll', function () {
+                editor.onscroll = function () {
                     if (mousePosition == 'editor') {
                         editor2Html.scrollTop = editor.scrollTop / (editor.scrollHeight - editor.clientHeight) * (editor2Html.scrollHeight - editor2Html.clientHeight);
                     }
-                });
-                editor2Html.addEventListener('scroll', function () {
+                };
+                editor2Html.onscroll = function () {
                     if (mousePosition == 'editor2Html') {
                         editor.scrollTop = editor2Html.scrollTop / (editor2Html.scrollHeight - editor2Html.clientHeight) * (editor.scrollHeight - editor.clientHeight);
                     }
-                });
-                editor.addEventListener('mousemove', function (e) {
+                };
+                editor.onmousemove = function (e) {
                     mousePosition = 'editor';
-                });
-                editor2Html.addEventListener('mousemove', function () {
+                };
+                editor2Html.onmousemove = function () {
                     mousePosition = 'editor2Html';
-                });
+                };
                 me.editor = editor;
                 me.editor2Html = editor2Html;
             }
@@ -64,10 +81,9 @@
             title: /^#{1,6}.+$/,
             a: /\[(.*?)\]\((.*?)\)/g,
             b: /\*\*(.+?)\*\*/g,
-            i:/\*(.+?)\*/g,
+            i: /\*(.+?)\*/g,
             inline_code: /\`(.+?)\`/g,
             blockquote: /^>(.+?)$/,
-            iframe: /^\$\[(.*?)\]\((.*?)\)$/,
             table: /^(\|[^|]+)+\|$/,
             table_td_align: /^(\|\s*:?-+:?\s*)+\|$/,
             table_td_align_left: /^\s*:-+\s*$/,
@@ -88,8 +104,8 @@
             return source;
         },
 
-        getDom: function (_id) {
-            return document.getElementById(_id);
+        getDom: function (selector) {
+            return document.querySelector(selector);
         },
 
         getMarkdown: function () {
@@ -116,54 +132,55 @@
         },
 
 
-
         markdownToHtml: function (md) {
-            var me = this;
             var rows = md.match(/.+/mg) || [];
             var html = [];
             var rowsCount = rows.length;
             var rowsStart = 0;
             var toc = null;
-            if (rowsCount && me.regLib.toc.test(rows[0])) {
+            var grammarIndex;
+            if (rowsCount && this.regLib.toc.test(rows[0])) {
                 rowsStart = 1;
                 toc = ['<div class="mdeditor-toc">'];
             }
             for (var i = rowsStart; i < rowsCount; i++) {
                 var row = rows[i];
 
-                if (me.regLib.title.test(row)) {
-                    html.push(me.handleTitle(row, toc));
+                if (this.regLib.title.test(row)) {
+                    html.push(this.handleTitle(row, toc));
 
-                } else if (me.regLib.ul.test(row)) {
-                    var ul = me.handleUl(rows, i);
+                } else if (this.regLib.ul.test(row)) {
+                    var ul = this.handleUl(rows, i);
                     html = html.concat(ul.html);
                     i = ul.index;
 
-                } else if (me.regLib.ol.test(row)) {
-                    var ol = me.handleOl(rows, i);
+                } else if (this.regLib.ol.test(row)) {
+                    var ol = this.handleOl(rows, i);
                     html = html.concat(ol.html);
                     i = ol.index;
 
-                } else if (me.regLib.table.test(row)) {
-                    var table = me.handleTable(rows, i);
+                } else if (this.regLib.table.test(row)) {
+                    var table = this.handleTable(rows, i);
                     html = html.concat(table.html);
                     i = table.index;
 
-                } else if (me.regLib.blockquote.test(row)) {
-                    var blockquote = me.handleBlockquote(rows, i);
+                } else if (this.regLib.blockquote.test(row)) {
+                    var blockquote = this.handleBlockquote(rows, i);
                     html = html.concat(blockquote.html);
                     i = blockquote.index;
 
-                } else if (me.regLib.code.test(row)) {
-                    var pre = me.handlePre(rows, i);
+                } else if (this.regLib.code.test(row)) {
+                    var pre = this.handlePre(rows, i);
                     html = html.concat(pre.html);
                     i = pre.index;
 
-                }  else if (me.regLib.iframe.test(row)) {
-                    html.push(me.handleIframe(row));
+                } else if (this.grammar && ( grammarIndex = this.matchGrammar(row) ) !== false) {
+                    var tag = this.grammar[grammarIndex].handle.call(this, rows, i, this.grammar[grammarIndex]);
+                    html = html.concat(tag.html);
+                    i = tag.index;
+
                 } else {
-                    row = me.replaceHtmlTag(row);
-                    html.push(me.handleParagraph(row));
+                    html.push(this.handleParagraph(row));
                 }
             }
 
@@ -175,6 +192,17 @@
             return html;
         },
 
+        matchGrammar: function (row) {
+            if (this.grammar && this.grammar.length > 0) {
+                for (var i = 0, j = this.grammar.length; i < j; i++) {
+                    if (this.grammar[i].reg.test(row)) {
+                        return i;
+                    }
+                }
+            }
+            return false;
+        },
+
         handleBlockquote: function (rows, start) {
             var html = [];
             var i = start
@@ -184,7 +212,7 @@
                     if (!this.regLib.blockquote.test(rows[i])) {
                         break;
                     }
-                    var row = this.replaceHtmlTag(rows[i]).replace(/>/, '');
+                    var row = rows[i].replace(/>/, '');
                     if (this.regLib.ul.test(row)) {
                         var ul = this.handleUl(rows, i, />/);
                         html = html.concat(ul.html);
@@ -211,16 +239,16 @@
             if (this.regLib.ul.test(reg ? rows[start].replace(reg, '') : rows[start])) {
                 html.push('<ul class="mdeditor-ul">');
                 for (; i < rows.length; i++) {
-                    var row = this.replaceHtmlTag(rows[i]);
+                    var row = rows[i];
                     if (reg) {
                         row = row.replace(reg, '');
                     }
                     if (!this.regLib.ul.test(row)) {
                         break;
                     }
+                    row = this.replaceHtmlTag(row);
                     row = row.replace(/^[\.\*\-]\s*/, '');
                     html.push('<li>' + this.handleInlineSet(row) + '</li>');
-
                 }
                 html.push('</ul>');
             }
@@ -236,13 +264,14 @@
             if (this.regLib.ol.test(reg ? rows[start].replace(reg, '') : rows[start])) {
                 html.push('<ol class="mdeditor-ol">');
                 for (; i < rows.length; i++) {
-                    var row = this.replaceHtmlTag(rows[i]);
+                    var row = rows[i];
                     if (reg) {
                         row = row.replace(reg, '');
                     }
                     if (!this.regLib.ol.test(row)) {
                         break;
                     }
+                    row = this.replaceHtmlTag(row);
                     row = row.replace(/^\d+\.\s*/, '');
                     html.push('<li>' + this.handleInlineSet(row) + '</li>');
 
@@ -266,10 +295,11 @@
                 html.push('<ol>');
                 i++;
                 for (; i < rows.length; i++) {
-                    var row = this.replaceHtmlTag(rows[i]);
+                    var row = rows[i];
                     if (this.regLib.code.test(row)) {
                         break;
                     }
+                    row = this.replaceHtmlTag(row);
                     html.push('<li><div>' + this.handleCodeType(codeType, row) + '</div></li>');
                 }
                 html.push('</ol>');
@@ -293,7 +323,7 @@
                 var tdArr = firstRow.match(/[^|]+/g);
                 var tdAlign = this.handleTdAlign(nextRow);
                 for (var m = 0, n = tdArr.length; m < n; m++) {
-                    html.push('<th style="text-align:' + tdAlign[m] + '">' + tdArr[m] + '</th>');
+                    html.push('<th style="text-align:' + tdAlign[m] + '">' + this.replaceHtmlTag(tdArr[m]) + '</th>');
                 }
                 html.push('</tr>');
 
@@ -304,6 +334,7 @@
                     if (!this.regLib.table.test(row)) {
                         break;
                     }
+                    row = this.replaceHtmlTag(row);
                     html.push(this.handleTr(row, tdAlign));
                 }
 
@@ -344,6 +375,7 @@
             var me = this;
             return txt.replace(/(#{1,6})(.+)/, function (match, $1, $2) {
                 var hno = $1.length;
+                $2 = me.replaceHtmlTag($2);
                 if (toc) {
                     toc.push('<a class="mdeditor-toc-' + hno + '" href="#' + $2 + '">' + $2 + '</a>');
                 }
@@ -352,6 +384,7 @@
         },
 
         handleParagraph: function (txt) {
+            txt = this.replaceHtmlTag(txt);
             return '<p>' + this.handleInlineSet(txt) + '</p>';
         },
 
@@ -370,16 +403,6 @@
             });
         },
 
-        handleIframe: function (txt) {
-            return txt.replace(this.regLib.iframe, function (match, $1, $2) {
-                var style = "";
-                if ($1!=''&&!isNaN($1)) {
-                    style = 'style="height:' + $1 + 'px"';
-                }
-                return '<iframe class="mdeditor-iframe" src="'+$2+'" '+style+'></iframe>';
-            });
-        },
-
         handleLink: function (txt) {
             var me = this;
             return txt.replace(me.regLib.a, function (txt, $1, $2) {
@@ -395,7 +418,7 @@
             });
         },
 
-        handelItalic:function(txt){
+        handelItalic: function (txt) {
             var me = this;
             return txt.replace(me.regLib.i, function (match, $1) {
                 return '<i>' + $1 + '</i>';
@@ -449,9 +472,6 @@
         },
 
         replaceHtmlTag: function (txt) {
-            if (this.regLib.blockquote.test(txt)) {
-                return '>' + txt.substr(1).replace(/\</g, '&lt;').replace(/\>/g, '&gt;')
-            }
             return txt.replace(/\</g, '&lt;').replace(/\>/g, '&gt;');
         }
     };
