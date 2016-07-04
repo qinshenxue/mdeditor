@@ -1,5 +1,5 @@
 #mdeditor
-## 演示地址及API
+## 演示地址&文档地址
 [http://mdeditor.qinshenxue.com](http://mdeditor.qinshenxue.com)
 
 ##更新日志
@@ -13,7 +13,9 @@
 - 添加版本号及说明
 - 增加引用语法`>引用`，引用内支持ul和ol
 - 增加斜体语法`*斜体*`
-- 增加私有语法插入iframe`$[iframe高度](iframe的src)`比如$\[200](http://mdeditor.qinshenxue.com)
+- 增加自定义语法扩展
+- 增加自定义语法扩展实例，私有语法插入iframe`$[iframe高度](iframe的src)`比如$\[200](http://mdeditor.qinshenxue.com)
+- 增加对ie8的支持
 - 优化markdown解析代码及css样式
 
 
