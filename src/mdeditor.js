@@ -60,7 +60,7 @@
                         editor.scrollTop = editor2Html.scrollTop / (editor2Html.scrollHeight - editor2Html.clientHeight) * (editor.scrollHeight - editor.clientHeight);
                     }
                 };
-                editor.onmousemove = function (e) {
+                editor.onmousemove = function () {
                     mousePosition = 'editor';
                 };
                 editor2Html.onmousemove = function () {
