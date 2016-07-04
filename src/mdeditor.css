@@ -246,12 +246,6 @@
     background: #f8f8f8;
 }
 
-.mdeditor-iframe {
-    display: block;
-    width: 100%;
-    border: 0;
-}
-
 .css-property-name {
     font-style: italic;
     color: #00F;
