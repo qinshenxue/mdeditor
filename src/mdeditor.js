@@ -4,7 +4,7 @@
     };
     mdeditor.version = '1.2.0';
     mdeditor.getType = function (obj) {
-        return Object.prototype.toString.call(obj).split(/[\s\[\]]/)[2].toLowerCase();
+        return Object.prototype.toString.call(obj).match(/\[object\s(\w+)\]/)[1].toLowerCase();
     };
     mdeditor.addGrammar = function (grammar) {
         grammar in mdeditor || (mdeditor.prototype.grammar = []);
@@ -13,6 +13,7 @@
         } else {
             mdeditor.prototype.grammar.push(grammar);
         }
+        return mdeditor;
     };
     mdeditor.prototype = {
         constructor: mdeditor,
@@ -84,8 +85,8 @@
             i: /\*(.+?)\*/g,
             inline_code: /\`(.+?)\`/g,
             blockquote: /^>(.+?)$/,
-            table: /^(\|[^|]+)+\|$/,
-            table_td_align: /^(\|\s*:?-+:?\s*)+\|$/,
+            table: /^(\|[^|]+)+\|\s*$/,
+            table_td_align: /^(\|\s*:?-+:?\s*)+\|\s*$/,
             table_td_align_left: /^\s*:-+\s*$/,
             table_td_align_center: /^\s*:-+:\s*$/,
             table_td_align_right: /^\s*-+:\s*$/
@@ -174,13 +175,15 @@
                     html = html.concat(pre.html);
                     i = pre.index;
 
-                } else if (this.grammar && ( grammarIndex = this.matchGrammar(row) ) !== false) {
-                    var tag = this.grammar[grammarIndex].handle.call(this, rows, i, this.grammar[grammarIndex]);
-                    html = html.concat(tag.html);
-                    i = tag.index;
-
                 } else {
-                    html.push(this.handleParagraph(row));
+                    var gra=this.matchGrammar(row);
+                    if(gra){
+                        var tag = gra.handle.call(this, rows, i, gra);
+                        html = html.concat(tag.html);
+                        i = tag.index;
+                    }else{
+                        html.push(this.handleParagraph(row));
+                    }
                 }
             }
 
@@ -196,7 +199,7 @@
             if (this.grammar && this.grammar.length > 0) {
                 for (var i = 0, j = this.grammar.length; i < j; i++) {
                     if (this.grammar[i].reg.test(row)) {
-                        return i;
+                        return this.grammar[i];
                     }
                 }
             }

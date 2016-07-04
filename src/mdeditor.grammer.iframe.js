@@ -1,5 +1,5 @@
 mdeditor && mdeditor.addGrammar && mdeditor.addGrammar({
-    reg: /^\$\[(.*?)\]\((.*?)\)$/,
+    reg: /^\$\[(.*?)\]\((.*?)\)\s*$/,
     handle: function (rows, i, that) {
         var row = rows[i];
         row = row.replace(that.reg, function (match, $1, $2) {
@@ -11,7 +11,7 @@ mdeditor && mdeditor.addGrammar && mdeditor.addGrammar({
         });
         return {
             html: [row],
-            start: i
+            index: i
         }
     }
 });
