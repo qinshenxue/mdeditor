@@ -5,7 +5,7 @@ mdeditor && mdeditor.addGrammar && mdeditor.addGrammar({
         row = row.replace(that.reg, function (match, $1, $2) {
             var style = "";
             if ($1 != '' && !isNaN($1)) {
-                style = 'style="height:' + $1 + 'px"';
+                style = 'style="display:block;border:0;width:100%;height:' + $1 + 'px"';
             }
             return '<iframe class="mdeditor-iframe" src="' + $2 + '" ' + style + '></iframe>';
         });
