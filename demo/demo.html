@@ -25,14 +25,14 @@
 </div>
 
 <script type="text/plain" style="display: none" id="md_source">## 标题
-# 一级标题
-## 二级标题
-### 三级标题
-#### 四级标题
-##### 五级标题
-###### 六级标题
+# 一级标题</div>
+## 二级标题</div>
+### 三级标题</div>
+#### 四级标题</div>
+##### 五级标题</div>
+###### 六级标题</div>
 ## 无序列表
-- 1
+- 1</div>
 - 2
 - 3
 * 1
@@ -42,13 +42,13 @@
 . 2
 . 3
 ## 有序列表
-1. 1
+1. 1</div>
 2. 2
 3. 3
 ### 引用
->1. a
->2. b
->33. c
+>1. a</div>
+>2. b</div>
+>33. c</div>
 >段落
 ## 图片
 ![前端路迹](http://www.qinshenxue.com/static/img/logo.jpg)
@@ -93,6 +93,7 @@ function test(){
 </script>
 
 <script src="../src/mdeditor.js"></script>
+<script src="../src/mdeditor.grammer.iframe.js"></script>
 
 <script>
     var editor = mdeditor({
@@ -100,7 +101,7 @@ function test(){
         placeholder: '请输入markdown语法文本，右边同步预览html'
     });
 
-    editor.setMarkdown(document.getElementById('md_source').innerText);
+    editor.setMarkdown(document.getElementById('md_source').innerHTML);
 </script>
 </body>
 </html>
