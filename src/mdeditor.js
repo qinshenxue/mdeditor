@@ -134,15 +134,20 @@
 
 
         markdownToHtml: function (md) {
-            var rows = md.match(/.+/mg) || [];
-            var html = [];
-            var rowsCount = rows.length;
-            var rowsStart = 0;
-            var toc = null;
-            var grammarIndex;
-            if (rowsCount && this.regLib.toc.test(rows[0])) {
+            var rows = md.match(/.+/mg) || [],
+                html = [],
+                rowsCount = rows.length,
+                rowsStart = 0,
+                toc = [],
+                showTOC = false;
+
+            if (rowsCount == 0) {
+                return '';
+            }
+            if (this.regLib.toc.test(rows[0])) {
                 rowsStart = 1;
-                toc = ['<div class="mdeditor-toc">'];
+                showTOC = true;
+                toc.push('<div class="mdeditor-toc">');
             }
             for (var i = rowsStart; i < rowsCount; i++) {
                 var row = rows[i];
@@ -176,19 +181,19 @@
                     i = pre.index;
 
                 } else {
-                    var gra=this.matchGrammar(row);
-                    if(gra){
+                    var gra = this.matchGrammar(row);
+                    if (gra) {
                         var tag = gra.handle.call(this, rows, i, gra);
                         html = html.concat(tag.html);
                         i = tag.index;
-                    }else{
+                    } else {
                         html.push(this.handleParagraph(row));
                     }
                 }
             }
 
-            html = (toc ? toc.join('') + '</div>' : '') + html.join('');
-
+            html = (showTOC ? toc.join('') + '</div>' : '') + html.join('');
+            this.toc = toc;
             if (this.editor2Html) {
                 this.editor2Html.innerHTML = html;
             }
@@ -379,9 +384,7 @@
             return txt.replace(/(#{1,6})(.+)/, function (match, $1, $2) {
                 var hno = $1.length;
                 $2 = me.replaceHtmlTag($2);
-                if (toc) {
-                    toc.push('<a class="mdeditor-toc-' + hno + '" href="#' + $2 + '">' + $2 + '</a>');
-                }
+                toc.push('<a class="mdeditor-toc-' + hno + '" href="#' + $2 + '">' + $2 + '</a>');
                 return '<h' + hno + ' id="' + $2 + '" >' + $2 + '</h' + hno + '>';
             });
         },
