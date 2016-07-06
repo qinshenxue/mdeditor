@@ -140,6 +140,8 @@
 .mdeditor-html p {
     line-height: 1.8em;
     margin: 20px 0;
+    word-break: break-all;
+    word-wrap: break-word;
 }
 
 .mdeditor-html b {
@@ -206,7 +208,7 @@
 }
 
 .mdeditor-html .mdeditor-code li > div {
-    white-space: pre-wrap;
+    white-space: nowrap;
     color: #666;
     font-size: 13px
 }
