@@ -141,58 +141,58 @@
                 toc = [],
                 showTOC = false;
 
-            if (rowsCount == 0) {
-                return '';
-            }
-            if (this.regLib.toc.test(rows[0])) {
-                rowsStart = 1;
-                showTOC = true;
-                toc.push('<div class="mdeditor-toc">');
-            }
-            for (var i = rowsStart; i < rowsCount; i++) {
-                var row = rows[i];
+            if (rowsCount > 0) {
 
-                if (this.regLib.title.test(row)) {
-                    html.push(this.handleTitle(row, toc));
+                if (this.regLib.toc.test(rows[0])) {
+                    rowsStart = 1;
+                    showTOC = true;
+                    toc.push('<div class="mdeditor-toc">');
+                }
+                for (var i = rowsStart; i < rowsCount; i++) {
+                    var row = rows[i];
 
-                } else if (this.regLib.ul.test(row)) {
-                    var ul = this.handleUl(rows, i);
-                    html = html.concat(ul.html);
-                    i = ul.index;
+                    if (this.regLib.title.test(row)) {
+                        html.push(this.handleTitle(row, toc));
 
-                } else if (this.regLib.ol.test(row)) {
-                    var ol = this.handleOl(rows, i);
-                    html = html.concat(ol.html);
-                    i = ol.index;
+                    } else if (this.regLib.ul.test(row)) {
+                        var ul = this.handleUl(rows, i);
+                        html = html.concat(ul.html);
+                        i = ul.index;
 
-                } else if (this.regLib.table.test(row)) {
-                    var table = this.handleTable(rows, i);
-                    html = html.concat(table.html);
-                    i = table.index;
+                    } else if (this.regLib.ol.test(row)) {
+                        var ol = this.handleOl(rows, i);
+                        html = html.concat(ol.html);
+                        i = ol.index;
 
-                } else if (this.regLib.blockquote.test(row)) {
-                    var blockquote = this.handleBlockquote(rows, i);
-                    html = html.concat(blockquote.html);
-                    i = blockquote.index;
+                    } else if (this.regLib.table.test(row)) {
+                        var table = this.handleTable(rows, i);
+                        html = html.concat(table.html);
+                        i = table.index;
 
-                } else if (this.regLib.code.test(row)) {
-                    var pre = this.handlePre(rows, i);
-                    html = html.concat(pre.html);
-                    i = pre.index;
+                    } else if (this.regLib.blockquote.test(row)) {
+                        var blockquote = this.handleBlockquote(rows, i);
+                        html = html.concat(blockquote.html);
+                        i = blockquote.index;
 
-                } else {
-                    var gra = this.matchGrammar(row);
-                    if (gra) {
-                        var tag = gra.handle.call(this, rows, i, gra);
-                        html = html.concat(tag.html);
-                        i = tag.index;
+                    } else if (this.regLib.code.test(row)) {
+                        var pre = this.handlePre(rows, i);
+                        html = html.concat(pre.html);
+                        i = pre.index;
+
                     } else {
-                        html.push(this.handleParagraph(row));
+                        var gra = this.matchGrammar(row);
+                        if (gra) {
+                            var tag = gra.handle.call(this, rows, i, gra);
+                            html = html.concat(tag.html);
+                            i = tag.index;
+                        } else {
+                            html.push(this.handleParagraph(row));
+                        }
                     }
                 }
             }
-
             html = (showTOC ? toc.join('') + '</div>' : '') + html.join('');
+
             this.toc = toc;
             if (this.editor2Html) {
                 this.editor2Html.innerHTML = html;
