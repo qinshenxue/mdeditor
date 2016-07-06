@@ -11,12 +11,27 @@ c.on('ready', function () {
         c.end();
         console.log('mdeditor.min.css sync success');
     })
+    c.put('dist/mdeditor.min.css', '/static/css/mdeditor.min.css', function (err) {
+        if (err) throw err;
+        c.end();
+        console.log('mdeditor.min.css sync success');
+    })
     c.put('dist/mdeditor.min.js', '/demo/mdeditor/js/mdeditor.min.js', function (err) {
         if (err) throw err;
         c.end();
         console.log('mdeditor.min.js sync success');
     });
+    c.put('dist/mdeditor.min.js', '/static/js/lib/mdeditor.min.js', function (err) {
+        if (err) throw err;
+        c.end();
+        console.log('mdeditor.min.js sync success');
+    });
     c.put('dist/mdeditor.grammer.iframe.min.js', '/demo/mdeditor/js/mdeditor.grammer.iframe.min.js', function (err) {
+        if (err) throw err;
+        c.end();
+        console.log('mdeditor.grammer.iframe.min.js sync success');
+    })
+    c.put('dist/mdeditor.grammer.iframe.min.js', '/static/js/lib/mdeditor.grammer.iframe.min.js', function (err) {
         if (err) throw err;
         c.end();
         console.log('mdeditor.grammer.iframe.min.js sync success');
