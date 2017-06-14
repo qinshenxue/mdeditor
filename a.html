@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="src/mdeditor.css">
+</head>
+<body>
+
+<div id="editor" class="editor" contenteditable="true" style="border:1px solid #d8d8d8;min-height: 100px">
+    <p data-id="1">&#8203;&#8203;</p>
+</div>
+
+<!--<script src="https://code.jquery.com/jquery-3.2.1.js"></script>-->
+
+<div id="md" class="mdeditor-html preview" contenteditable="false" style="border:1px solid #d8d8d8;min-height: 100px"></div>
+<script src="dist/md.js"></script>
+
+<script>
+
+
+var md= mdeditor('#md')
+
+
+    /*  document.querySelector('#editor').addEventListener('input',function (e) {
+     console.log(e);
+     },false)*/
+
+    var cursor;
+
+
+    function getRootNode() {
+
+        var node = cursor.focusNode;
+        if (node.nodeName === '#text') {
+            node = node.parentNode;
+        }
+        while ('hasAttribute' in node && !node.hasAttribute('data-id')) {
+            node = node.parentNode;
+        }
+        if (node.parentNode && node.parentNode.classList.contains('editor')) {
+            return node
+        }
+        return null
+    }
+
+    document.addEventListener('selectionchange', function (e) {
+        var sel = window.getSelection();
+        if (sel.isCollapsed) {
+            cursor = sel;
+            //sel.parentNode
+        }
+
+    })
+
+    function toHTML() {
+        var node = getRootNode();
+        if (node) {
+            node.innerHTML = '<h1>' + node.textContent + '</h1><div style="display: none">'+node.textContent+'</div>'
+        }
+        node.insertAdjacentHTML('afterend', '<p data-id="2">&#8203;</p>');
+        var selection = window.getSelection();
+        var range = document.createRange()
+        var selectNode = document.querySelector('[data-id="2"]');
+        range.selectNode(selectNode)
+        range.collapse(true)
+        selection.removeAllRanges()
+        selection.addRange(range)
+    }
+
+    document.querySelector('#editor').addEventListener('click', function (e) {
+
+        var node = getRootNode();
+        if (node && node.children.length) {
+           // console.log(node);
+           //console.log( node.lastChild)
+            node.textContent= node.lastChild.textContent;
+        }
+
+    })
+    document.querySelector('#editor').addEventListener('keydown', function (e) {
+        //console.log(e);
+        if (e.keyCode == 13) {
+            e.preventDefault();
+            toHTML();
+        }
+
+    }, false)
+</script>
+
+</body>
+<div>22</div>
+</html>

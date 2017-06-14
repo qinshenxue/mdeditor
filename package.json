@@ -7,9 +7,9 @@
     "type": "git",
     "url": "https://git.oschina.net/qinshenxue/mdeditor"
   },
-  "main":"",
+  "main": "",
   "scripts": {
-    "start":"node sync.js",
+    "start": "node sync.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": {
@@ -18,10 +18,14 @@
   },
   "license": "ISC",
   "devDependencies": {
+    "ftp": "^0.3.10",
     "gulp": "^3.9.1",
+    "gulp-clean-css": "^2.0.2",
+    "gulp-ftp": "^1.1.0",
+    "gulp-jshint": "^2.0.1",
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^1.5.3",
-    "gulp-clean-css": "^2.0.2",
-    "ftp":"^0.3.10"
+    "jshint": "^2.9.2",
+    "rollup": "^0.42.0"
   }
 }

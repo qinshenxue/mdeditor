@@ -2,21 +2,18 @@
     var mdeditor = function (options) {
         return new mdeditor.prototype.init(options);
     };
-    mdeditor.version = '1.2.0';
-    mdeditor.getType = function (obj) {
-        return Object.prototype.toString.call(obj).match(/\[object\s(\w+)\]/)[1].toLowerCase();
-    };
+    mdeditor.version = '1.4.1';
     mdeditor.addGrammar = function (grammar) {
-        grammar in mdeditor || (mdeditor.prototype.grammar = []);
-        if (this.getType(grammar) == 'array') {
-            mdeditor.prototype.grammar = mdeditor.prototype.grammar.concat(grammar);
+        if ({}.toString.call(grammar) == '[object Array]') {
+            mdeditor.prototype.grammars = mdeditor.prototype.grammars.concat(grammar);
         } else {
-            mdeditor.prototype.grammar.push(grammar);
+            mdeditor.prototype.grammars.push(grammar);
         }
         return mdeditor;
     };
     mdeditor.prototype = {
         constructor: mdeditor,
+        grammars: [],
         init: function (options) {
             var me = this;
             var defaults = {
@@ -80,11 +77,12 @@
             toc: /^\s*\[TOC\]\s*$/,
             img: /\!\[(.*?)\]\((.*?)\)/g,
             title: /^#{1,6}.+$/,
-            a: /\[(.*?)\]\((.*?)\)/g,
+            a: /\[(([^(\(\)\[\])]|\\\[|\\\]|\\\(|\\\))+?)\]\((.+?)\)/g,
             b: /\*\*(.+?)\*\*/g,
             i: /\*(.+?)\*/g,
             inline_code: /\`(.+?)\`/g,
             blockquote: /^>(.+?)$/,
+            hr:/^(\*\s*){3,}|(-\s*){3,}|(_\s*){3,}$/,
             table: /^(\|[^|]+)+\|\s*$/,
             table_td_align: /^(\|\s*:?-+:?\s*)+\|\s*$/,
             table_td_align_left: /^\s*:-+\s*$/,
@@ -154,6 +152,9 @@
                     if (this.regLib.title.test(row)) {
                         html.push(this.handleTitle(row, toc));
 
+                    }else if(this.regLib.hr.test(row)){
+                        html.push('<hr>');
+
                     } else if (this.regLib.ul.test(row)) {
                         var ul = this.handleUl(rows, i);
                         html = html.concat(ul.html);
@@ -201,10 +202,10 @@
         },
 
         matchGrammar: function (row) {
-            if (this.grammar && this.grammar.length > 0) {
-                for (var i = 0, j = this.grammar.length; i < j; i++) {
-                    if (this.grammar[i].reg.test(row)) {
-                        return this.grammar[i];
+            if (this.grammars.length > 0) {
+                for (var i = 0, j = this.grammars.length; i < j; i++) {
+                    if (this.grammars[i].reg.test(row)) {
+                        return this.grammars[i];
                     }
                 }
             }
@@ -213,7 +214,7 @@
 
         handleBlockquote: function (rows, start) {
             var html = [];
-            var i = start
+            var i = start;
             if (this.regLib.blockquote.test(rows[start])) {
                 html.push('<blockquote class="mdeditor-blockquote">');
                 for (; i < rows.length; i++) {
@@ -299,8 +300,8 @@
             var firstRow = rows[start];
             if (this.regLib.code.test(firstRow)) {
                 var codeType = firstRow.replace(/[`\s]/g, '');
-                html.push('<pre class="mdeditor-code mdeditor-code-' + codeType.toLowerCase() + '">');
-                html.push('<ol>');
+                html.push('<pre class="mdeditor-code">');
+                html.push('<code class="'+codeType.toLowerCase()+'">');
                 i++;
                 for (; i < rows.length; i++) {
                     var row = rows[i];
@@ -308,9 +309,9 @@
                         break;
                     }
                     row = this.replaceHtmlTag(row);
-                    html.push('<li><div>' + this.handleCodeType(codeType, row) + '</div></li>');
+                    html.push(row+'\n');
                 }
-                html.push('</ol>');
+                html.push('</code>');
                 html.push('</pre>');
             }
             return {
@@ -412,8 +413,7 @@
         handleLink: function (txt) {
             var me = this;
             return txt.replace(me.regLib.a, function (txt, $1, $2) {
-                $1 = me.handleBold($1);
-                return '<a href="' + $2 + '" target="' + me.options.aTarget + '">' + $1 + '</a>';
+                return '<a href="' + $2 + '" target="' + me.options.aTarget + '">' + me.handleBold($1.replace(/\\([\(\)\[\])])/g, '$1')) + '</a>';
             });
         },
 
@@ -436,45 +436,6 @@
             return txt.replace(me.regLib.inline_code, function (txt, $1) {
                 return '<span class="mdeditor-inline-code">' + $1 + '</span>';
             });
-        },
-
-        /* 高亮各种代码类型 */
-        handleCodeType: function (codeType, txt) {
-            switch (codeType) {
-                case 'javascript':
-                    return this.highlightJs(txt);
-                case 'css':
-                    return txt.replace(/([a-zA-Z-]+:)([^;\{]+)(;)/g, '<span class="css-property-name">$1</span><span class="css-property-value">$2</span><span class="css-semicolon">$3</span>');
-                case 'xml':
-                    return txt.replace(/(&lt;\/?)(\w+)(.*?)(&gt;)/g, '<span class="xml-lt">$1</span><span class="xml-tag-name">$2</span><span class="xml-tag-attr">$3</span><span class="xml-gt">$4</span>');
-                default:
-                    return txt;
-            }
-        },
-
-        highlightJs: function (txt) {
-            var keywords = ['break',
-                'case', 'catch', 'continue',
-                'default', 'delete', 'do',
-                'else', 'finally', 'for', 'function',
-                'if', 'in', 'instanceof',
-                'new',
-                'return',
-                'switch',
-                'this', 'throw', 'try', 'typeof',
-                'var', 'void',
-                'while', 'with'
-            ];
-
-            var keywordReg = new RegExp('\\b(' + keywords.join('|') + ')\\b', 'g');
-            return txt.replace(/('|").*?('|")/g, function (v) {
-                return '<span class="js-string">' + v + '</span>';
-            }).replace(keywordReg, function (v) {
-                return '<span class="js-keyword">' + v + '</span>';
-            }).replace(/\/\/.+$/, function (v) {
-                return '<span class="js-line-comment">' + v + '</span>';
-            });
-
         },
 
         replaceHtmlTag: function (txt) {

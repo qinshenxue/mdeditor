@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta name="description" content="mdeditor,前端路迹,秦申学的个人博客"/>
+    <meta name="keywords" content="mdeditor,前端路迹,秦申学的个人博客,个人博客,个人网站,web前端,JavaScript,css,html,markdown"/>
+    <meta name="baidu-site-verification" content="dOoP4XkgY3"/>
+    <meta name="google-site-verification" content="nm8-PjoCRsr_JTKeSrSiq089X_gPq3lrNALTSlB-MEQ"/>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="http://www.qinshenxue.com/static/img/favicon.ico"/>
+    <title>原创markdown编辑器-前端路迹</title>
+
+    <link href="//cdn.bootcss.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body, input, select, textarea {
+            font-family: Helvetica, Arial, "Hiragino Sans GB", "Microsoft Yahei", "微软雅黑", STHeiti, "华文细黑", sans-serif;
+        }
+
+        section {
+            padding: 50px 0;
+        }
+
+        .first {
+            background: #887C42;
+        }
+
+        .plugin-title {
+            font-size: 80px;
+            text-align: center;
+            color: #fff;
+            font-family: arial, sans-serif;
+        }
+
+        .plugin-desc {
+            text-align: center;
+            font-size: 20px;
+            color: #fff;
+            font-family: '黑体';
+        }
+
+        #wrap {
+            height: 550px;
+            margin: 50px 0 30px;
+            box-shadow: #6B6134 0 5px 15px;
+        }
+
+        #wrap textarea {
+            border-width: 0 1px 0 0;
+        }
+
+        #wrap .mdeditor-html {
+            border-width: 0;
+        }
+
+        #wrap .mdeditor:focus {
+            border-color: #ccc;
+            -webkit-box-shadow: none;
+            box-shadow: none;
+        }
+
+        .list-group-item-heading .badge {
+            margin-left: 5px;
+            background: #f0ad4e;
+        }
+
+        .option-desc {
+            color: #666;
+        }
+
+        .key {
+            color: #888;
+            font-weight: bold;
+        }
+
+        .time-spend {
+            text-align: center;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        #time-spend-count {
+            font-family: serif sans-serif;
+            font-size: 24px;
+        }
+
+        .obj li {
+            list-style: none;
+        }
+
+        .obj-kv {
+            padding-left: 20px;
+
+        }
+        .obj i{
+            margin-left:10px;
+            color:#509ee0
+        }
+    </style>
+
+
+    <link href="dist/mdeditor.min.css" rel="stylesheet" type="text/css">
+    <script src="//cdn.bootcss.com/jquery/1.12.1/jquery.min.js"></script>
+    <script src="//cdn.bootcss.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+</head>
+<body>
+
+<section class="first">
+    <div class="container">
+        <h1 class="plugin-title">mdeditor</h1>
+        <h4 class="plugin-desc">原创markdown编辑器，基于textarea，同步预览html，不依赖任何插件，支持自定义语法，压缩版7k，使用简单。</h4>
+
+        <div id="wrap">
+        </div>
+        <div class="time-spend">解析耗时：<span id="time-spend-count">10ms</span></div>
+    </div>
+</section>
+<section>
+    <div class="container">
+
+        <div class="row">
+
+            <div class="col-md-12">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">配置项</div>
+                    <div class="list-group">
+                        <div class="list-group-item">
+                            <h2 class="list-group-item-heading">id</h2>
+
+                            <p class="option-desc">编辑器载入容器的id</p>
+
+                            <p><span class="key">值类型：</span>string</p>
+
+                            <p><span class="key">默认值：</span>空</p>
+
+                        </div>
+
+                        <div class="list-group-item">
+                            <h2 class="list-group-item-heading">name</h2>
+
+                            <p class="option-desc">指定编辑器textarea的name属性值</p>
+
+                            <p><span class="key">值类型：</span>string</p>
+
+                            <p><span class="key">默认值：</span>空</p>
+
+                        </div>
+                        <div class="list-group-item">
+                            <h2 class="list-group-item-heading">placeholder</h2>
+
+                            <p class="option-desc">指定编辑器textarea的placeholder属性值</p>
+
+                            <p><span class="key">值类型：</span>string</p>
+
+                            <p><span class="key">默认值：</span>空</p>
+
+                        </div>
+                        <div class="list-group-item">
+                            <h2 class="list-group-item-heading">aTarget</h2>
+
+                            <p class="option-desc">指定a链接的target属性值</p>
+
+                            <p><span class="key">值类型：</span>string</p>
+
+                            <p><span class="key">默认值：</span>_blank</p>
+
+                            <p><span class="key">可选值：</span>_blank，_self</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel panel-primary">
+                    <div class="panel-heading">静态方法</div>
+                    <div class="list-group">
+                        <!--<div class="list-group-item">
+                            <h2 class="list-group-item-heading">getType(object)
+                            </h2>
+
+                            <p class="option-desc">获取对象类型</p>
+
+                            <p><span class="key">参数：</span>obj 待检测类型的对象</p>
+
+                            <p><span class="key">返回：</span>object | number | string | function | array | null |
+                                undefined</p>
+                        </div>
+-->
+                        <div class="list-group-item">
+                            <h2 class="list-group-item-heading">addGrammar(object|array)
+                            </h2>
+
+                            <p class="option-desc">添加自定义语法（已提供示例mdeditor.grammer.iframe.js即插入iframe的私有语法）</p>
+
+                            <p><span class="key">参数：</span>对象或对象数组
+                            <ul class="obj">
+                                <li class="obj-bra">[{</li>
+                                <li class="obj-kv">reg:/^$/, <i>// 匹配语法的正则表达式 </i></li>
+                                <li class="obj-kv">handle:function(rows,i,grammar){}<i>// 将匹配的行转化为html代码。 参数说明 rows：所有行，i：满足匹配的行（即rows[i]）的开始位置，grammar：当前grammar配置。 </i></li>
+                                <li class="obj-bra">}]</li>
+                            </ul>
+                            handle返回值
+                            <ul class="obj">
+                                <li class="obj-bra">{</li>
+                                <li class="obj-kv">html:[], <i>// 转化后的html都放在数组中 </i></li>
+                                <li class="obj-kv">index:i <i>// 返回语法有效的rows的截止index </i></li>
+                                <li class="obj-bra">}</li>
+                            </ul>
+                            </p>
+
+                            <p><span class="key">返回：</span>mdeditor
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+
+
+                <div class="panel panel-primary">
+                    <div class="panel-heading">实例方法</div>
+                    <div class="list-group">
+                        <div class="list-group-item">
+                            <h2 class="list-group-item-heading">getHTML
+                                <button class="btn btn-default pull-right" data-method="getHTML" data-toggle="modal"
+                                        data-target="#testMethod">测试getHTML
+                                </button>
+                            </h2>
+
+                            <p class="option-desc">获取textarea内的markdown内容转义后的html代码</p>
+
+                            <p><span class="key">参数：</span>无</p>
+
+                            <p><span class="key">返回：</span>string（html代码）</p>
+
+                        </div>
+                        <div class="list-group-item">
+                            <h2 class="list-group-item-heading">getMarkdown
+                                <button class="btn btn-default pull-right" data-method="getMarkdown" data-toggle="modal"
+                                        data-target="#testMethod">测试getMarkdown
+                                </button>
+                            </h2>
+
+                            <p class="option-desc">获取textarea内的markdown内容转义后的html代码</p>
+
+                            <p><span class="key">参数：</span>无</p>
+
+                            <p><span class="key">返回：</span>string（markdown语法文本）</p>
+
+                        </div>
+                        <div class="list-group-item">
+                            <h2 class="list-group-item-heading">setMarkdown
+                                <button class="btn btn-default pull-right" data-method="getMarkdown" data-toggle="modal"
+                                        data-target="#setMarkdown">测试setMarkdown
+                                </button>
+                            </h2>
+
+                            <p class="option-desc">将传入的markdown内容转义成html代码并返回，如果初始化id不为空，则向编辑器输入框添加markdown内容</p>
+
+                            <p><span class="key">参数：</span></p>
+                            <ul>
+                                <li><h3>markdown</h3>
+
+                                    <p>markdown语法文本</p></li>
+                            </ul>
+                            <p><span class="key">返回：</span>string（html代码）</p>
+
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+
+
+    </div>
+</section>
+
+
+<div class="modal fade" id="testMethod" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel"></h4>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="setMarkdown" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">测试setMarkdown</h4>
+            </div>
+            <div class="modal-body">
+                <div style="line-height: 100px;"><span style="font-size: 22px;">setMarkdown</span><span
+                        style="font-size: 100px;">(</span><textarea id="setMarkdownSource"
+                                                                    style="line-height: 1.5em; outline: none;resize: none;height:100px;vertical-align: -23px; width: 360px;">#输入markdown语法文本</textarea><span
+                        style="font-size: 100px;">)</span></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="doSetMarkdown">确定</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/plain" style="display: none" id="md_source">## 标题
+# 一级标题
+## 二级标题
+### 三级标题
+#### 四级标题
+##### 五级标题
+###### 六级标题
+## 分割线
+---
+***
+___
+## 无序列表
+- 1
+- 2
+- 3
+* 1
+* 2
+* 3
+. 1
+. 2
+. 3
+## 有序列表
+1. 1
+2. 2
+3. 3
+### 引用
+>1. a
+>2. b
+>33. c
+>段落
+## 图片
+![前端路迹](http://www.qinshenxue.com/static/img/logo.jpg)
+## 链接
+[前端路迹](http://www.qinshenxue.com/)
+## 行内代码
+行内代码展示：`npm install`
+## 粗体
+粗体展示：**粗体**
+## 斜体
+斜体展示: *斜体*
+## 表格
+|1|2|3|4|
+|:--:|:--:|:--:|:--:|
+|1|2|3|4|
+|1|2|3|4|
+## 代码块
+``` css
+.mdeditor {
+    float: left;
+    width: 50%;
+    line-height: 1.5em;
+    resize: none;
+    outline: none;
+    border: 1px solid #ccc;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+}
+```
+``` xml
+<ul class="mdeditor-ol">
+    <li>原创markdown编辑器，基于textarea，同步预览html，不依赖任何插件，使用简单。</li>
+</ul>
+```
+``` javascript
+var a=1,b=2; // 注释
+function test(){
+	return "原创markdown编辑器，基于textarea，同步预览html，不依赖任何插件，使用简单。";
+}
+```
+## 内嵌页（自定义语法，私有语法）
+$[200](about:blank)
+</script>
+
+<script src="dist/mdeditor.min.js"></script>
+<script src="dist/mdeditor.grammer.iframe.min.js"></script>
+
+
+<script>
+    var editor = mdeditor({
+        id: 'wrap'
+    });
+    var start = new Date().getTime();
+    editor.setMarkdown($('#md_source').html());
+    $('#time-spend-count').text( new Date().getTime() - start + 'ms');
+
+    $('#testMethod').on('show.bs.modal', function (e) {
+        var $dialog = $(e.target);
+
+        var method = $(e.relatedTarget).data('method');
+        var $title = $dialog.find('.modal-title');
+        var $body = $dialog.find('.modal-body');
+        switch (method) {
+            case 'getHTML':
+                $title.text('测试getHTML');
+                $body.text(editor.getHTML());
+                break;
+            case 'getMarkdown':
+                $title.text('测试getMarkdown');
+                $body.text(editor.getMarkdown());
+                break;
+            case 'setMarkdown':
+                $title.text('测试setMarkdown');
+                $body.text(editor.setMarkdown('#ddd'));
+                break;
+        }
+    })
+    $('body').on('click', '#doSetMarkdown', function (e) {
+        var md = $('#setMarkdownSource').val();
+        editor.setMarkdown(md);
+        $('#setMarkdown').modal('hide');
+        setTimeout(function () {
+            $("html,body").stop(!0, !0).animate({
+                scrollTop: 0
+            }, 200)
+        }, 200);
+    });
+
+    var _hmt = _hmt || [];
+    window.onload = function () {
+        setTimeout(function () {
+            (function () {
+                var hm = document.createElement("script");
+                hm.src = "//hm.baidu.com/hm.js?fd951fac9710ff77ff3b7ae3a70f637a";
+                var s = document.getElementsByTagName("script")[0];
+                s.parentNode.insertBefore(hm, s);
+            })();
+        }, 100);
+    }
+
+</script>
+
+</body>
+</html>
