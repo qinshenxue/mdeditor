@@ -57,11 +57,9 @@ cursor.prototype.in = function (nodeName) {
     }
 }
 cursor.prototype.moveTo = function () {
-
 }
 
 cursor.prototype.offset = function () {
-
 }
 
 export default cursor
