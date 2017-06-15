@@ -2,6 +2,7 @@ import el from './el'
 
 import {initEvent}  from './events'
 import {initRow}  from './row'
+import cursor from './cursor'
 
 export function initMixin(mdeditor) {
     mdeditor.prototype._init = function (id, options) {
@@ -13,6 +14,7 @@ export function initMixin(mdeditor) {
             initRow(md)
             initEvent(md)
             md.addRow()
+            this.cursor = new cursor(this.el[0])
         }
 
         this.options = options

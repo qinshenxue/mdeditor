@@ -124,6 +124,10 @@ function handlePre(rows, start) {
             row = replaceHtmlTag(row)
             html.push(row + '\n')
         }
+        // console.log(html.length)
+        if (html.length === 2) {
+            html.push('<br>')
+        }
         html.push('</code>')
         html.push('</pre>')
     }

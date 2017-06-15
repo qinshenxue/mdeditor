@@ -21,6 +21,7 @@
     "ftp": "^0.3.10",
     "gulp": "^3.9.1",
     "gulp-clean-css": "^2.0.2",
+    "gulp-eslint": "^4.0.0",
     "gulp-ftp": "^1.1.0",
     "gulp-jshint": "^2.0.1",
     "gulp-rename": "^1.2.2",

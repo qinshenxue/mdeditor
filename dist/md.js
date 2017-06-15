@@ -279,6 +279,10 @@ function handlePre(rows, start) {
             row = replaceHtmlTag(row);
             html.push(row + '\n');
         }
+        // console.log(html.length)
+        if (html.length === 2) {
+            html.push('<br>');
+        }
         html.push('</code>');
         html.push('</pre>');
     }
@@ -488,7 +492,7 @@ function initEvent(md) {
     md._lastRow = null;
     md._value = [];
     md.on('keydown', function keydown(e) {
-        if (!e.shiftKey && e.keyCode === 13) {
+        if (e.keyCode === 13) {
             e.preventDefault();
             md.addRow();
         }
@@ -507,12 +511,15 @@ function initEvent(md) {
             var text = oldRow.textContent;
             if (hasContent(text)) {
                 md._value[oldRow.getAttribute('row')] = text;
-                var html = mdToHtml(text);
-                oldRow.innerHTML = html.join('');
+                var html = mdToHtml(text).join('');
+                oldRow.innerHTML = html;
+                if (/^\<pre.+\<\/pre\>$/.test(html)) {
+                    oldRow.setAttribute('code', 1);
+                }
                 oldRow.setAttribute('md', 1);
             }
         }
-        if (newRow && newRow.hasAttribute('md')) {
+        if (newRow && newRow.hasAttribute('md') && !newRow.hasAttribute('code')) {
             var rowNo = newRow.getAttribute('row');
             newRow.innerHTML = md._value[rowNo];
             newRow.removeAttribute('md');
@@ -520,8 +527,7 @@ function initEvent(md) {
         }
 
     });
-    document.addEventListener('selectionchange', function selectionchange() {
-
+    document.addEventListener('selectionchange', function selectionchange(e) {
         if (window.getSelection().isCollapsed) {
             var row = closestRow(getCursorNode(), md.el[0]);
 
@@ -545,6 +551,12 @@ function initEvent(md) {
  * Created by qinsx on 2017/6/13.
  */
 function rowMixin(mdeditor) {
+
+
+    mdeditor.prototype.parseRow = function (htmlArr) {
+
+    };
+
     mdeditor.prototype.addRow = function () {
         var txtNode = getCursorNode();
 
@@ -589,6 +601,72 @@ function initRow(md) {
     md._rowNo = 0;
 }
 
+    /**
+     * Created by qinsx on 2017/6/14.
+     */
+
+    var def = Object.defineProperty;
+
+    function cursor(editor) {
+
+        this.editor = editor;
+
+        var me = this;
+        this.path = [];
+
+        def(this, 'sel', {
+            get: function () {
+                return window.getSelection()
+            }
+        });
+        def(this, 'at', {
+            get: function () {
+                return me._inside()
+            }
+        });
+
+    }
+
+    cursor.prototype._inside = function () {
+        var focusNode = this.sel.focusNode;
+        var _path = [focusNode];
+        while (focusNode && !focusNode.isEqualNode(this.editor)) {
+            focusNode = focusNode.parentNode;
+            _path.push(focusNode);
+        }
+        this.path = _path;
+        return !!focusNode && focusNode.isEqualNode(this.editor)
+    };
+
+    cursor.prototype.set = function () {
+    };
+    cursor.prototype.closest = function () {
+        if (this._inside()) {
+
+        }
+    };
+    cursor.prototype.in = function (nodeName) {
+        if (this._inside()) {
+            var _path = this.path;
+            var i = _path.length;
+            while (i--) {
+                if (_path[i].nodeName === nodeName) {
+                    return true
+                }
+            }
+            return false
+        } else {
+            return false
+        }
+    };
+    cursor.prototype.moveTo = function () {
+
+    };
+
+    cursor.prototype.offset = function () {
+
+    };
+
 function initMixin(mdeditor) {
     mdeditor.prototype._init = function (id, options) {
 
@@ -599,6 +677,7 @@ function initMixin(mdeditor) {
             initRow(md);
             initEvent(md);
             md.addRow();
+            this.cursor = new cursor(this.el[0]);
         }
 
         this.options = options;

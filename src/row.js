@@ -8,6 +8,8 @@ import {
 import  el from './el'
 
 export function rowMixin(mdeditor) {
+
+
     mdeditor.prototype.addRow = function () {
         var txtNode = getCursorNode()
 

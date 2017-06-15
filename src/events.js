@@ -3,8 +3,7 @@
  */
 
 import  {
-    getCursorNode, closestRow, hasContent, setCursor,
-    getCursorOffset
+    getCursorNode, closestRow, hasContent, setCursor
 }  from './util'
 import  {mdToHtml} from './markdown'
 
@@ -16,7 +15,7 @@ export function eventsMixin(mdeditor) {
     }
 
     mdeditor.prototype.trigger = function (eventName) {
-        var md = this;
+        var md = this
         var params = Array.prototype.slice.call(arguments, 1)
         if (this._events[eventName]) {
             this._events[eventName].forEach(function (cb) {
@@ -32,12 +31,12 @@ export function initEvent(md) {
     md._lastRow = null
     md._value = []
     md.on('keydown', function keydown(e) {
-        if (!e.shiftKey && e.keyCode === 13) {
+        if (e.keyCode === 13) {
             e.preventDefault()
             md.addRow()
         }
     })
-    md.on('input', function (e) {
+    md.on('input', function () {
         //console.log(md.el.children().length)
         if (!md.el.children().length) {
             md.el.empty()
@@ -51,12 +50,15 @@ export function initEvent(md) {
             var text = oldRow.textContent
             if (hasContent(text)) {
                 md._value[oldRow.getAttribute('row')] = text
-                var html = mdToHtml(text)
-                oldRow.innerHTML = html.join('')
+                var html = mdToHtml(text).join('')
+                oldRow.innerHTML = html
+                if (/^\<pre.+\<\/pre\>$/.test(html)) {
+                    oldRow.setAttribute('code', 1)
+                }
                 oldRow.setAttribute('md', 1)
             }
         }
-        if (newRow && newRow.hasAttribute('md')) {
+        if (newRow && newRow.hasAttribute('md') && !newRow.hasAttribute('code')) {
             var rowNo = newRow.getAttribute('row')
             newRow.innerHTML = md._value[rowNo]
             newRow.removeAttribute('md')
@@ -65,7 +67,6 @@ export function initEvent(md) {
 
     })
     document.addEventListener('selectionchange', function selectionchange() {
-
         if (window.getSelection().isCollapsed) {
             var row = closestRow(getCursorNode(), md.el[0])
 

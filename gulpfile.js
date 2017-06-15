@@ -6,6 +6,8 @@ var gulp = require('gulp'),
     ftp = require('gulp-ftp'),
     syncConfig = require('./sync-config');
 
+var eslint = require('gulp-eslint');
+
 
 gulp.task('jshint', function () {
     return gulp.src('src/*.js')
@@ -46,7 +48,21 @@ gulp.task('server-js', function () {
 //var tasks = ['jshint', 'css', 'sync', 'sync-index'];
 var rollup = require('rollup').rollup;
 
-gulp.task('build', function () {
+gulp.task('lint', () => {
+    // ESLint ignores files with "node_modules" paths.
+    // So, it's best to have gulp ignore the directory as well.
+    // Also, Be sure to return the stream from the task;
+    // Otherwise, the task may end before the stream has finished.
+    return gulp.src(['src/**.js'])
+    // eslint() attaches the lint output to the "eslint" property
+    // of the file object so it can be used by other modules.
+        .pipe(eslint())
+        // eslint.format() outputs the lint results to the console.
+        // Alternatively use eslint.formatEach() (see Docs).
+        .pipe(eslint.format())
+});
+
+gulp.task('build', ['lint'], function () {
     return rollup({
         entry: 'src/index.js',
 
