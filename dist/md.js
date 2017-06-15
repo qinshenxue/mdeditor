@@ -33,23 +33,42 @@ function createElement() {
 
 
 function el(selector) {
-    this[0] = document.querySelector(selector);
+    if (typeof selector === 'string') {
+        this[0] = document.querySelector(selector);
+    } else if (selector instanceof HTMLElement) {
+        this[0] = selector;
+    }
 }
 el.prototype.insertAfter = function () {
-    this[0].parentNode.insertBefore(createElement.apply(null, arguments), this[0].nextSibling);
+    var brother = createElement.apply(null, arguments);
+    this[0].parentNode.insertBefore(brother, this[0].nextSibling);
+    return brother
 };
 el.prototype.insertBefore = function () {
-    this[0].parentNode.insertBefore(createElement.apply(null, arguments), this[0]);
+    var brother = createElement.apply(null, arguments);
+    this[0].parentNode.insertBefore(brother, this[0]);
+    return brother
 };
 
 el.prototype.prepend = function () {
-    this[0].insertBefore(createElement.apply(null, arguments), this[0].firstChild);
+    var child = createElement.apply(null, arguments);
+    this[0].insertBefore(child, this[0].firstChild);
+    return child
 };
 
 el.prototype.append = function () {
     var child = createElement.apply(null, arguments);
     this[0].appendChild(child);
     return child
+};
+el.prototype.empty = function () {
+    this[0].innerHTML = '';
+};
+el.prototype.children = function () {
+    return this[0].childNodes
+};
+el.prototype.text = function () {
+    return this[0].textContent
 };
 
 el.prototype.attr = function (name, value) {
@@ -79,17 +98,44 @@ function extend(source, dest) {
 function setCursor(node, offset) {
     var selection = window.getSelection();
     var range = document.createRange();
-    var selectNode = node;
-    range.setStart(selectNode, offset);
+    if (offset === undefined) {
+        offset = node.textContent.length;
+    }
+    range.setStart(node.childNodes[0], offset);
     range.collapse(true);
     selection.removeAllRanges();
     selection.addRange(range);
 }
 
-
+function getCursorOffset() {
+    return window.getSelection().focusOffset
+    /* if (!sel.focusNode) {
+     return 0
+     }
+     var node = sel.focusNode.parentNode
+     var nodeName = node.nodeName
+     if (nodeName.match(/^H(\d)$/)) {
+     offset += Number(RegExp.$1)
+     } else if (nodeName.match(/^A$/)) {
+     offset += 1
+     }
+     while (node.previousSibling) {
+     node = node.previousSibling
+     nodeName = node.nodeName
+     if (nodeName === 'A') {
+     offset += 4 + node.textContent.length + node.getAttribute('href').length
+     } else if (nodeName === '#text') {
+     offset += node.textContent.length
+     }
+     }
+     return offset + 1*/
+    // window.getSelection().focusOffset
+}
 
 function closestRow(node, rootNode) {
-
+    if (!node) {
+        return
+    }
     if (node.nodeName === '#text') {
         node = node.parentNode;
     }
@@ -111,6 +157,10 @@ function hasContent(txt) {
     return !/^[\u200B\s]*$/.test(txt)
 }
 
+function isTextNode(node) {
+    return node && node.nodeName === '#text'
+}
+
 var regLib = {
     code: /^\`{3}.*$/,
     ul: /^[\.\-\*]\s+.+$/,
@@ -118,7 +168,7 @@ var regLib = {
     toc: /^\s*\[TOC\]\s*$/,
     img: /\!\[(.*?)\]\((.*?)\)/g,
     title: /^#{1,6}.+$/,
-    a: /\[(([^(\(\)\[\])]|\\\[|\\\]|\\\(|\\\))+?)\]\((.+?)\)/g,
+    a: /\[(([^\(\)\[\]]|\\\[|\\\]|\\\(|\\\))+)\]\((.+?)\)/g,
     b: /\*\*(.+?)\*\*/g,
     i: /\*(.+?)\*/g,
     inline_code: /\`(.+?)\`/g,
@@ -137,7 +187,7 @@ function handleBlockquote(rows, start) {
         html.push('<blockquote class="mdeditor-blockquote">');
         for (; i < rows.length; i++) {
             if (!regLib.blockquote.test(rows[i])) {
-                break;
+                break
             }
             var row = rows[i].replace(/>/, '');
             if (regLib.ul.test(row)) {
@@ -157,7 +207,7 @@ function handleBlockquote(rows, start) {
     return {
         html: html,
         index: i - 1
-    };
+    }
 }
 
 function handleUl(rows, start, reg) {
@@ -171,7 +221,7 @@ function handleUl(rows, start, reg) {
                 row = row.replace(reg, '');
             }
             if (!regLib.ul.test(row)) {
-                break;
+                break
             }
             row = replaceHtmlTag(row);
             row = row.replace(/^[\.\*\-]\s*/, '');
@@ -182,7 +232,7 @@ function handleUl(rows, start, reg) {
     return {
         html: html,
         index: i - 1
-    };
+    }
 }
 
 function handleOl(rows, start, reg) {
@@ -196,7 +246,7 @@ function handleOl(rows, start, reg) {
                 row = row.replace(reg, '');
             }
             if (!regLib.ol.test(row)) {
-                break;
+                break
             }
             row = replaceHtmlTag(row);
             row = row.replace(/^\d+\.\s*/, '');
@@ -208,7 +258,7 @@ function handleOl(rows, start, reg) {
     return {
         html: html,
         index: i - 1
-    };
+    }
 }
 
 
@@ -224,7 +274,7 @@ function handlePre(rows, start) {
         for (; i < rows.length; i++) {
             var row = rows[i];
             if (regLib.code.test(row)) {
-                break;
+                break
             }
             row = replaceHtmlTag(row);
             html.push(row + '\n');
@@ -235,7 +285,7 @@ function handlePre(rows, start) {
     return {
         html: html,
         index: i
-    };
+    }
 }
 
 function handleTable(rows, start) {
@@ -259,7 +309,7 @@ function handleTable(rows, start) {
         for (; i < rows.length; i++) {
             var row = rows[i];
             if (!regLib.table.test(row)) {
-                break;
+                break
             }
             row = replaceHtmlTag(row);
             html.push(handleTr(row, tdAlign));
@@ -270,7 +320,7 @@ function handleTable(rows, start) {
     return {
         html: html,
         index: i - 1
-    };
+    }
 }
 
 function handleTr(txt, align) {
@@ -280,7 +330,7 @@ function handleTr(txt, align) {
         tr += '<td style="text-align:' + align[i] + '">' + handleInlineSet(arr[i]) + '</td>';
     }
     tr += '</tr>';
-    return tr;
+    return tr
 }
 
 function handleTdAlign(txt) {
@@ -295,7 +345,7 @@ function handleTdAlign(txt) {
             align.push('left');
         }
     }
-    return align;
+    return align
 }
 
 function handleTitle(txt, toc) {
@@ -303,13 +353,13 @@ function handleTitle(txt, toc) {
         var hno = $1.length;
         $2 = replaceHtmlTag($2);
         toc.push('<a class="mdeditor-toc-' + hno + '" href="#' + $2 + '">' + $2 + '</a>');
-        return '<h' + hno + ' id="' + $2 + '" >' + $2 + '</h' + hno + '>';
-    });
+        return '<h' + hno + ' id="' + $2 + '" >' + $2 + '</h' + hno + '>'
+    })
 }
 
 function handleParagraph(txt) {
     txt = replaceHtmlTag(txt);
-    return '<p>' + handleInlineSet(txt) + '</p>';
+    return '<p>' + handleInlineSet(txt) + '</p>'
 }
 
 function handleInlineSet(txt) {
@@ -318,62 +368,58 @@ function handleInlineSet(txt) {
     txt = handleLink(txt);
     txt = handleBold(txt);
     txt = handleItalic(txt);
-    return txt;
+    return txt
 }
 
 function handleImg(txt) {
     return txt.replace(regLib.img, function (match, $1, $2) {
-        return '<img class="mdeditor-img" alt="' + $1 + '" src="' + $2 + '">';
-    });
+        return '<img class="mdeditor-img" alt="' + $1 + '" src="' + $2 + '">'
+    })
 }
 
 function handleLink(txt) {
-    
-    return txt.replace(regLib.a, function (txt, $1, $2) {
-        return '<a href="' + $2 + '" target="_blank">' + handleBold($1.replace(/\\([\(\)\[\])])/g, '$1')) + '</a>';
-    });
+
+    return txt.replace(regLib.a, function (txt, $1, $2, $3) {
+        return '<a href="' + $3 + '" target="_blank">' + handleBold($1.replace(/\\([\(\)\[\])])/g, '$1')) + '</a>'
+    })
 }
 
 function handleBold(txt) {
-    
+
     return txt.replace(regLib.b, function (match, $1) {
-        return '<b>' + $1 + '</b>';
-    });
+        return '<b>' + $1 + '</b>'
+    })
 }
 
 function handleItalic(txt) {
-    
+
     return txt.replace(regLib.i, function (match, $1) {
-        return '<i>' + $1 + '</i>';
-    });
+        return '<i>' + $1 + '</i>'
+    })
 }
 
 function handleInlineCode(txt) {
-    
+
     return txt.replace(regLib.inline_code, function (txt, $1) {
-        return '<span class="mdeditor-inline-code">' + $1 + '</span>';
-    });
+        return '<span class="mdeditor-inline-code">' + $1 + '</span>'
+    })
 }
 
 function replaceHtmlTag(txt) {
-    return txt.replace(/\</g, '&lt;').replace(/\>/g, '&gt;');
-}
-
-function removeSpace(txt) {
-    return txt.replace(/\u200B/g, '')
+    return txt.replace(/\</g, '&lt;').replace(/\>/g, '&gt;')
 }
 
 function mdToHtml(md) {
     var rows = md.match(/.+/mg) || [],
         html = [],
         rowsCount = rows.length,
-        toc=[],
+        toc = [],
         rowsStart = 0;
 
     if (rowsCount > 0) {
 
         for (var i = rowsStart; i < rowsCount; i++) {
-            var row = removeSpace(rows[i]);
+            var row = rows[i];
             if (regLib.title.test(row)) {
                 html.push(handleTitle(row, toc));
 
@@ -411,38 +457,46 @@ function mdToHtml(md) {
         }
     }
 
-    return html;
+    return html
 }
 
 /**
  * Created by qinsx on 2017/6/13.
  */
 
-var events = {};
 function eventsMixin(mdeditor) {
 
     mdeditor.prototype.on = function (eventName, cb) {
-        ( events[eventName] || (events[eventName] = [])).push(cb);
+        ( this._events[eventName] || (this._events[eventName] = [])).push(cb);
         this.el[0].addEventListener(eventName, cb);
     };
 
     mdeditor.prototype.trigger = function (eventName) {
         var md = this;
         var params = Array.prototype.slice.call(arguments, 1);
-        if (events[eventName]) {
-            events[eventName].forEach(function (cb) {
+        if (this._events[eventName]) {
+            this._events[eventName].forEach(function (cb) {
                 cb.apply(md, params);
             });
         }
     };
 }
 
-var lastRow = null;
 
 function initEvent(md) {
+    md._events = [];
+    md._lastRow = null;
+    md._value = [];
     md.on('keydown', function keydown(e) {
-        if (e.keyCode === 13) {
+        if (!e.shiftKey && e.keyCode === 13) {
             e.preventDefault();
+            md.addRow();
+        }
+    });
+    md.on('input', function (e) {
+        //console.log(md.el.children().length)
+        if (!md.el.children().length) {
+            md.el.empty();
             md.addRow();
         }
     });
@@ -450,47 +504,101 @@ function initEvent(md) {
     md.on('rowchange', function rowchange(oldRow, newRow) {
         //console.log(oldRow,newRow)
         if (oldRow && !oldRow.hasAttribute('md')) {
-            var md = oldRow.textContent;
-            if (hasContent(md)) {
-                var mdHtml = mdToHtml(md);
-                oldRow.innerHTML = mdHtml.join('') + '<div style="display: none">' + md + '</div>';
+            var text = oldRow.textContent;
+            if (hasContent(text)) {
+                md._value[oldRow.getAttribute('row')] = text;
+                var html = mdToHtml(text);
+                oldRow.innerHTML = html.join('');
                 oldRow.setAttribute('md', 1);
             }
         }
         if (newRow && newRow.hasAttribute('md')) {
-            newRow.innerHTML = newRow.lastChild.textContent;
+            var rowNo = newRow.getAttribute('row');
+            newRow.innerHTML = md._value[rowNo];
             newRow.removeAttribute('md');
-            setCursor(newRow.childNodes[0], newRow.lastChild.textContent.length);
+            setCursor(newRow, md._value[rowNo].length);
         }
 
     });
     document.addEventListener('selectionchange', function selectionchange() {
-        var row = closestRow(getCursorNode(), md.el[0]);
-        console.log('row',row);
-        console.log('last',lastRow);
 
-        if (row) {
-            if (lastRow && lastRow.getAttribute('row') !== row.getAttribute('row')) {
-                md.trigger('rowchange', lastRow, row);
-            } else if (!lastRow) {
-                md.trigger('rowchange', lastRow, row);
+        if (window.getSelection().isCollapsed) {
+            var row = closestRow(getCursorNode(), md.el[0]);
+
+            if (row) {
+                if (md._lastRow && md._lastRow.getAttribute('row') !== row.getAttribute('row')) {
+                    md.trigger('rowchange', md._lastRow, row);
+                } else if (!md._lastRow) {
+                    md.trigger('rowchange', md._lastRow, row);
+                }
+            } else if (md._lastRow) {   // 离开编辑器
+                md.trigger('rowchange', md._lastRow);
             }
-        } else if (lastRow) {   // 离开编辑器
-            md.trigger('rowchange', lastRow);
+            md._lastRow = row;
         }
-        lastRow = row;
+
+
     });
+}
+
+/**
+ * Created by qinsx on 2017/6/13.
+ */
+function rowMixin(mdeditor) {
+    mdeditor.prototype.addRow = function () {
+        var txtNode = getCursorNode();
+
+
+        var offset = getCursorOffset();
+        var appended;
+        var appendNode = ['div', {
+            attrs: {
+                'row': this._rowNo
+            },
+            innerHTML: '<br>'
+        }];
+
+
+        var row;
+        if (isTextNode(txtNode)) {
+            row = closestRow(txtNode, this.el[0]);
+            while (txtNode.previousSibling) {
+                offset += txtNode.previousSibling.textContent.length;
+                txtNode = txtNode.previousSibling;
+            }
+        }
+
+
+        if (offset === 0) {
+            appended = this.el.prepend(appendNode);
+        } else if (row) {
+            var rowTxt = row.textContent;
+            row.textContent = rowTxt.slice(0, offset);
+            var newRowTxt = rowTxt.slice(offset);
+            appendNode[1].innerHTML = newRowTxt === '' ? '<br>' : newRowTxt;
+            appended = el$1(row).insertAfter(appendNode);
+        }
+        if (appended) {
+            setCursor(appended, 0);
+            this._rowNo++;
+        }
+    };
+}
+
+function initRow(md) {
+    md._rowNo = 0;
 }
 
 function initMixin(mdeditor) {
     mdeditor.prototype._init = function (id, options) {
 
-
+        var md = this;
         if (id) {
             this.el = el$1(id);
             this.el.attr('contenteditable', true);
-            this.addRow();
-            initEvent(this);
+            initRow(md);
+            initEvent(md);
+            md.addRow();
         }
 
         this.options = options;
@@ -510,24 +618,6 @@ function initGlobalApi(mdeditor) {
 /**
  * Created by qinsx on 2017/6/13.
  */
-var row = 0;
-
-function mixin(mdeditor) {
-    mdeditor.prototype.addRow = function () {
-        row++;
-        var appended = this.el.append(['div', {
-            attrs: {
-                'row': row
-            },
-            innerHTML: '<br>'
-        }]);
-        setCursor(appended, 1);
-    };
-}
-
-/**
- * Created by qinsx on 2017/6/13.
- */
 
 
 function mdeditor(options) {
@@ -535,10 +625,8 @@ function mdeditor(options) {
 }
 initGlobalApi(mdeditor);
 initMixin(mdeditor);
-
 eventsMixin(mdeditor);
-
-mixin(mdeditor);
+rowMixin(mdeditor);
 
 return mdeditor;
 

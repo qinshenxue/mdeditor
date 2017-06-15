@@ -27,23 +27,42 @@ function createElement() {
 
 
 function el(selector) {
-    this[0] = document.querySelector(selector)
+    if (typeof selector === 'string') {
+        this[0] = document.querySelector(selector)
+    } else if (selector instanceof HTMLElement) {
+        this[0] = selector
+    }
 }
 el.prototype.insertAfter = function () {
-    this[0].parentNode.insertBefore(createElement.apply(null, arguments), this[0].nextSibling)
+    var brother = createElement.apply(null, arguments)
+    this[0].parentNode.insertBefore(brother, this[0].nextSibling)
+    return brother
 }
 el.prototype.insertBefore = function () {
-    this[0].parentNode.insertBefore(createElement.apply(null, arguments), this[0])
+    var brother = createElement.apply(null, arguments)
+    this[0].parentNode.insertBefore(brother, this[0])
+    return brother
 }
 
 el.prototype.prepend = function () {
-    this[0].insertBefore(createElement.apply(null, arguments), this[0].firstChild)
+    var child = createElement.apply(null, arguments)
+    this[0].insertBefore(child, this[0].firstChild)
+    return child
 }
 
 el.prototype.append = function () {
     var child = createElement.apply(null, arguments)
     this[0].appendChild(child)
     return child
+}
+el.prototype.empty = function () {
+    this[0].innerHTML = ''
+}
+el.prototype.children = function () {
+    return this[0].childNodes
+}
+el.prototype.text = function () {
+    return this[0].textContent
 }
 
 el.prototype.attr = function (name, value) {
