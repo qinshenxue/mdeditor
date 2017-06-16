@@ -12,9 +12,6 @@
     padding: 10px;
 }
 
-.mdeditor [row] {
-    background: #f9f9f9;
-}
 
 .mdeditor::-webkit-scrollbar {
     width: 8px;
