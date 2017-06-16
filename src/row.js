@@ -1,50 +1,56 @@
 /**
  * Created by qinsx on 2017/6/13.
  */
-import {
-    setCursor, getCursorOffset, closestRow, getCursorNode,
-    isTextNode
-} from './util'
 import  el from './el'
 
 export function rowMixin(mdeditor) {
 
 
     mdeditor.prototype.addRow = function () {
-        var txtNode = getCursorNode()
 
 
-        var offset = getCursorOffset()
-        var appended
-        var appendNode = ['div', {
+        var offset = this.cursor.offset
+        var newRow
+        var newRowData = ['div', {
             attrs: {
                 'row': this._rowNo
             },
             innerHTML: '<br>'
         }]
 
+        var cursorRow = this.cursor.closestRow()
 
-        var row
-        if (isTextNode(txtNode)) {
-            row = closestRow(txtNode, this.el[0])
-            while (txtNode.previousSibling) {
-                offset += txtNode.previousSibling.textContent.length
-                txtNode = txtNode.previousSibling
+        /*  var row
+         if (isTextNode(txtNode)) {
+         row = closestRow(txtNode, this.el[0])
+         while (txtNode.previousSibling) {
+         offset += txtNode.previousSibling.textContent.length
+         txtNode = txtNode.previousSibling
+         }
+         }
+         */
+
+        if (cursorRow) {
+            var rowTxt = cursorRow.textContent
+            if (offset === 0 && rowTxt !== '') {
+                newRow = el(cursorRow).insertBefore(newRowData)
+            } else if (rowTxt === '') {
+                newRow = el(cursorRow).insertAfter(newRowData)
+            } else {
+                cursorRow.textContent = rowTxt.slice(0, offset)
+                var newRowTxt = rowTxt.slice(offset)
+                if (newRowTxt !== '') {
+                    newRowData[1].innerHTML = newRowTxt
+                }
+                newRow = el(cursorRow).insertAfter(newRowData)
             }
+
+        } else if (offset === 0) {
+            newRow = this.el.prepend(newRowData)
         }
 
-
-        if (offset === 0) {
-            appended = this.el.prepend(appendNode)
-        } else if (row) {
-            var rowTxt = row.textContent
-            row.textContent = rowTxt.slice(0, offset)
-            var newRowTxt = rowTxt.slice(offset)
-            appendNode[1].innerHTML = newRowTxt === '' ? '<br>' : newRowTxt
-            appended = el(row).insertAfter(appendNode)
-        }
-        if (appended) {
-            setCursor(appended, 0)
+        if (newRow) {
+            this.cursor.set(newRow, 0)
             this._rowNo++
         }
     }

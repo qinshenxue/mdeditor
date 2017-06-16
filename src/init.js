@@ -11,10 +11,10 @@ export function initMixin(mdeditor) {
         if (id) {
             this.el = el(id)
             this.el.attr('contenteditable', true)
+            this.cursor = new cursor(this.el[0])
             initRow(md)
             initEvent(md)
             md.addRow()
-            this.cursor = new cursor(this.el[0])
         }
 
         this.options = options

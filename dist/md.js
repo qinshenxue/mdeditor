@@ -82,85 +82,6 @@ var el$1 = function (selector) {
     return new el(selector)
 };
 
-/**
- * Created by qinsx on 2017/6/13.
- */
-
-function extend(source, dest) {
-    var destKeys = Object.keys(dest);
-    var i = destKeys.length;
-    while (i--) {
-        source[destKeys[i]] = dest[destKeys[i]];
-    }
-}
-
-
-function setCursor(node, offset) {
-    var selection = window.getSelection();
-    var range = document.createRange();
-    if (offset === undefined) {
-        offset = node.textContent.length;
-    }
-    range.setStart(node.childNodes[0], offset);
-    range.collapse(true);
-    selection.removeAllRanges();
-    selection.addRange(range);
-}
-
-function getCursorOffset() {
-    return window.getSelection().focusOffset
-    /* if (!sel.focusNode) {
-     return 0
-     }
-     var node = sel.focusNode.parentNode
-     var nodeName = node.nodeName
-     if (nodeName.match(/^H(\d)$/)) {
-     offset += Number(RegExp.$1)
-     } else if (nodeName.match(/^A$/)) {
-     offset += 1
-     }
-     while (node.previousSibling) {
-     node = node.previousSibling
-     nodeName = node.nodeName
-     if (nodeName === 'A') {
-     offset += 4 + node.textContent.length + node.getAttribute('href').length
-     } else if (nodeName === '#text') {
-     offset += node.textContent.length
-     }
-     }
-     return offset + 1*/
-    // window.getSelection().focusOffset
-}
-
-function closestRow(node, rootNode) {
-    if (!node) {
-        return
-    }
-    if (node.nodeName === '#text') {
-        node = node.parentNode;
-    }
-    while ('hasAttribute' in node && !node.hasAttribute('row')) {
-        node = node.parentNode;
-    }
-    if (node.parentNode && node.parentNode.isEqualNode(rootNode)) {
-        return node
-    }
-    return null
-}
-
-
-function getCursorNode() {
-    return window.getSelection().focusNode
-}
-
-function hasContent(txt) {
-    return !/^[\u200B\s]*$/.test(txt)
-}
-
-function isTextNode(node) {
-    return node && node.nodeName === '#text'
-}
-
 var regLib = {
     code: /^\`{3}.*$/,
     ul: /^[\.\-\*]\s+.+$/,
@@ -493,15 +414,39 @@ function initEvent(md) {
     md._value = [];
     md.on('keydown', function keydown(e) {
         if (e.keyCode === 13) {
+            if (md.cursor.in('PRE')) {
+                return
+            }
             e.preventDefault();
             md.addRow();
         }
     });
-    md.on('input', function (e) {
-        //console.log(md.el.children().length)
+    md.on('input', function () {
+        var row = md.cursor.closest('[row]');
+        if (row) {
+            var txt = row.textContent;
+            if (row.hasAttribute('code')) {
+                txt = '```\n' + txt + '\n```';
+            }
+            md._value[row.getAttribute('row')] = txt;
+        }
+
         if (!md.el.children().length) {
             md.el.empty();
             md.addRow();
+        }
+    });
+
+    md.on('dblclick', function dblclick() {
+
+        if (md.cursor.in('CODE')) {
+            //   md.cursor.row
+            var row = md.cursor.closest('[row]');
+            if (row) {
+                var rowNo = row.getAttribute('row');
+                row.innerHTML = md._value[rowNo];
+                row.removeAttribute('md');
+            }
         }
     });
 
@@ -509,8 +454,8 @@ function initEvent(md) {
         //console.log(oldRow,newRow)
         if (oldRow && !oldRow.hasAttribute('md')) {
             var text = oldRow.textContent;
-            if (hasContent(text)) {
-                md._value[oldRow.getAttribute('row')] = text;
+            if (text !== '') {
+
                 var html = mdToHtml(text).join('');
                 oldRow.innerHTML = html;
                 if (/^\<pre.+\<\/pre\>$/.test(html)) {
@@ -519,17 +464,18 @@ function initEvent(md) {
                 oldRow.setAttribute('md', 1);
             }
         }
+
         if (newRow && newRow.hasAttribute('md') && !newRow.hasAttribute('code')) {
             var rowNo = newRow.getAttribute('row');
             newRow.innerHTML = md._value[rowNo];
             newRow.removeAttribute('md');
-            setCursor(newRow, md._value[rowNo].length);
+            md.cursor.set(newRow, md._value[rowNo].length);
         }
 
     });
-    document.addEventListener('selectionchange', function selectionchange(e) {
+    document.addEventListener('selectionchange', function selectionchange() {
         if (window.getSelection().isCollapsed) {
-            var row = closestRow(getCursorNode(), md.el[0]);
+            var row = md.cursor.closestRow();
 
             if (row) {
                 if (md._lastRow && md._lastRow.getAttribute('row') !== row.getAttribute('row')) {
@@ -553,45 +499,51 @@ function initEvent(md) {
 function rowMixin(mdeditor) {
 
 
-    mdeditor.prototype.parseRow = function (htmlArr) {
-
-    };
-
     mdeditor.prototype.addRow = function () {
-        var txtNode = getCursorNode();
 
 
-        var offset = getCursorOffset();
-        var appended;
-        var appendNode = ['div', {
+        var offset = this.cursor.offset;
+        var newRow;
+        var newRowData = ['div', {
             attrs: {
                 'row': this._rowNo
             },
             innerHTML: '<br>'
         }];
 
+        var cursorRow = this.cursor.closestRow();
 
-        var row;
-        if (isTextNode(txtNode)) {
-            row = closestRow(txtNode, this.el[0]);
-            while (txtNode.previousSibling) {
-                offset += txtNode.previousSibling.textContent.length;
-                txtNode = txtNode.previousSibling;
+        /*  var row
+         if (isTextNode(txtNode)) {
+         row = closestRow(txtNode, this.el[0])
+         while (txtNode.previousSibling) {
+         offset += txtNode.previousSibling.textContent.length
+         txtNode = txtNode.previousSibling
+         }
+         }
+         */
+
+        if (cursorRow) {
+            var rowTxt = cursorRow.textContent;
+            if (offset === 0 && rowTxt !== '') {
+                newRow = el$1(cursorRow).insertBefore(newRowData);
+            } else if (rowTxt === '') {
+                newRow = el$1(cursorRow).insertAfter(newRowData);
+            } else {
+                cursorRow.textContent = rowTxt.slice(0, offset);
+                var newRowTxt = rowTxt.slice(offset);
+                if (newRowTxt !== '') {
+                    newRowData[1].innerHTML = newRowTxt;
+                }
+                newRow = el$1(cursorRow).insertAfter(newRowData);
             }
+
+        } else if (offset === 0) {
+            newRow = this.el.prepend(newRowData);
         }
 
-
-        if (offset === 0) {
-            appended = this.el.prepend(appendNode);
-        } else if (row) {
-            var rowTxt = row.textContent;
-            row.textContent = rowTxt.slice(0, offset);
-            var newRowTxt = rowTxt.slice(offset);
-            appendNode[1].innerHTML = newRowTxt === '' ? '<br>' : newRowTxt;
-            appended = el$1(row).insertAfter(appendNode);
-        }
-        if (appended) {
-            setCursor(appended, 0);
+        if (newRow) {
+            this.cursor.set(newRow, 0);
             this._rowNo++;
         }
     };
@@ -601,71 +553,90 @@ function initRow(md) {
     md._rowNo = 0;
 }
 
-    /**
-     * Created by qinsx on 2017/6/14.
-     */
+/**
+ * Created by qinsx on 2017/6/14.
+ */
 
-    var def = Object.defineProperty;
+var def = Object.defineProperty;
 
-    function cursor(editor) {
+function cursor(editor) {
 
-        this.editor = editor;
+    this.editor = editor;
 
-        var me = this;
-        this.path = [];
+    var me = this;
+    this.path = [];
 
-        def(this, 'sel', {
-            get: function () {
-                return window.getSelection()
-            }
-        });
-        def(this, 'at', {
-            get: function () {
-                return me._inside()
-            }
-        });
+    def(this, 'sel', {
+        get: function () {
+            return window.getSelection()
+        }
+    });
+    def(this, 'node', {
+        get: function () {
+            return me.sel.focusNode
+        }
+    });
+    def(this, 'offset', {
+        get: function () {
+            return me.sel.focusOffset
+        }
+    });
 
+}
+
+cursor.prototype._inside = function () {
+    var focusNode = this.sel.focusNode;
+    var _path = [focusNode];
+    while (focusNode && !focusNode.isEqualNode(this.editor)) {
+        focusNode = focusNode.parentNode;
+        _path.push(focusNode);
     }
+    this.path = _path;
+    return !!focusNode && focusNode.isEqualNode(this.editor)
+};
 
-    cursor.prototype._inside = function () {
-        var focusNode = this.sel.focusNode;
-        var _path = [focusNode];
-        while (focusNode && !focusNode.isEqualNode(this.editor)) {
-            focusNode = focusNode.parentNode;
-            _path.push(focusNode);
-        }
-        this.path = _path;
-        return !!focusNode && focusNode.isEqualNode(this.editor)
-    };
-
-    cursor.prototype.set = function () {
-    };
-    cursor.prototype.closest = function () {
-        if (this._inside()) {
-
-        }
-    };
-    cursor.prototype.in = function (nodeName) {
-        if (this._inside()) {
-            var _path = this.path;
-            var i = _path.length;
-            while (i--) {
-                if (_path[i].nodeName === nodeName) {
-                    return true
-                }
+cursor.prototype.closest = function (selector) {
+    var match = null;
+    if (this._inside()) {
+        this.path.some(function (p) {
+            if (p.matches && p.matches(selector)) {
+                match = p;
+                return true
             }
-            return false
-        } else {
-            return false
+        });
+    }
+    return match
+};
+
+cursor.prototype.closestRow = function () {
+    return this.closest('[row]')
+};
+
+cursor.prototype.in = function (nodeName) {
+    if (this._inside()) {
+        var _path = this.path;
+        var i = _path.length;
+        while (i--) {
+            if (_path[i].nodeName === nodeName) {
+                return true
+            }
         }
-    };
-    cursor.prototype.moveTo = function () {
+        return false
+    }
+    return false
+};
 
-    };
-
-    cursor.prototype.offset = function () {
-
-    };
+cursor.prototype.set = function (node, offset) {
+    var selection = window.getSelection();
+    var range = document.createRange();
+    if (offset === undefined) {
+        offset = node.textContent.length;
+    }
+    range.setStart(node.childNodes[0], offset);
+    range.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(range);
+};
 
 function initMixin(mdeditor) {
     mdeditor.prototype._init = function (id, options) {
@@ -674,16 +645,28 @@ function initMixin(mdeditor) {
         if (id) {
             this.el = el$1(id);
             this.el.attr('contenteditable', true);
+            this.cursor = new cursor(this.el[0]);
             initRow(md);
             initEvent(md);
             md.addRow();
-            this.cursor = new cursor(this.el[0]);
         }
 
         this.options = options;
 
     };
     mdeditor.prototype._init.prototype = mdeditor.prototype;
+}
+
+/**
+ * Created by qinsx on 2017/6/13.
+ */
+
+function extend(source, dest) {
+    var destKeys = Object.keys(dest);
+    var i = destKeys.length;
+    while (i--) {
+        source[destKeys[i]] = dest[destKeys[i]];
+    }
 }
 
 /**

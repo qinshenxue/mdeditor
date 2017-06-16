@@ -2,9 +2,6 @@
  * Created by qinsx on 2017/6/13.
  */
 
-import  {
-    getCursorNode, closestRow, hasContent, setCursor
-}  from './util'
 import  {mdToHtml} from './markdown'
 
 export function eventsMixin(mdeditor) {
@@ -32,15 +29,39 @@ export function initEvent(md) {
     md._value = []
     md.on('keydown', function keydown(e) {
         if (e.keyCode === 13) {
+            if (md.cursor.in('PRE')) {
+                return
+            }
             e.preventDefault()
             md.addRow()
         }
     })
     md.on('input', function () {
-        //console.log(md.el.children().length)
+        var row = md.cursor.closest('[row]')
+        if (row) {
+            var txt = row.textContent
+            if (row.hasAttribute('code')) {
+                txt = '```\n' + txt + '\n```'
+            }
+            md._value[row.getAttribute('row')] = txt
+        }
+
         if (!md.el.children().length) {
             md.el.empty()
             md.addRow()
+        }
+    })
+
+    md.on('dblclick', function dblclick() {
+
+        if (md.cursor.in('CODE')) {
+            //   md.cursor.row
+            var row = md.cursor.closest('[row]')
+            if (row) {
+                var rowNo = row.getAttribute('row')
+                row.innerHTML = md._value[rowNo]
+                row.removeAttribute('md')
+            }
         }
     })
 
@@ -48,8 +69,8 @@ export function initEvent(md) {
         //console.log(oldRow,newRow)
         if (oldRow && !oldRow.hasAttribute('md')) {
             var text = oldRow.textContent
-            if (hasContent(text)) {
-                md._value[oldRow.getAttribute('row')] = text
+            if (text !== '') {
+
                 var html = mdToHtml(text).join('')
                 oldRow.innerHTML = html
                 if (/^\<pre.+\<\/pre\>$/.test(html)) {
@@ -58,17 +79,18 @@ export function initEvent(md) {
                 oldRow.setAttribute('md', 1)
             }
         }
+
         if (newRow && newRow.hasAttribute('md') && !newRow.hasAttribute('code')) {
             var rowNo = newRow.getAttribute('row')
             newRow.innerHTML = md._value[rowNo]
             newRow.removeAttribute('md')
-            setCursor(newRow, md._value[rowNo].length)
+            md.cursor.set(newRow, md._value[rowNo].length)
         }
 
     })
     document.addEventListener('selectionchange', function selectionchange() {
         if (window.getSelection().isCollapsed) {
-            var row = closestRow(getCursorNode(), md.el[0])
+            var row = md.cursor.closestRow()
 
             if (row) {
                 if (md._lastRow && md._lastRow.getAttribute('row') !== row.getAttribute('row')) {

@@ -62,7 +62,7 @@ gulp.task('lint', () => {
         .pipe(eslint.format())
 });
 
-gulp.task('build', ['lint'], function () {
+gulp.task('build', function () {
     return rollup({
         entry: 'src/index.js',
 

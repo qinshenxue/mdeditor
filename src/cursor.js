@@ -16,9 +16,14 @@ function cursor(editor) {
             return window.getSelection()
         }
     })
-    def(this, 'at', {
+    def(this, 'node', {
         get: function () {
-            return me._inside()
+            return me.sel.focusNode
+        }
+    })
+    def(this, 'offset', {
+        get: function () {
+            return me.sel.focusOffset
         }
     })
 
@@ -35,13 +40,23 @@ cursor.prototype._inside = function () {
     return !!focusNode && focusNode.isEqualNode(this.editor)
 }
 
-cursor.prototype.set = function () {
-}
-cursor.prototype.closest = function () {
+cursor.prototype.closest = function (selector) {
+    var match = null
     if (this._inside()) {
-        return false
+        this.path.some(function (p) {
+            if (p.matches && p.matches(selector)) {
+                match = p
+                return true
+            }
+        })
     }
+    return match
 }
+
+cursor.prototype.closestRow = function () {
+    return this.closest('[row]')
+}
+
 cursor.prototype.in = function (nodeName) {
     if (this._inside()) {
         var _path = this.path
@@ -52,14 +67,21 @@ cursor.prototype.in = function (nodeName) {
             }
         }
         return false
-    } else {
-        return false
     }
-}
-cursor.prototype.moveTo = function () {
+    return false
 }
 
-cursor.prototype.offset = function () {
+cursor.prototype.set = function (node, offset) {
+    var selection = window.getSelection()
+    var range = document.createRange()
+    if (offset === undefined) {
+        offset = node.textContent.length
+    }
+    range.setStart(node.childNodes[0], offset)
+    range.collapse(true)
+    selection.removeAllRanges()
+    selection.addRange(range)
 }
+
 
 export default cursor
