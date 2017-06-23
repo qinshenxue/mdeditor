@@ -423,10 +423,14 @@ function initEvent(md) {
     });
     md.on('input', function () {
         var row = md.cursor.closest('[row]');
-        if (row) {
+        if (row && (!row.hasAttribute('md') || md.cursor.in('CODE'))) {
             var txt = row.textContent;
             if (row.hasAttribute('code')) {
-                txt = '```\n' + txt + '\n```';
+                txt = '```\n' + txt;
+                if (!/\n$/.test(txt)) {
+                    txt += '\n';
+                }
+                txt += '```';
             }
             md._value[row.getAttribute('row')] = txt;
         }
@@ -437,28 +441,27 @@ function initEvent(md) {
         }
     });
 
-    md.on('dblclick', function dblclick() {
+    md.on('dblclick', function dblclick(e) {
 
         if (md.cursor.in('CODE')) {
-            //   md.cursor.row
             var row = md.cursor.closest('[row]');
             if (row) {
                 var rowNo = row.getAttribute('row');
                 row.innerHTML = md._value[rowNo];
                 row.removeAttribute('md');
+                row.removeAttribute('code');
             }
         }
     });
 
     md.on('rowchange', function rowchange(oldRow, newRow) {
-        //console.log(oldRow,newRow)
         if (oldRow && !oldRow.hasAttribute('md')) {
             var text = oldRow.textContent;
             if (text !== '') {
 
                 var html = mdToHtml(text).join('');
                 oldRow.innerHTML = html;
-                if (/^\<pre.+\<\/pre\>$/.test(html)) {
+                if (/^\<pre(.+\n?)+\<\/pre\>$/.test(html)) {
                     oldRow.setAttribute('code', 1);
                 }
                 oldRow.setAttribute('md', 1);
@@ -559,7 +562,7 @@ function initRow(md) {
 
 var def = Object.defineProperty;
 
-function cursor(editor) {
+    function Cursor(editor) {
 
     this.editor = editor;
 
@@ -573,6 +576,9 @@ function cursor(editor) {
     });
     def(this, 'node', {
         get: function () {
+            if (me.sel.type === 'Range') {
+                return me.sel.anchorNode
+            }
             return me.sel.focusNode
         }
     });
@@ -584,18 +590,18 @@ function cursor(editor) {
 
 }
 
-cursor.prototype._inside = function () {
-    var focusNode = this.sel.focusNode;
-    var _path = [focusNode];
-    while (focusNode && !focusNode.isEqualNode(this.editor)) {
-        focusNode = focusNode.parentNode;
-        _path.push(focusNode);
+    Cursor.prototype._inside = function () {
+        var node = this.node;
+        var _path = [node];
+        while (node && !node.isEqualNode(this.editor)) {
+            node = node.parentNode;
+            _path.push(node);
     }
     this.path = _path;
-    return !!focusNode && focusNode.isEqualNode(this.editor)
+        return !!node && node.isEqualNode(this.editor)
 };
 
-cursor.prototype.closest = function (selector) {
+    Cursor.prototype.closest = function (selector) {
     var match = null;
     if (this._inside()) {
         this.path.some(function (p) {
@@ -608,11 +614,11 @@ cursor.prototype.closest = function (selector) {
     return match
 };
 
-cursor.prototype.closestRow = function () {
+    Cursor.prototype.closestRow = function () {
     return this.closest('[row]')
 };
 
-cursor.prototype.in = function (nodeName) {
+    Cursor.prototype.in = function (nodeName) {
     if (this._inside()) {
         var _path = this.path;
         var i = _path.length;
@@ -626,7 +632,7 @@ cursor.prototype.in = function (nodeName) {
     return false
 };
 
-cursor.prototype.set = function (node, offset) {
+    Cursor.prototype.set = function (node, offset) {
     var selection = window.getSelection();
     var range = document.createRange();
     if (offset === undefined) {
@@ -645,7 +651,7 @@ function initMixin(mdeditor) {
         if (id) {
             this.el = el$1(id);
             this.el.attr('contenteditable', true);
-            this.cursor = new cursor(this.el[0]);
+            this.cursor = new Cursor(this.el[0]);
             initRow(md);
             initEvent(md);
             md.addRow();

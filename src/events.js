@@ -38,10 +38,14 @@ export function initEvent(md) {
     })
     md.on('input', function () {
         var row = md.cursor.closest('[row]')
-        if (row) {
+        if (row && (!row.hasAttribute('md') || md.cursor.in('CODE'))) {
             var txt = row.textContent
             if (row.hasAttribute('code')) {
-                txt = '```\n' + txt + '\n```'
+                txt = '```\n' + txt
+                if (!/\n$/.test(txt)) {
+                    txt += '\n'
+                }
+                txt += '```'
             }
             md._value[row.getAttribute('row')] = txt
         }
@@ -52,28 +56,27 @@ export function initEvent(md) {
         }
     })
 
-    md.on('dblclick', function dblclick() {
+    md.on('dblclick', function dblclick(e) {
 
         if (md.cursor.in('CODE')) {
-            //   md.cursor.row
             var row = md.cursor.closest('[row]')
             if (row) {
                 var rowNo = row.getAttribute('row')
                 row.innerHTML = md._value[rowNo]
                 row.removeAttribute('md')
+                row.removeAttribute('code')
             }
         }
     })
 
     md.on('rowchange', function rowchange(oldRow, newRow) {
-        //console.log(oldRow,newRow)
         if (oldRow && !oldRow.hasAttribute('md')) {
             var text = oldRow.textContent
             if (text !== '') {
 
                 var html = mdToHtml(text).join('')
                 oldRow.innerHTML = html
-                if (/^\<pre.+\<\/pre\>$/.test(html)) {
+                if (/^\<pre(.+\n?)+\<\/pre\>$/.test(html)) {
                     oldRow.setAttribute('code', 1)
                 }
                 oldRow.setAttribute('md', 1)

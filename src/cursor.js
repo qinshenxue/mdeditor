@@ -4,7 +4,7 @@
 
 var def = Object.defineProperty
 
-function cursor(editor) {
+function Cursor(editor) {
 
     this.editor = editor
 
@@ -18,6 +18,9 @@ function cursor(editor) {
     })
     def(this, 'node', {
         get: function () {
+            if (me.sel.type === 'Range') {
+                return me.sel.anchorNode
+            }
             return me.sel.focusNode
         }
     })
@@ -29,18 +32,18 @@ function cursor(editor) {
 
 }
 
-cursor.prototype._inside = function () {
-    var focusNode = this.sel.focusNode
-    var _path = [focusNode]
-    while (focusNode && !focusNode.isEqualNode(this.editor)) {
-        focusNode = focusNode.parentNode
-        _path.push(focusNode)
+Cursor.prototype._inside = function () {
+    var node = this.node
+    var _path = [node]
+    while (node && !node.isEqualNode(this.editor)) {
+        node = node.parentNode
+        _path.push(node)
     }
     this.path = _path
-    return !!focusNode && focusNode.isEqualNode(this.editor)
+    return !!node && node.isEqualNode(this.editor)
 }
 
-cursor.prototype.closest = function (selector) {
+Cursor.prototype.closest = function (selector) {
     var match = null
     if (this._inside()) {
         this.path.some(function (p) {
@@ -53,11 +56,11 @@ cursor.prototype.closest = function (selector) {
     return match
 }
 
-cursor.prototype.closestRow = function () {
+Cursor.prototype.closestRow = function () {
     return this.closest('[row]')
 }
 
-cursor.prototype.in = function (nodeName) {
+Cursor.prototype.in = function (nodeName) {
     if (this._inside()) {
         var _path = this.path
         var i = _path.length
@@ -71,7 +74,7 @@ cursor.prototype.in = function (nodeName) {
     return false
 }
 
-cursor.prototype.set = function (node, offset) {
+Cursor.prototype.set = function (node, offset) {
     var selection = window.getSelection()
     var range = document.createRange()
     if (offset === undefined) {
@@ -84,4 +87,4 @@ cursor.prototype.set = function (node, offset) {
 }
 
 
-export default cursor
+export default Cursor
