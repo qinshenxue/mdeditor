@@ -37,7 +37,7 @@ export function initEvent(md) {
         }
     })
     md.on('input', function () {
-        var row = md.cursor.closest('[row]')
+        var row = md.cursor.closestRow()
         if (row && (!row.hasAttribute('md') || md.cursor.in('CODE'))) {
             var txt = row.textContent
             if (row.hasAttribute('code')) {
@@ -56,7 +56,7 @@ export function initEvent(md) {
         }
     })
 
-    md.on('dblclick', function dblclick(e) {
+    md.on('dblclick', function dblclick() {
 
         if (md.cursor.in('CODE')) {
             var row = md.cursor.closest('[row]')

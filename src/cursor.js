@@ -4,6 +4,8 @@
 
 var def = Object.defineProperty
 
+import el from './el'
+
 function Cursor(editor) {
 
     this.editor = editor
@@ -31,7 +33,11 @@ function Cursor(editor) {
     })
 
 }
-
+/**
+ * 鼠标是否在绑定的编辑器内
+ * @returns {boolean}
+ * @private
+ */
 Cursor.prototype._inside = function () {
     var node = this.node
     var _path = [node]
@@ -42,7 +48,11 @@ Cursor.prototype._inside = function () {
     this.path = _path
     return !!node && node.isEqualNode(this.editor)
 }
-
+/**
+ * 向上查找符合selector的节点
+ * @param selector css选择器
+ * @returns {*}
+ */
 Cursor.prototype.closest = function (selector) {
     var match = null
     if (this._inside()) {
@@ -56,6 +66,10 @@ Cursor.prototype.closest = function (selector) {
     return match
 }
 
+/**
+ * 查找光标所在的行
+ * @returns {el}
+ */
 Cursor.prototype.closestRow = function () {
     return this.closest('[row]')
 }
