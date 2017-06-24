@@ -636,7 +636,7 @@
 
     /**
      * 光标是否在nodeName中
-     * @param nodeName HtmlElment的nodeName，一般为大写
+     * @param nodeName HTMLElement的nodeName，一般为大写
      * @returns {boolean}
      */
     Cursor.prototype.in = function (nodeName) {
