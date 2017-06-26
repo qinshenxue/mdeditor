@@ -434,6 +434,8 @@ function initEvent(md) {
     md._lastRow = null;
     md._value = [];
     md.on('keydown', function keydown(e) {
+
+        // enter
         if (e.keyCode === 13) {
             if (md.cursor.in('PRE')) {
                 return
@@ -441,8 +443,10 @@ function initEvent(md) {
             e.preventDefault();
             md.addRow();
         }
+
     });
     md.on('input', function input() {
+
         var row = md.cursor.closestRow();
         if (row && (!row.hasAttr('md') || md.cursor.in('CODE'))) {
             var txt = row.text();
@@ -476,29 +480,37 @@ function initEvent(md) {
     });
 
     md.on('rowchange', function rowchange(oldRow, newRow) {
-        var appendText = '';
-        if (oldRow && !oldRow.hasAttr('md')) {
-            var text = oldRow.text();
-            if (text !== '') {
-                var html = mdToHtml(text).join('');
-                oldRow.html(html);
-                if (/^\<pre(.+\n?)+\<\/pre\>$/.test(html)) {
-                    oldRow.attr('code', 1);
-                }
-                oldRow.attr('md', 1);
-            }
+        var oldRemoved = null;
+
+        if (oldRow) {
             var oldRowNo = oldRow.attr('row');
-            if (!md.el.find('[row="' + oldRowNo + '"]') && md._value[oldRowNo]) {
-                appendText = md._value[oldRowNo];
+            if (!md.el.find('[row="' + oldRowNo + '"]')) {
+                oldRemoved = oldRowNo;
+            } else if (!oldRow.hasAttr('md')) {
+                var text = oldRow.text();
+                if (text !== '') {
+                    var html = mdToHtml(text).join('');
+                    oldRow.html(html);
+                    if (/^\<pre(.+\n?)+\<\/pre\>$/.test(html)) {
+                        oldRow.attr('code', 1);
+                    }
+                    oldRow.attr('md', 1);
+                }
             }
         }
 
         if (newRow && newRow.hasAttr('md') && !newRow.hasAttr('code')) {
-            var rowNo = newRow.attr('row');
-            md._value[rowNo] += appendText;
-            newRow.html(md._value[rowNo]);
+
+            var newRowNo = newRow.attr('row');
+            var newRowText = newRow.text();
+            if (oldRemoved) {
+                md._value[newRowNo] += md._value[oldRemoved];
+                md._value[oldRemoved] = '';
+            }
+
+            newRow.text(md._value[newRowNo]);
             newRow.removeAttr('md');
-            md.cursor.set(newRow[0], md._value[rowNo].length);
+            md.cursor.set(newRow[0], md._value[newRowNo].length);
         }
 
     });
@@ -559,11 +571,14 @@ function rowMixin(mdeditor) {
             } else if (rowTxt === '') {
                 newRow = curRow.insertAfter(newRowData);
             } else {
-                curRow.text(rowTxt.slice(0, offset));
+                var curRowTxt = rowTxt.slice(0, offset);
+                curRow.text(curRowTxt);
                 var newRowTxt = rowTxt.slice(offset);
                 if (newRowTxt !== '') {
                     newRowData[1].innerHTML = newRowTxt;
                 }
+                this._value[curRow.attr('row')] = curRowTxt;
+                this._value[this._rowNo] = newRowTxt;
                 newRow = curRow.insertAfter(newRowData);
             }
 

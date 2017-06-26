@@ -37,11 +37,14 @@ export function rowMixin(mdeditor) {
             } else if (rowTxt === '') {
                 newRow = curRow.insertAfter(newRowData)
             } else {
-                curRow.text(rowTxt.slice(0, offset))
+                var curRowTxt = rowTxt.slice(0, offset)
+                curRow.text(curRowTxt)
                 var newRowTxt = rowTxt.slice(offset)
                 if (newRowTxt !== '') {
                     newRowData[1].innerHTML = newRowTxt
                 }
+                this._value[curRow.attr('row')] = curRowTxt
+                this._value[this._rowNo] = newRowTxt
                 newRow = curRow.insertAfter(newRowData)
             }
 
