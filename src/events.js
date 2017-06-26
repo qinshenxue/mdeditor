@@ -36,18 +36,18 @@ export function initEvent(md) {
             md.addRow()
         }
     })
-    md.on('input', function () {
+    md.on('input', function input() {
         var row = md.cursor.closestRow()
-        if (row && (!row.hasAttribute('md') || md.cursor.in('CODE'))) {
-            var txt = row.textContent
-            if (row.hasAttribute('code')) {
+        if (row && (!row.hasAttr('md') || md.cursor.in('CODE'))) {
+            var txt = row.text()
+            if (row.hasAttr('code')) {
                 txt = '```\n' + txt
                 if (!/\n$/.test(txt)) {
                     txt += '\n'
                 }
                 txt += '```'
             }
-            md._value[row.getAttribute('row')] = txt
+            md._value[row.attr('row')] = txt
         }
 
         if (!md.el.children().length) {
@@ -59,35 +59,40 @@ export function initEvent(md) {
     md.on('dblclick', function dblclick() {
 
         if (md.cursor.in('CODE')) {
-            var row = md.cursor.closest('[row]')
+            var row = md.cursor.closestRow()
             if (row) {
-                var rowNo = row.getAttribute('row')
-                row.innerHTML = md._value[rowNo]
-                row.removeAttribute('md')
-                row.removeAttribute('code')
+                var rowNo = row.attr('row')
+                row.html(md._value[rowNo])
+                row.removeAttr('md')
+                row.removeAttr('code')
             }
         }
     })
 
     md.on('rowchange', function rowchange(oldRow, newRow) {
-        if (oldRow && !oldRow.hasAttribute('md')) {
-            var text = oldRow.textContent
+        var appendText = '';
+        if (oldRow && !oldRow.hasAttr('md')) {
+            var text = oldRow.text()
             if (text !== '') {
-
                 var html = mdToHtml(text).join('')
-                oldRow.innerHTML = html
+                oldRow.html(html)
                 if (/^\<pre(.+\n?)+\<\/pre\>$/.test(html)) {
-                    oldRow.setAttribute('code', 1)
+                    oldRow.attr('code', 1)
                 }
-                oldRow.setAttribute('md', 1)
+                oldRow.attr('md', 1)
+            }
+            var oldRowNo = oldRow.attr('row')
+            if (!md.el.find('[row="' + oldRowNo + '"]') && md._value[oldRowNo]) {
+                appendText = md._value[oldRowNo]
             }
         }
 
-        if (newRow && newRow.hasAttribute('md') && !newRow.hasAttribute('code')) {
-            var rowNo = newRow.getAttribute('row')
-            newRow.innerHTML = md._value[rowNo]
-            newRow.removeAttribute('md')
-            md.cursor.set(newRow, md._value[rowNo].length)
+        if (newRow && newRow.hasAttr('md') && !newRow.hasAttr('code')) {
+            var rowNo = newRow.attr('row')
+            md._value[rowNo] += appendText
+            newRow.html(md._value[rowNo])
+            newRow.removeAttr('md')
+            md.cursor.set(newRow[0], md._value[rowNo].length)
         }
 
     })
@@ -96,7 +101,7 @@ export function initEvent(md) {
             var row = md.cursor.closestRow()
 
             if (row) {
-                if (md._lastRow && md._lastRow.getAttribute('row') !== row.getAttribute('row')) {
+                if (md._lastRow && md._lastRow.attr('row') !== row.attr('row')) {
                     md.trigger('rowchange', md._lastRow, row)
                 } else if (!md._lastRow) {
                     md.trigger('rowchange', md._lastRow, row)

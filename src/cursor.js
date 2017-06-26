@@ -63,7 +63,7 @@ Cursor.prototype.closest = function (selector) {
             }
         })
     }
-    return match
+    return match ? new el(match) : match
 }
 
 /**
@@ -88,6 +88,11 @@ Cursor.prototype.in = function (nodeName) {
     return false
 }
 
+/**
+ * 设定光标位置
+ * @param node 光标所在的节点
+ * @param offset 光标偏移长度
+ */
 Cursor.prototype.set = function (node, offset) {
     var selection = window.getSelection()
     var range = document.createRange()

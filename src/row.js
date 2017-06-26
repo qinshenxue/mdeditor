@@ -18,7 +18,7 @@ export function rowMixin(mdeditor) {
             innerHTML: '<br>'
         }]
 
-        var cursorRow = this.cursor.closestRow()
+        var curRow = this.cursor.closestRow()
 
         /*  var row
          if (isTextNode(txtNode)) {
@@ -30,19 +30,19 @@ export function rowMixin(mdeditor) {
          }
          */
 
-        if (cursorRow) {
-            var rowTxt = cursorRow.textContent
+        if (curRow) {
+            var rowTxt = curRow.text()
             if (offset === 0 && rowTxt !== '') {
-                newRow = el(cursorRow).insertBefore(newRowData)
+                newRow = curRow.insertBefore(newRowData)
             } else if (rowTxt === '') {
-                newRow = el(cursorRow).insertAfter(newRowData)
+                newRow = curRow.insertAfter(newRowData)
             } else {
-                cursorRow.textContent = rowTxt.slice(0, offset)
+                curRow.text(rowTxt.slice(0, offset))
                 var newRowTxt = rowTxt.slice(offset)
                 if (newRowTxt !== '') {
                     newRowData[1].innerHTML = newRowTxt
                 }
-                newRow = el(cursorRow).insertAfter(newRowData)
+                newRow = curRow.insertAfter(newRowData)
             }
 
         } else if (offset === 0) {

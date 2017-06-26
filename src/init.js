@@ -9,7 +9,7 @@ export function initMixin(mdeditor) {
 
         var md = this
         if (id) {
-            this.el = el(id)
+            this.el = new el(id)
             this.el.attr('contenteditable', true)
             this.cursor = new Cursor(this.el[0])
             initRow(md)

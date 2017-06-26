@@ -61,8 +61,33 @@ el.prototype.empty = function () {
 el.prototype.children = function () {
     return this[0].childNodes
 }
-el.prototype.text = function () {
-    return this[0].textContent
+el.prototype.text = function (text) {
+    if (text === undefined) {
+        return this[0].textContent
+    }
+    this[0].textContent = text
+}
+el.prototype.html = function (html) {
+    if (html === undefined) {
+        return this[0].innerHTML
+    }
+    this[0].innerHTML = html;
+}
+el.prototype.find = function (selector) {
+    var found = this[0].querySelector(selector)
+    return found ? new el(found) : found
+}
+el.prototype.hasAttr = function (attrName) {
+    return this[0].hasAttribute(attrName)
+}
+el.prototype.removeAttr = function (attrName) {
+    return this[0].removeAttribute(attrName)
+}
+el.prototype.attr = function (attrName, attrVal) {
+    if (attrVal !== undefined) {
+        return this[0].setAttribute(attrName, attrVal)
+    }
+    return this[0].getAttribute(attrName)
 }
 
 el.prototype.attr = function (name, value) {
@@ -72,6 +97,4 @@ el.prototype.attr = function (name, value) {
     this[0].setAttribute(name, value)
 }
 
-export default function (selector) {
-    return new el(selector)
-}
+export default el
