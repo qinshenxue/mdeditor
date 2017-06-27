@@ -1,6 +1,4 @@
 .*
 node_modules
-sync.js
-sync-config.js
 /sync-config.js
 /sync.js
