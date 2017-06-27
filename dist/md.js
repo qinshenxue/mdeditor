@@ -440,6 +440,9 @@ function initEvent(md) {
             if (md.cursor.in('PRE')) {
                 return
             }
+            if (md.cursor.closest('[row]') && e.shiftKey) {
+                return
+            }
             e.preventDefault();
             md.addRow();
         }
@@ -493,6 +496,7 @@ function initEvent(md) {
                     oldRow.html(html);
                     if (/^\<pre(.+\n?)+\<\/pre\>$/.test(html)) {
                         oldRow.attr('code', 1);
+                        md.cursor.set(oldRow.find('code'));
                     }
                     oldRow.attr('md', 1);
                 }
@@ -502,7 +506,7 @@ function initEvent(md) {
         if (newRow && newRow.hasAttr('md') && !newRow.hasAttr('code')) {
 
             var newRowNo = newRow.attr('row');
-            var newRowText = newRow.text();
+            var newRowTxt = md._value[newRowNo];
             if (oldRemoved) {
                 md._value[newRowNo] += md._value[oldRemoved];
                 md._value[oldRemoved] = '';
@@ -510,7 +514,7 @@ function initEvent(md) {
 
             newRow.text(md._value[newRowNo]);
             newRow.removeAttr('md');
-            md.cursor.set(newRow[0], md._value[newRowNo].length);
+            md.cursor.set(newRow[0], newRowTxt.length);
         }
 
     });
@@ -671,6 +675,11 @@ Cursor.prototype.closestRow = function () {
     return this.closest('[row]')
 };
 
+/**
+ * 光标是否在node中
+ * @param nodeName HTMLElement nodeName，全大写
+ * @returns {boolean}
+ */
 Cursor.prototype.in = function (nodeName) {
     if (this._inside()) {
         var _path = this.path;
@@ -691,12 +700,16 @@ Cursor.prototype.in = function (nodeName) {
  * @param offset 光标偏移长度
  */
 Cursor.prototype.set = function (node, offset) {
+    var elm = node;
+    if (node instanceof el) {
+        elm = node[0];
+    }
     var selection = window.getSelection();
     var range = document.createRange();
     if (offset === undefined) {
-        offset = node.textContent.length;
+        offset = elm.textContent.length;
     }
-    range.setStart(node.childNodes[0], offset);
+    range.setStart(elm.childNodes[0], offset);
     range.collapse(true);
     selection.removeAllRanges();
     selection.addRange(range);

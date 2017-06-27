@@ -74,6 +74,11 @@ Cursor.prototype.closestRow = function () {
     return this.closest('[row]')
 }
 
+/**
+ * 光标是否在node中
+ * @param nodeName HTMLElement nodeName，全大写
+ * @returns {boolean}
+ */
 Cursor.prototype.in = function (nodeName) {
     if (this._inside()) {
         var _path = this.path
@@ -94,16 +99,19 @@ Cursor.prototype.in = function (nodeName) {
  * @param offset 光标偏移长度
  */
 Cursor.prototype.set = function (node, offset) {
+    var elm = node
+    if (node instanceof el) {
+        elm = node[0]
+    }
     var selection = window.getSelection()
     var range = document.createRange()
     if (offset === undefined) {
-        offset = node.textContent.length
+        offset = elm.textContent.length
     }
-    range.setStart(node.childNodes[0], offset)
+    range.setStart(elm.childNodes[0], offset)
     range.collapse(true)
     selection.removeAllRanges()
     selection.addRange(range)
 }
-
 
 export default Cursor

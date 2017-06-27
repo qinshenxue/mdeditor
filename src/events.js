@@ -34,6 +34,9 @@ export function initEvent(md) {
             if (md.cursor.in('PRE')) {
                 return
             }
+            if (md.cursor.closest('[row]') && e.shiftKey) {
+                return
+            }
             e.preventDefault()
             md.addRow()
         }
@@ -87,6 +90,7 @@ export function initEvent(md) {
                     oldRow.html(html)
                     if (/^\<pre(.+\n?)+\<\/pre\>$/.test(html)) {
                         oldRow.attr('code', 1)
+                        md.cursor.set(oldRow.find('code'))
                     }
                     oldRow.attr('md', 1)
                 }
@@ -96,7 +100,7 @@ export function initEvent(md) {
         if (newRow && newRow.hasAttr('md') && !newRow.hasAttr('code')) {
 
             var newRowNo = newRow.attr('row')
-            var newRowText = newRow.text()
+            var newRowTxt = md._value[newRowNo]
             if (oldRemoved) {
                 md._value[newRowNo] += md._value[oldRemoved]
                 md._value[oldRemoved] = ''
@@ -104,7 +108,7 @@ export function initEvent(md) {
 
             newRow.text(md._value[newRowNo])
             newRow.removeAttr('md')
-            md.cursor.set(newRow[0], md._value[newRowNo].length)
+            md.cursor.set(newRow[0], newRowTxt.length)
         }
 
     })
