@@ -1,0 +1,16 @@
+{
+    "extends": "eslint:recommended",
+    "rules": {
+        "semi": [0, "never"],
+        "no-div-regex":0,
+        "no-useless-escape":0,
+        "quotes": [0, "double"]
+    },
+    "parserOptions": {
+        "ecmaVersion": 7,
+        "sourceType": "module"
+    },
+    "env": {
+        "browser": true
+    }
+}
