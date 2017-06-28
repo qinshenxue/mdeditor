@@ -59,7 +59,7 @@ export function rowMixin(mdeditor) {
         }
     }
 
-    mdeditor.prototype.html2Row = function (html, markdown) {
+    mdeditor.prototype.htmlToRow = function (html, markdown) {
         var nodes = parseHTML(html)
         var rows = []
         var len = nodes.length

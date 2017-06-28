@@ -540,13 +540,11 @@ function initEvent(md) {
                     if (mdHtml.html.length == 1) {
                         oldRow.html(html);
                     } else {
-                        var rows = this.html2Row(html, mdHtml.markdown);
+                        var rows = this.htmlToRow(html, mdHtml.markdown);
                         oldRow.replaceWith(rows);
-                        console.log(rows);
                     }
                     if (/^\<pre(.+\n?)+\<\/pre\>$/.test(html)) {
                         oldRow.attr('code', 1);
-                        md.cursor.set(oldRow.find('code'));
                     }
                     oldRow.attr('md', 1);
                 }
@@ -557,12 +555,13 @@ function initEvent(md) {
 
             var newRowNo = newRow.attr('row');
             var newRowTxt = md._value[newRowNo];
+            newRowTxt = newRowTxt ? newRowTxt : '';
             if (oldRemoved) {
-                md._value[newRowNo] += md._value[oldRemoved];
+                newRowTxt += md._value[oldRemoved];
                 md._value[oldRemoved] = '';
             }
 
-            newRow.text(md._value[newRowNo]);
+            newRow.text(newRowTxt);
             newRow.removeAttr('md');
             md.cursor.set(newRow[0], newRowTxt.length);
         }
@@ -646,7 +645,7 @@ function rowMixin(mdeditor) {
         }
     };
 
-    mdeditor.prototype.html2Row = function (html, markdown) {
+    mdeditor.prototype.htmlToRow = function (html, markdown) {
         var nodes = parseHTML(html);
         var rows = [];
         var len = nodes.length;
