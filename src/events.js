@@ -87,7 +87,14 @@ export function initEvent(md) {
                 var text = oldRow.text()
                 if (text !== '') {
                     var html = mdToHtml(text).join('')
-                    oldRow.html(html)
+                    var rows = this.html2Row(html)
+                    if (rows.length == 1) {
+                        oldRow.html(html)
+                    } else {
+                        oldRow.replaceWith(rows)
+                        //console.log(rows)
+                        //console.log(rows)
+                    }
                     if (/^\<pre(.+\n?)+\<\/pre\>$/.test(html)) {
                         oldRow.attr('code', 1)
                         md.cursor.set(oldRow.find('code'))

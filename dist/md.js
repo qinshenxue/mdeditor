@@ -8,6 +8,34 @@
  * Created by qinsx on 2017/6/13.
  */
 
+function extend(source, dest) {
+    var destKeys = Object.keys(dest);
+    var i = destKeys.length;
+    while (i--) {
+        source[destKeys[i]] = dest[destKeys[i]];
+    }
+}
+
+
+
+function isTextNode(node) {
+    return node && node.nodeName === '#text'
+}
+
+
+function parseHTML(string) {
+    const context = document.implementation.createHTMLDocument();
+
+    // Set the base href for the created document so any parsed elements with URLs
+    // are based on the document's URL
+    const base = context.createElement('base');
+    base.href = document.location.href;
+    context.head.appendChild(base);
+
+    context.body.innerHTML = string;
+    return context.body.children;
+}
+
 function createElement() {
 
     var elms = [];
@@ -31,6 +59,9 @@ function createElement() {
     return elms
 }
 
+/**
+ * Created by qinsx on 2017/6/13.
+ */
 
 function el(selector) {
     if (typeof selector === 'string') {
@@ -101,6 +132,12 @@ el.prototype.attr = function (name, value) {
         return this[0].getAttribute(name)
     }
     this[0].setAttribute(name, value);
+};
+el.prototype.replaceWith = function (nodes) {
+    for (var i = 0; i < nodes.length; i++) {
+        this[0].parentNode.insertBefore(nodes[i], this[0]);
+    }
+    this[0].remove();
 };
 
 var regLib = {
@@ -493,7 +530,14 @@ function initEvent(md) {
                 var text = oldRow.text();
                 if (text !== '') {
                     var html = mdToHtml(text).join('');
-                    oldRow.html(html);
+                    var rows = this.html2Row(html);
+                    if (rows.length == 1) {
+                        oldRow.html(html);
+                    } else {
+                        oldRow.replaceWith(rows);
+                        //console.log(rows)
+                        //console.log(rows)
+                    }
                     if (/^\<pre(.+\n?)+\<\/pre\>$/.test(html)) {
                         oldRow.attr('code', 1);
                         md.cursor.set(oldRow.find('code'));
@@ -558,15 +602,15 @@ function rowMixin(mdeditor) {
 
         var curRow = this.cursor.closestRow();
 
-        /*  var row
-         if (isTextNode(txtNode)) {
-         row = closestRow(txtNode, this.el[0])
-         while (txtNode.previousSibling) {
-         offset += txtNode.previousSibling.textContent.length
-         txtNode = txtNode.previousSibling
-         }
-         }
-         */
+        // 计算offset
+        var cursorNode = this.cursor.node;
+        if (isTextNode(cursorNode)) {
+            //row = closestRow(txtNode, this.el[0])
+            while (cursorNode.previousSibling) {
+                offset += cursorNode.previousSibling.textContent.length;
+                cursorNode = cursorNode.previousSibling;
+            }
+        }
 
         if (curRow) {
             var rowTxt = curRow.text();
@@ -595,6 +639,24 @@ function rowMixin(mdeditor) {
             this._rowNo++;
         }
     };
+
+    mdeditor.prototype.html2Row = function (html) {
+        var nodes = parseHTML(html);
+        var rows = [];
+        while (nodes.length) {
+            var div = createElement(['div', {
+                attrs: {
+                    'row': this._rowNo,
+                    'md': 1
+                }
+            }]);
+            div.appendChild(nodes[0]);
+            rows.push(div);
+            this._rowNo++;
+        }
+        return rows
+    };
+
 }
 
 function initRow(md) {
@@ -732,18 +794,6 @@ function initMixin(mdeditor) {
 
     };
     mdeditor.prototype._init.prototype = mdeditor.prototype;
-}
-
-/**
- * Created by qinsx on 2017/6/13.
- */
-
-function extend(source, dest) {
-    var destKeys = Object.keys(dest);
-    var i = destKeys.length;
-    while (i--) {
-        source[destKeys[i]] = dest[destKeys[i]];
-    }
 }
 
 /**

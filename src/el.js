@@ -2,29 +2,7 @@
  * Created by qinsx on 2017/6/13.
  */
 
-function createElement() {
-
-    var elms = []
-    var args = Array.prototype.slice.call(arguments)
-    args.forEach(function (item) {
-        var elm = document.createElement(item[0])
-        var elmData = item[1]
-        if (elmData) {
-            if (elmData.attrs) {
-                for (var attr in elmData.attrs) {
-                    elm.setAttribute(attr, elmData.attrs[attr])
-                }
-            }
-            if (elmData.innerHTML) {
-                elm.innerHTML = elmData.innerHTML
-            }
-        }
-        elms.push(elm)
-    })
-    if (args.length == 1) return elms[0]
-    return elms
-}
-
+import  {createElement} from './util'
 
 function el(selector) {
     if (typeof selector === 'string') {
@@ -96,5 +74,12 @@ el.prototype.attr = function (name, value) {
     }
     this[0].setAttribute(name, value)
 }
+el.prototype.replaceWith = function (nodes) {
+    for (var i = 0; i < nodes.length; i++) {
+        this[0].parentNode.insertBefore(nodes[i], this[0])
+    }
+    this[0].remove()
+}
+
 
 export default el

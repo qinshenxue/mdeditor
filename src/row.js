@@ -2,6 +2,7 @@
  * Created by qinsx on 2017/6/13.
  */
 import  el from './el'
+import {parseHTML, isTextNode, createElement}  from './util'
 
 export function rowMixin(mdeditor) {
 
@@ -20,15 +21,15 @@ export function rowMixin(mdeditor) {
 
         var curRow = this.cursor.closestRow()
 
-        /*  var row
-         if (isTextNode(txtNode)) {
-         row = closestRow(txtNode, this.el[0])
-         while (txtNode.previousSibling) {
-         offset += txtNode.previousSibling.textContent.length
-         txtNode = txtNode.previousSibling
-         }
-         }
-         */
+        // 计算offset
+        var cursorNode = this.cursor.node
+        if (isTextNode(cursorNode)) {
+            //row = closestRow(txtNode, this.el[0])
+            while (cursorNode.previousSibling) {
+                offset += cursorNode.previousSibling.textContent.length
+                cursorNode = cursorNode.previousSibling
+            }
+        }
 
         if (curRow) {
             var rowTxt = curRow.text()
@@ -57,6 +58,24 @@ export function rowMixin(mdeditor) {
             this._rowNo++
         }
     }
+
+    mdeditor.prototype.html2Row = function (html) {
+        var nodes = parseHTML(html)
+        var rows = []
+        while (nodes.length) {
+            var div = createElement(['div', {
+                attrs: {
+                    'row': this._rowNo,
+                    'md': 1
+                }
+            }])
+            div.appendChild(nodes[0])
+            rows.push(div)
+            this._rowNo++
+        }
+        return rows
+    }
+
 }
 
 export function initRow(md) {
