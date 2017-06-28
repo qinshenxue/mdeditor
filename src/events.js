@@ -86,14 +86,14 @@ export function initEvent(md) {
             } else if (!oldRow.hasAttr('md')) {
                 var text = oldRow.text()
                 if (text !== '') {
-                    var html = mdToHtml(text).join('')
-                    var rows = this.html2Row(html)
-                    if (rows.length == 1) {
+                    var mdHtml = mdToHtml(text)
+                    var html = mdHtml.html.join('')
+                    if (mdHtml.html.length == 1) {
                         oldRow.html(html)
                     } else {
+                        var rows = this.html2Row(html, mdHtml.markdown)
                         oldRow.replaceWith(rows)
-                        //console.log(rows)
-                        //console.log(rows)
+                        console.log(rows)
                     }
                     if (/^\<pre(.+\n?)+\<\/pre\>$/.test(html)) {
                         oldRow.attr('code', 1)

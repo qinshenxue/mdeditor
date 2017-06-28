@@ -258,7 +258,6 @@ function handlePre(rows, start) {
             row = replaceHtmlTag(row);
             html.push(row + '\n');
         }
-        // console.log(html.length)
         if (html.length === 2) {
             html.push('<br>');
         }
@@ -335,7 +334,6 @@ function handleTitle(txt, toc) {
     return txt.replace(/(#{1,6})(.+)/, function (match, $1, $2) {
         var hno = $1.length;
         $2 = replaceHtmlTag($2);
-        toc.push('<a class="mdeditor-toc-' + hno + '" href="#' + $2 + '">' + $2 + '</a>');
         return '<h' + hno + ' id="' + $2 + '" >' + $2 + '</h' + hno + '>'
     })
 }
@@ -395,8 +393,8 @@ function replaceHtmlTag(txt) {
 function mdToHtml(md) {
     var rows = md.match(/.+/mg) || [],
         html = [],
+        markdown = [],
         rowsCount = rows.length,
-        toc = [],
         rowsStart = 0;
 
     if (rowsCount > 0) {
@@ -404,43 +402,51 @@ function mdToHtml(md) {
         for (var i = rowsStart; i < rowsCount; i++) {
             var row = rows[i];
             if (regLib.title.test(row)) {
-                html.push(handleTitle(row, toc));
+                markdown.push(row);
+                html.push(handleTitle(row));
 
             } else if (regLib.hr.test(row)) {
+                markdown.push(row);
                 html.push('<hr>');
 
             } else if (regLib.ul.test(row)) {
                 var ul = handleUl(rows, i);
-                html = html.concat(ul.html);
+                html.push(ul.html.join(''));
+                markdown.push(rows.slice(i, ul.index + 1).join('\n'));
                 i = ul.index;
 
             } else if (regLib.ol.test(row)) {
                 var ol = handleOl(rows, i);
-                html = html.concat(ol.html);
+                html.push(ol.html.join(''));
+                markdown.push(rows.slice(i, ol.index + 1).join('\n'));
                 i = ol.index;
 
             } else if (regLib.table.test(row)) {
                 var table = handleTable(rows, i);
-                html = html.concat(table.html);
+                html.push(table.html.join(''));
                 i = table.index;
 
             } else if (regLib.blockquote.test(row)) {
                 var blockquote = handleBlockquote(rows, i);
-                html = html.concat(blockquote.html);
+                html.push(blockquote.html.join(''));
                 i = blockquote.index;
 
             } else if (regLib.code.test(row)) {
                 var pre = handlePre(rows, i);
-                html = html.concat(pre.html);
+                html.push(pre.html.join(''));
                 i = pre.index;
 
             } else {
+                markdown.push(row);
                 html.push(handleParagraph(row));
             }
         }
     }
 
-    return html
+    return {
+        html: html,
+        markdown: markdown
+    }
 }
 
 /**
@@ -529,14 +535,14 @@ function initEvent(md) {
             } else if (!oldRow.hasAttr('md')) {
                 var text = oldRow.text();
                 if (text !== '') {
-                    var html = mdToHtml(text).join('');
-                    var rows = this.html2Row(html);
-                    if (rows.length == 1) {
+                    var mdHtml = mdToHtml(text);
+                    var html = mdHtml.html.join('');
+                    if (mdHtml.html.length == 1) {
                         oldRow.html(html);
                     } else {
+                        var rows = this.html2Row(html, mdHtml.markdown);
                         oldRow.replaceWith(rows);
-                        //console.log(rows)
-                        //console.log(rows)
+                        console.log(rows);
                     }
                     if (/^\<pre(.+\n?)+\<\/pre\>$/.test(html)) {
                         oldRow.attr('code', 1);
@@ -640,10 +646,11 @@ function rowMixin(mdeditor) {
         }
     };
 
-    mdeditor.prototype.html2Row = function (html) {
+    mdeditor.prototype.html2Row = function (html, markdown) {
         var nodes = parseHTML(html);
         var rows = [];
-        while (nodes.length) {
+        var len = nodes.length;
+        for (var i = 0; i < len; i++) {
             var div = createElement(['div', {
                 attrs: {
                     'row': this._rowNo,
@@ -652,6 +659,7 @@ function rowMixin(mdeditor) {
             }]);
             div.appendChild(nodes[0]);
             rows.push(div);
+            this._value[this._rowNo] = markdown[i];
             this._rowNo++;
         }
         return rows

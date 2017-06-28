@@ -9,7 +9,7 @@
   },
   "main": "",
   "scripts": {
-    "start": "node sync.js",
+      "start": "gulp watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": {

@@ -59,10 +59,11 @@ export function rowMixin(mdeditor) {
         }
     }
 
-    mdeditor.prototype.html2Row = function (html) {
+    mdeditor.prototype.html2Row = function (html, markdown) {
         var nodes = parseHTML(html)
         var rows = []
-        while (nodes.length) {
+        var len = nodes.length
+        for (var i = 0; i < len; i++) {
             var div = createElement(['div', {
                 attrs: {
                     'row': this._rowNo,
@@ -71,6 +72,7 @@ export function rowMixin(mdeditor) {
             }])
             div.appendChild(nodes[0])
             rows.push(div)
+            this._value[this._rowNo] = markdown[i]
             this._rowNo++
         }
         return rows
