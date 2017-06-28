@@ -144,7 +144,6 @@ var regLib = {
     code: /^\`{3}.*$/,
     ul: /^[\.\-\*]\s+.+$/,
     ol: /^\d+\.\s?.+$/,
-    toc: /^\s*\[TOC\]\s*$/,
     img: /\!\[(.*?)\]\((.*?)\)/g,
     title: /^#{1,6}.+$/,
     a: /\[(([^\(\)\[\]]|\\\[|\\\]|\\\(|\\\))+)\]\((.+?)\)/g,
@@ -394,12 +393,11 @@ function mdToHtml(md) {
     var rows = md.match(/.+/mg) || [],
         html = [],
         markdown = [],
-        rowsCount = rows.length,
-        rowsStart = 0;
+        rowsCount = rows.length;
 
     if (rowsCount > 0) {
 
-        for (var i = rowsStart; i < rowsCount; i++) {
+        for (var i = 0; i < rowsCount; i++) {
             var row = rows[i];
             if (regLib.title.test(row)) {
                 markdown.push(row);
