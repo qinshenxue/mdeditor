@@ -23,6 +23,10 @@ export function eventsMixin(mdeditor) {
 }
 
 
+/**
+ * 绑定事件
+ * @param md
+ */
 export function initEvent(md) {
     md._events = []
     md._lastRow = null
@@ -87,22 +91,19 @@ export function initEvent(md) {
                 var text = oldRow.text()
                 if (text !== '') {
                     var mdHtml = mdToHtml(text)
-                    var html = mdHtml.html.join('')
-                    if (mdHtml.html.length == 1) {
-                        oldRow.html(html)
+                    if (mdHtml.length == 1) {
+                        oldRow.html(mdHtml[0].html)
+                        oldRow.attr('type', mdHtml[0].type)
                     } else {
-                        var rows = this.htmlToRow(html, mdHtml.markdown)
+                        var rows = this.htmlToRow(mdHtml)
                         oldRow.replaceWith(rows)
-                    }
-                    if (/^\<pre(.+\n?)+\<\/pre\>$/.test(html)) {
-                        oldRow.attr('code', 1)
                     }
                     oldRow.attr('md', 1)
                 }
             }
         }
 
-        if (newRow && newRow.hasAttr('md') && !newRow.hasAttr('code')) {
+        if (newRow && newRow.hasAttr('md') && !(newRow.attr('type') == 'pre')) {
 
             var newRowNo = newRow.attr('row')
             var newRowTxt = md._value[newRowNo]
@@ -133,7 +134,5 @@ export function initEvent(md) {
             }
             md._lastRow = row
         }
-
-
     })
 }

@@ -23,18 +23,7 @@ function isTextNode(node) {
 }
 
 
-function parseHTML(string) {
-    const context = document.implementation.createHTMLDocument();
 
-    // Set the base href for the created document so any parsed elements with URLs
-    // are based on the document's URL
-    const base = context.createElement('base');
-    base.href = document.location.href;
-    context.head.appendChild(base);
-
-    context.body.innerHTML = string;
-    return context.body.children;
-}
 
 function createElement() {
 
@@ -389,62 +378,62 @@ function replaceHtmlTag(txt) {
     return txt.replace(/\</g, '&lt;').replace(/\>/g, '&gt;')
 }
 
+function dataFormat(type, markdown, html) {
+    return {
+        html: html,
+        markdown: markdown,
+        type: type
+    }
+}
+
 function mdToHtml(md) {
     var rows = md.match(/.+/mg) || [],
         html = [],
-        markdown = [],
         rowsCount = rows.length;
 
     if (rowsCount > 0) {
 
         for (var i = 0; i < rowsCount; i++) {
             var row = rows[i];
+            var row = rows[i];
             if (regLib.title.test(row)) {
-                markdown.push(row);
-                html.push(handleTitle(row));
+                html.push(dataFormat('h', row, handleTitle(row)));
 
             } else if (regLib.hr.test(row)) {
-                markdown.push(row);
-                html.push('<hr>');
+                html.push(dataFormat('hr', row, '<hr>'));
 
             } else if (regLib.ul.test(row)) {
                 var ul = handleUl(rows, i);
-                html.push(ul.html.join(''));
-                markdown.push(rows.slice(i, ul.index + 1).join('\n'));
+                html.push(dataFormat('ul', rows.slice(i, ul.index + 1).join('\n'), ul.html.join('')));
                 i = ul.index;
 
             } else if (regLib.ol.test(row)) {
                 var ol = handleOl(rows, i);
-                html.push(ol.html.join(''));
-                markdown.push(rows.slice(i, ol.index + 1).join('\n'));
+                html.push(dataFormat('ol', rows.slice(i, ol.index + 1).join('\n'), ol.html.join('')));
                 i = ol.index;
 
             } else if (regLib.table.test(row)) {
                 var table = handleTable(rows, i);
-                html.push(table.html.join(''));
+                html.push(dataFormat('table', rows.slice(i, table.index + 1).join('\n'), table.html.join('')));
                 i = table.index;
 
             } else if (regLib.blockquote.test(row)) {
                 var blockquote = handleBlockquote(rows, i);
-                html.push(blockquote.html.join(''));
+                html.push(dataFormat('blockquote', rows.slice(i, blockquote.index + 1).join('\n'), blockquote.html.join('')));
                 i = blockquote.index;
 
             } else if (regLib.code.test(row)) {
                 var pre = handlePre(rows, i);
-                html.push(pre.html.join(''));
+                html.push(dataFormat('pre', rows.slice(i, pre.index + 1).join('\n'), pre.html.join('')));
                 i = pre.index;
 
             } else {
-                markdown.push(row);
-                html.push(handleParagraph(row));
+                html.push(dataFormat('p', row, handleParagraph(row)));
             }
         }
     }
 
-    return {
-        html: html,
-        markdown: markdown
-    }
+    return html
 }
 
 /**
@@ -470,6 +459,10 @@ function eventsMixin(mdeditor) {
 }
 
 
+/**
+ * 绑定事件
+ * @param md
+ */
 function initEvent(md) {
     md._events = [];
     md._lastRow = null;
@@ -534,22 +527,19 @@ function initEvent(md) {
                 var text = oldRow.text();
                 if (text !== '') {
                     var mdHtml = mdToHtml(text);
-                    var html = mdHtml.html.join('');
-                    if (mdHtml.html.length == 1) {
-                        oldRow.html(html);
+                    if (mdHtml.length == 1) {
+                        oldRow.html(mdHtml[0].html);
+                        oldRow.attr('type', mdHtml[0].type);
                     } else {
-                        var rows = this.htmlToRow(html, mdHtml.markdown);
+                        var rows = this.htmlToRow(mdHtml);
                         oldRow.replaceWith(rows);
-                    }
-                    if (/^\<pre(.+\n?)+\<\/pre\>$/.test(html)) {
-                        oldRow.attr('code', 1);
                     }
                     oldRow.attr('md', 1);
                 }
             }
         }
 
-        if (newRow && newRow.hasAttr('md') && !newRow.hasAttr('code')) {
+        if (newRow && newRow.hasAttr('md') && !(newRow.attr('type') == 'pre')) {
 
             var newRowNo = newRow.attr('row');
             var newRowTxt = md._value[newRowNo];
@@ -580,8 +570,6 @@ function initEvent(md) {
             }
             md._lastRow = row;
         }
-
-
     });
 }
 
@@ -591,8 +579,10 @@ function initEvent(md) {
 function rowMixin(mdeditor) {
 
 
+    /**
+     * 给编辑器增加一行
+     */
     mdeditor.prototype.addRow = function () {
-
 
         var offset = this.cursor.offset;
         var newRow;
@@ -605,10 +595,9 @@ function rowMixin(mdeditor) {
 
         var curRow = this.cursor.closestRow();
 
-        // 计算offset
+        // 计算offset（主要是用了shift换行输入的情况）
         var cursorNode = this.cursor.node;
         if (isTextNode(cursorNode)) {
-            //row = closestRow(txtNode, this.el[0])
             while (cursorNode.previousSibling) {
                 offset += cursorNode.previousSibling.textContent.length;
                 cursorNode = cursorNode.previousSibling;
@@ -643,27 +632,34 @@ function rowMixin(mdeditor) {
         }
     };
 
-    mdeditor.prototype.htmlToRow = function (html, markdown) {
-        var nodes = parseHTML(html);
+    /**
+     * 将markdown解析成的html，转换成符合编辑器的行，保证每一行只有一个类型（p、pre、ul、li等）
+     * @param html 由mdToHtml返回的html数组
+     * @returns {Array}
+     */
+    mdeditor.prototype.htmlToRow = function (html) {
         var rows = [];
-        var len = nodes.length;
-        for (var i = 0; i < len; i++) {
+        for (var i = 0; i < html.length; i++) {
             var div = createElement(['div', {
                 attrs: {
                     'row': this._rowNo,
-                    'md': 1
-                }
+                    'md': 1,
+                    type: html[i].type
+                },
+                innerHTML: html[i].html
             }]);
-            div.appendChild(nodes[0]);
             rows.push(div);
-            this._value[this._rowNo] = markdown[i];
+            this._value[this._rowNo] = html[i].markdown;
             this._rowNo++;
         }
         return rows
     };
-
 }
 
+/**
+ * 初始化mdeditor实例的行号为0
+ * @param md mdeditor实例
+ */
 function initRow(md) {
     md._rowNo = 0;
 }

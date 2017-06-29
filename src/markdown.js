@@ -259,60 +259,60 @@ function removeSpace(txt) {
     return txt.replace(/\u200B/g, '')
 }
 
+function dataFormat(type, markdown, html) {
+    return {
+        html: html,
+        markdown: markdown,
+        type: type
+    }
+}
+
 export function mdToHtml(md) {
     var rows = md.match(/.+/mg) || [],
         html = [],
-        markdown = [],
         rowsCount = rows.length;
 
     if (rowsCount > 0) {
 
         for (var i = 0; i < rowsCount; i++) {
             var row = rows[i]
+            var row = rows[i]
             if (regLib.title.test(row)) {
-                markdown.push(row)
-                html.push(handleTitle(row))
+                html.push(dataFormat('h', row, handleTitle(row)))
 
             } else if (regLib.hr.test(row)) {
-                markdown.push(row)
-                html.push('<hr>')
+                html.push(dataFormat('hr', row, '<hr>'))
 
             } else if (regLib.ul.test(row)) {
                 var ul = handleUl(rows, i)
-                html.push(ul.html.join(''))
-                markdown.push(rows.slice(i, ul.index + 1).join('\n'))
+                html.push(dataFormat('ul', rows.slice(i, ul.index + 1).join('\n'), ul.html.join('')))
                 i = ul.index
 
             } else if (regLib.ol.test(row)) {
                 var ol = handleOl(rows, i)
-                html.push(ol.html.join(''))
-                markdown.push(rows.slice(i, ol.index + 1).join('\n'))
+                html.push(dataFormat('ol', rows.slice(i, ol.index + 1).join('\n'), ol.html.join('')))
                 i = ol.index
 
             } else if (regLib.table.test(row)) {
                 var table = handleTable(rows, i)
-                html.push(table.html.join(''))
+                html.push(dataFormat('table', rows.slice(i, table.index + 1).join('\n'), table.html.join('')))
                 i = table.index
 
             } else if (regLib.blockquote.test(row)) {
                 var blockquote = handleBlockquote(rows, i)
-                html.push(blockquote.html.join(''))
+                html.push(dataFormat('blockquote', rows.slice(i, blockquote.index + 1).join('\n'), blockquote.html.join('')))
                 i = blockquote.index
 
             } else if (regLib.code.test(row)) {
                 var pre = handlePre(rows, i)
-                html.push(pre.html.join(''))
+                html.push(dataFormat('pre', rows.slice(i, pre.index + 1).join('\n'), pre.html.join('')))
                 i = pre.index
 
             } else {
-                markdown.push(row)
-                html.push(handleParagraph(row))
+                html.push(dataFormat('p', row, handleParagraph(row)))
             }
         }
     }
 
-    return {
-        html: html,
-        markdown: markdown
-    }
+    return html
 }

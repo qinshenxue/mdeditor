@@ -2,13 +2,15 @@
  * Created by qinsx on 2017/6/13.
  */
 import  el from './el'
-import {parseHTML, isTextNode, createElement}  from './util'
+import {isTextNode, createElement}  from './util'
 
 export function rowMixin(mdeditor) {
 
 
+    /**
+     * 给编辑器增加一行
+     */
     mdeditor.prototype.addRow = function () {
-
 
         var offset = this.cursor.offset
         var newRow
@@ -21,10 +23,9 @@ export function rowMixin(mdeditor) {
 
         var curRow = this.cursor.closestRow()
 
-        // 计算offset
+        // 计算offset（主要是用了shift换行输入的情况）
         var cursorNode = this.cursor.node
         if (isTextNode(cursorNode)) {
-            //row = closestRow(txtNode, this.el[0])
             while (cursorNode.previousSibling) {
                 offset += cursorNode.previousSibling.textContent.length
                 cursorNode = cursorNode.previousSibling
@@ -59,27 +60,34 @@ export function rowMixin(mdeditor) {
         }
     }
 
-    mdeditor.prototype.htmlToRow = function (html, markdown) {
-        var nodes = parseHTML(html)
+    /**
+     * 将markdown解析成的html，转换成符合编辑器的行，保证每一行只有一个类型（p、pre、ul、li等）
+     * @param html 由mdToHtml返回的html数组
+     * @returns {Array}
+     */
+    mdeditor.prototype.htmlToRow = function (html) {
         var rows = []
-        var len = nodes.length
-        for (var i = 0; i < len; i++) {
+        for (var i = 0; i < html.length; i++) {
             var div = createElement(['div', {
                 attrs: {
                     'row': this._rowNo,
-                    'md': 1
-                }
+                    'md': 1,
+                    type: html[i].type
+                },
+                innerHTML: html[i].html
             }])
-            div.appendChild(nodes[0])
             rows.push(div)
-            this._value[this._rowNo] = markdown[i]
+            this._value[this._rowNo] = html[i].markdown
             this._rowNo++
         }
         return rows
     }
-
 }
 
+/**
+ * 初始化mdeditor实例的行号为0
+ * @param md mdeditor实例
+ */
 export function initRow(md) {
     md._rowNo = 0
 }
