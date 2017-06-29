@@ -19,7 +19,7 @@ function extend(source, dest) {
 
 
 function isTextNode(node) {
-    return node && node.nodeName === '#text'
+    return node instanceof Text
 }
 
 
@@ -76,8 +76,8 @@ el.prototype.prepend = function () {
     return child
 };
 
-el.prototype.append = function () {
-    var child = createElement.apply(null, arguments);
+el.prototype.append = function (node) {
+    var child = (node instanceof Text || node instanceof HTMLElement) ? node : createElement.apply(null, arguments);
     this[0].appendChild(child);
     return child
 };
@@ -132,6 +132,7 @@ el.prototype.replaceWith = function (nodes) {
 var regLib = {
     code: /^\`{3}.*$/,
     ul: /^[\.\-\*]\s+.+$/,
+    ul_flag: /^[\.\-\*]/,
     ol: /^\d+\.\s?.+$/,
     img: /\!\[(.*?)\]\((.*?)\)/g,
     title: /^#{1,6}.+$/,
@@ -147,6 +148,7 @@ var regLib = {
     table_td_align_center: /^\s*:-+:\s*$/,
     table_td_align_right: /^\s*-+:\s*$/
 };
+
 function handleBlockquote(rows, start) {
     var html = [];
     var i = start;
@@ -584,6 +586,7 @@ function rowMixin(mdeditor) {
      */
     mdeditor.prototype.addRow = function () {
 
+
         var offset = this.cursor.offset;
         var newRow;
         var newRowData = ['div', {
@@ -593,7 +596,6 @@ function rowMixin(mdeditor) {
             innerHTML: '<br>'
         }];
 
-        var curRow = this.cursor.closestRow();
 
         // 计算offset（主要是用了shift换行输入的情况）
         var cursorNode = this.cursor.node;
@@ -603,6 +605,7 @@ function rowMixin(mdeditor) {
                 cursorNode = cursorNode.previousSibling;
             }
         }
+        var curRow = this.cursor.closestRow();
 
         if (curRow) {
             var rowTxt = curRow.text();
@@ -767,12 +770,13 @@ Cursor.prototype.set = function (node, offset) {
     if (node instanceof el) {
         elm = node[0];
     }
+    var isTxtNode = node instanceof Text;
     var selection = window.getSelection();
     var range = document.createRange();
     if (offset === undefined) {
-        offset = elm.textContent.length;
+        offset = isTxtNode ? node.nodeValue.length : elm.textContent.length;
     }
-    range.setStart(elm.childNodes[0], offset);
+    range.setStart(isTxtNode ? node : elm.childNodes[0], offset);
     range.collapse(true);
     selection.removeAllRanges();
     selection.addRange(range);

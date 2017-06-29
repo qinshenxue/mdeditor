@@ -12,6 +12,10 @@
     padding: 10px;
 }
 
+.mdeditor [row] {
+    margin-bottom: 20px;
+}
+
 
 .mdeditor::-webkit-scrollbar {
     width: 8px;

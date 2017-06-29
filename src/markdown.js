@@ -1,14 +1,7 @@
-export function markdownMixin(mdeditor) {
-
-    mdeditor.prototype.getMarkdown = function () {
-
-    }
-
-}
-
 var regLib = {
     code: /^\`{3}.*$/,
     ul: /^[\.\-\*]\s+.+$/,
+    ul_flag: /^[\.\-\*]/,
     ol: /^\d+\.\s?.+$/,
     img: /\!\[(.*?)\]\((.*?)\)/g,
     title: /^#{1,6}.+$/,
@@ -24,6 +17,7 @@ var regLib = {
     table_td_align_center: /^\s*:-+:\s*$/,
     table_td_align_right: /^\s*-+:\s*$/
 }
+
 function handleBlockquote(rows, start) {
     var html = []
     var i = start
@@ -315,4 +309,23 @@ export function mdToHtml(md) {
     }
 
     return html
+}
+
+export function markdownMixin(mdeditor) {
+
+    mdeditor.prototype.getMarkdown = function () {
+
+    }
+}
+
+export function mdType(txt) {
+
+    var match = null
+    if ((match = txt.match(new RegExp(regLib.ul, 'mg')))) {
+        return {
+            type: 'ul',
+            flag: match[0].match(regLib.ul_flag)[0] + ' '
+        }
+    }
+
 }

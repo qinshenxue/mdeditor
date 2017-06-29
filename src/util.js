@@ -15,7 +15,7 @@ export function hasContent(txt) {
 }
 
 export function isTextNode(node) {
-    return node && node.nodeName === '#text'
+    return node instanceof Text
 }
 
 

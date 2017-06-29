@@ -1,8 +1,8 @@
 /**
  * Created by qinsx on 2017/6/13.
  */
-import  el from './el'
 import {isTextNode, createElement}  from './util'
+import {mdType} from './markdown'
 
 export function rowMixin(mdeditor) {
 
@@ -11,6 +11,7 @@ export function rowMixin(mdeditor) {
      * 给编辑器增加一行
      */
     mdeditor.prototype.addRow = function () {
+
 
         var offset = this.cursor.offset
         var newRow
@@ -21,7 +22,6 @@ export function rowMixin(mdeditor) {
             innerHTML: '<br>'
         }]
 
-        var curRow = this.cursor.closestRow()
 
         // 计算offset（主要是用了shift换行输入的情况）
         var cursorNode = this.cursor.node
@@ -31,6 +31,7 @@ export function rowMixin(mdeditor) {
                 cursorNode = cursorNode.previousSibling
             }
         }
+        var curRow = this.cursor.closestRow()
 
         if (curRow) {
             var rowTxt = curRow.text()

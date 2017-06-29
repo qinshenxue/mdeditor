@@ -28,8 +28,8 @@ el.prototype.prepend = function () {
     return child
 }
 
-el.prototype.append = function () {
-    var child = createElement.apply(null, arguments)
+el.prototype.append = function (node) {
+    var child = (node instanceof Text || node instanceof HTMLElement) ? node : createElement.apply(null, arguments)
     this[0].appendChild(child)
     return child
 }

@@ -103,12 +103,13 @@ Cursor.prototype.set = function (node, offset) {
     if (node instanceof el) {
         elm = node[0]
     }
+    var isTxtNode = node instanceof Text
     var selection = window.getSelection()
     var range = document.createRange()
     if (offset === undefined) {
-        offset = elm.textContent.length
+        offset = isTxtNode ? node.nodeValue.length : elm.textContent.length
     }
-    range.setStart(elm.childNodes[0], offset)
+    range.setStart(isTxtNode ? node : elm.childNodes[0], offset)
     range.collapse(true)
     selection.removeAllRanges()
     selection.addRange(range)

@@ -3,6 +3,7 @@
  */
 
 import  {mdToHtml} from './markdown'
+import {isTextNode} from './util'
 
 export function eventsMixin(mdeditor) {
 
