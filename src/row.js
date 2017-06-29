@@ -83,6 +83,7 @@ export function rowMixin(mdeditor) {
         }
         return rows
     }
+
 }
 
 /**

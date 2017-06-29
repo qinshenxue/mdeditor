@@ -310,22 +310,3 @@ export function mdToHtml(md) {
 
     return html
 }
-
-export function markdownMixin(mdeditor) {
-
-    mdeditor.prototype.getMarkdown = function () {
-
-    }
-}
-
-export function mdType(txt) {
-
-    var match = null
-    if ((match = txt.match(new RegExp(regLib.ul, 'mg')))) {
-        return {
-            type: 'ul',
-            flag: match[0].match(regLib.ul_flag)[0] + ' '
-        }
-    }
-
-}

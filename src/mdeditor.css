@@ -1,6 +1,6 @@
 
 .mdeditor {
-    line-height: 1.5em;
+    line-height: 1.8em;
     border: 1px solid #d8d8d8;
     min-height: 100%;
     -webkit-user-modify: read-write-plaintext-only;
@@ -13,9 +13,8 @@
 }
 
 .mdeditor [row] {
-    margin-bottom: 20px;
+    margin-bottom: 1.2em
 }
-
 
 .mdeditor::-webkit-scrollbar {
     width: 8px;
