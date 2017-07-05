@@ -136,7 +136,7 @@ var regLib = {
     ol: /^\d+\.\s?.+$/,
     img: /\!\[(.*?)\]\((.*?)\)/g,
     title: /^#{1,6}.+$/,
-    a: /\[(([^\(\)\[\]]|\\\[|\\\]|\\\(|\\\))+)\]\((.+?)\)/g,
+    a: /\[((?:[^\(\)\[\]]|\\\[|\\\]|\\\(|\\\))+)\]\((.+?)\)/g,
     b: /\*\*(.+?)\*\*/g,
     i: /\*(.+?)\*/g,
     inline_code: /\`(.+?)\`/g,
@@ -349,14 +349,12 @@ function handleImg(txt) {
 }
 
 function handleLink(txt) {
-
-    return txt.replace(regLib.a, function (txt, $1, $2, $3) {
-        return '<a href="' + $3 + '" target="_blank">' + handleBold($1.replace(/\\([\(\)\[\])])/g, '$1')) + '</a>'
+    return txt.replace(regLib.a, function (txt, $1, $2) {
+        return '<a href="' + $2 + '" target="_blank">' + handleBold($1.replace(/\\([\(\)\[\])])/g, '$1')) + '</a>'
     })
 }
 
 function handleBold(txt) {
-
     return txt.replace(regLib.b, function (match, $1) {
         return '<b>' + $1 + '</b>'
     })
