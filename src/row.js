@@ -2,7 +2,6 @@
  * Created by qinsx on 2017/6/13.
  */
 import {isTextNode, createElement}  from './util'
-import {mdType} from './markdown'
 
 export function rowMixin(mdeditor) {
 

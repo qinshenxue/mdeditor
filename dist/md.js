@@ -544,7 +544,7 @@ function initEvent(md) {
             var newRowNo = newRow.attr('row');
             var newRowTxt = md._value[newRowNo];
             newRowTxt = newRowTxt ? newRowTxt : '';
-            if (oldRemoved) {
+            if (oldRemoved && md._value[oldRemoved]) {
                 newRowTxt += md._value[oldRemoved];
                 md._value[oldRemoved] = '';
             }
@@ -840,6 +840,18 @@ function apiMixin(mdeditor) {
             }
         }
         return html
+    };
+
+    mdeditor.prototype.setMarkdown = function (markdown) {
+
+        var html = mdToHtml(markdown);
+        var rows = this.htmlToRow(html);
+        var me=this;
+        this.el.empty();
+        rows.forEach(function (row) {
+            me.el.append(row);
+        });
+
     };
 }
 

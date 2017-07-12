@@ -1,3 +1,5 @@
+import {mdToHtml} from './markdown'
+
 export function apiMixin(mdeditor) {
 
 
@@ -30,5 +32,17 @@ export function apiMixin(mdeditor) {
             }
         }
         return html
+    }
+
+    mdeditor.prototype.setMarkdown = function (markdown) {
+
+        var html = mdToHtml(markdown)
+        var rows = this.htmlToRow(html)
+        var me = this
+        this.el.empty()
+        rows.forEach(function (row) {
+            me.el.append(row)
+        })
+
     }
 }
