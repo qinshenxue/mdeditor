@@ -808,6 +808,10 @@ function initGlobalApi(mdeditor) {
     mdeditor.extend = extend;
 }
 
+/**
+ * 实例可用api
+ * @param mdeditor
+ */
 function apiMixin(mdeditor) {
 
 
@@ -842,16 +846,21 @@ function apiMixin(mdeditor) {
         return html
     };
 
+    /**
+     * 初始化markdown值，markdown转成html
+     * @param markdown
+     */
     mdeditor.prototype.setMarkdown = function (markdown) {
-
+        // 初始化行号
+        this._rowNo = 0;
+        this._value = [];
+        this.el.empty();
         var html = mdToHtml(markdown);
         var rows = this.htmlToRow(html);
-        var me=this;
-        this.el.empty();
+        var me = this;
         rows.forEach(function (row) {
             me.el.append(row);
         });
-
     };
 }
 
