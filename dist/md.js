@@ -561,15 +561,16 @@ function initEvent(md) {
 
     });
     document.addEventListener('selectionchange', function selectionchange() {
+        // 目前仅支持非选择区域
         if (window.getSelection().isCollapsed) {
             var row = md.cursor.closestRow();
             if (row) {
-                if (md._lastRow && md._lastRow.attr('row') !== row.attr('row')) {
+                if (md._lastRow && md._lastRow.attr('row') !== row.attr('row')) {  // 光标所在行和之前行号不相等才触发rowchange
                     md.trigger('rowchange', md._lastRow, row);
-                } else if (!md._lastRow) {
+                } else if (!md._lastRow) {  // 首次换行
                     md.trigger('rowchange', md._lastRow, row);
                 }
-            } else if (md._lastRow) {   // 离开编辑器
+            } else if (md._lastRow) {   // 离开编辑器，但是仍然触发了selectionchange，说明光标仍然在当前页面上
                 md.trigger('rowchange', md._lastRow);
             }
             md._lastRow = row;
