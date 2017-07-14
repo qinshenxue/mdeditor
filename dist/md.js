@@ -443,7 +443,7 @@ function mdToHtml(md) {
 function eventsMixin(mdeditor) {
 
     mdeditor.prototype.on = function (eventName, cb) {
-        ( this._events[eventName] || (this._events[eventName] = [])).push(cb);
+        (this._events[eventName] || (this._events[eventName] = [])).push(cb);
         this.el[0].addEventListener(eventName, cb);
     };
 
@@ -487,7 +487,7 @@ function initEvent(md) {
         var row = md.cursor.closestRow();
         if (row && (!row.hasAttr('md') || md.cursor.in('CODE'))) {
             var txt = row.text();
-            if (row.hasAttr('code')) {
+            if (row.attr('type') == 'code') {
                 txt = '```\n' + txt;
                 if (!/\n$/.test(txt)) {
                     txt += '\n';

@@ -9,7 +9,8 @@
   },
   "main": "",
   "scripts": {
-      "start": "gulp watch",
+    "build": "gulp build",
+    "start": "gulp watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": {
