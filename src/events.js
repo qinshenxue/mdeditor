@@ -52,7 +52,7 @@ export function initEvent(md) {
         var row = md.cursor.closestRow()
         if (row && (!row.hasAttr('md') || md.cursor.in('CODE'))) {
             var txt = row.text()
-            if (row.attr('type') == 'code') {
+            if (row.attr('type') == 'pre') {
                 txt = '```\n' + txt
                 if (!/\n$/.test(txt)) {
                     txt += '\n'
