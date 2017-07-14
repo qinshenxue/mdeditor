@@ -68,6 +68,11 @@ export function initEvent(md) {
         }
     })
 
+    md.on('blur', function blur() {
+        md.trigger('rowchange', md._lastRow)
+        md._lastRow = null
+    })
+
     md.on('dblclick', function dblclick() {
 
         if (md.cursor.in('CODE')) {
@@ -123,7 +128,6 @@ export function initEvent(md) {
     document.addEventListener('selectionchange', function selectionchange() {
         if (window.getSelection().isCollapsed) {
             var row = md.cursor.closestRow()
-
             if (row) {
                 if (md._lastRow && md._lastRow.attr('row') !== row.attr('row')) {
                     md.trigger('rowchange', md._lastRow, row)
