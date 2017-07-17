@@ -3,7 +3,6 @@
  */
 
 import { mdToHtml } from './markdown'
-import { isTextNode } from './util'
 
 export function eventsMixin(mdeditor) {
 
@@ -48,7 +47,6 @@ export function initEvent(md) {
 
     })
     md.on('input', function input() {
-
         var row = md.cursor.closestRow()
         if (row && (!row.hasAttr('md') || md.cursor.in('CODE'))) {
             var txt = row.text()

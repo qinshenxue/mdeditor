@@ -18,6 +18,13 @@ var regLib = {
     table_td_align_right: /^\s*-+:\s*$/
 }
 
+/**
+ * 引用<blockquote>
+ * 
+ * @param {any} rows 
+ * @param {any} start 
+ * @returns 
+ */
 function handleBlockquote(rows, start) {
     var html = []
     var markdowns = []
@@ -52,6 +59,14 @@ function handleBlockquote(rows, start) {
     }
 }
 
+/**
+ * 无序列表<ul>
+ * 
+ * @param {any} rows 
+ * @param {any} start 
+ * @param {any} reg 
+ * @returns 
+ */
 function handleUl(rows, start, reg) {
     var html = []
     var markdowns = []
@@ -82,6 +97,14 @@ function handleUl(rows, start, reg) {
     }
 }
 
+/**
+ * 有序列表<ol>
+ * 
+ * @param {any} rows 
+ * @param {any} start 
+ * @param {any} reg 
+ * @returns 
+ */
 function handleOl(rows, start, reg) {
     var html = []
     var markdowns = []
@@ -281,7 +304,7 @@ function removeSpace(txt) {
 
 function dataFormat(type, markdown, html) {
     return {
-        html: html,
+        html: [html],
         markdown: markdown,
         type: type
     }

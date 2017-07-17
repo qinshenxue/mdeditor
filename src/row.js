@@ -74,7 +74,7 @@ export function rowMixin(mdeditor) {
                     'md': 1,
                     type: html[i].type
                 },
-                innerHTML: html[i].html
+                innerHTML: html[i].html.join('')
             }])
             rows.push(div)
             this._value[this._rowNo] = html[i].markdown
