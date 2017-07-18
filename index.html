@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
     <link rel="stylesheet" href="src/mdeditor.css">
     <style>
-        html, body {
+        html,
+        body {
             height: 100%;
         }
 
@@ -13,18 +15,53 @@
             width: 800px;
             margin: 0 auto;
         }
+
     </style>
 </head>
+
 <body>
 
 
-<div id="md" class="mdeditor" contenteditable="true"></div>
+    <div id="md" class="mdeditor" contenteditable="true"></div>
 
+    <textarea id="mdv">
+## Vue.extend
+配置项data必须为function，否则配置无效。data的合并规则（可以看[《Vue官方文档梳理-全局配置》](http://www.qinshenxue.com/article/20170616121212.html)）源码如下：
+![](http://www.qinshenxue.com/resource/2017_07_13_09_40_28_401750.png)
+传入非function类型的data（上图中data配置为`{a:1}`），在合并options时，如果data不是function类型，开发版会发出警告，然后直接返回了parentVal，这意味着extend传入的data选项被无视了。
+我们知道实例化Vue的时候，data可以是对象，这里的合并规则不是通用的吗？注意上面有个`if(!vm)`的判断，实例化的时候vm是有值的，因此不同于Vue.extend，其实下面的注释也做了说明（in a Vue.extend merge, both should be function），这也是官方文档为何说data是个特例。
+另外官方文档所说的“子类”，是因为Vue.extend返回的是一个“继承”Vue的函数，源码结构如下：
+``` js
+Vue.extend = function (extendOptions) {
+    //***
+    var Super = this;
+    var SuperId = Super.cid;
+    //***
+    var Sub = function VueComponent(options) {
+        this._init(options);
+    };
+    Sub.prototype = Object.create(Super.prototype);
+    Sub.prototype.constructor = Sub;
+    //***
+    return Sub
+};
+```
+## Vue.nextTick
+既然使用vue，当然要沿着数据驱动的方式思考，所谓数据驱动，就是不要直接去操作dom，dom的所有操作完全可以利用vue的各种指令来完成，指令将数据和dom进行了“绑定”，操作数据不仅能实现dom的更新，而且更方便。
+如果浏览器支持Promise，或者用了Promise库（但是对外暴露的必须叫Promise，因为源码中的判断为`typeof Promise !== 'undefined'`），nextTick返回的就是Promise对象。
+``` js
+Vue.nextTick().then(() => {
+    // do sth
+})
+```
+</textarea>
 
-<script src="dist/md.js"></script>
-<script>
-    var md = mdeditor('#md')
-</script>
+    <script src="dist/md.js"></script>
+    <script>
+        var md = mdeditor('#md')
+
+    </script>
 
 </body>
+
 </html>

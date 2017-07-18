@@ -50,7 +50,8 @@ export function initEvent(md) {
         var row = md.cursor.closestRow()
         if (row && (!row.hasAttr('md') || md.cursor.in('CODE'))) {
             var txt = row.text()
-            if (row.attr('type') == 'pre') {
+            if (row.attr('type') == 'pre' && row.hasAttr('md')) {
+                console.log(txt)
                 txt = '```\n' + txt
                 if (!/\n$/.test(txt)) {
                     txt += '\n'
@@ -96,7 +97,7 @@ export function initEvent(md) {
                 if (text !== '') {
                     var mdHtml = mdToHtml(text)
                     if (mdHtml.length == 1) {
-                        oldRow.html(mdHtml[0].html)
+                        oldRow.html(mdHtml[0].html.join(''))
                         oldRow.attr('type', mdHtml[0].type)
                     } else {
                         var rows = this.htmlToRow(mdHtml)

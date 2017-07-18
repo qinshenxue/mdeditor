@@ -432,7 +432,7 @@ function replaceHtmlTag(txt) {
 function dataFormat(type, markdown, html) {
     return {
         html: [html],
-        markdown: markdown,
+        markdown: [markdown],
         type: type
     }
 }
@@ -537,7 +537,8 @@ function initEvent(md) {
         var row = md.cursor.closestRow();
         if (row && (!row.hasAttr('md') || md.cursor.in('CODE'))) {
             var txt = row.text();
-            if (row.attr('type') == 'pre') {
+            if (row.attr('type') == 'pre' && row.hasAttr('md')) {
+                console.log(txt);
                 txt = '```\n' + txt;
                 if (!/\n$/.test(txt)) {
                     txt += '\n';
@@ -583,7 +584,7 @@ function initEvent(md) {
                 if (text !== '') {
                     var mdHtml = mdToHtml(text);
                     if (mdHtml.length == 1) {
-                        oldRow.html(mdHtml[0].html);
+                        oldRow.html(mdHtml[0].html.join(''));
                         oldRow.attr('type', mdHtml[0].type);
                     } else {
                         var rows = this.htmlToRow(mdHtml);
@@ -705,7 +706,7 @@ function rowMixin(mdeditor) {
                 innerHTML: html[i].html.join('')
             }]);
             rows.push(div);
-            this._value[this._rowNo] = html[i].markdown;
+            this._value[this._rowNo] = html[i].markdown.join('\n');
             this._rowNo++;
         }
         return rows

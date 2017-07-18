@@ -305,7 +305,7 @@ function removeSpace(txt) {
 function dataFormat(type, markdown, html) {
     return {
         html: [html],
-        markdown: markdown,
+        markdown: [markdown],
         type: type
     }
 }
