@@ -78,7 +78,7 @@ export function initEvent(md) {
             var row = md.cursor.closestRow()
             if (row) {
                 var rowNo = row.attr('row')
-                row.html(md._value[rowNo])
+                row.text(md._value[rowNo])
                 row.removeAttr('md')
                 row.removeAttr('code')
             }
