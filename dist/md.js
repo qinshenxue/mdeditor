@@ -206,28 +206,53 @@ function handleUl(rows, start, reg) {
     if (regLib.ul.test(reg ? rows[start].replace(reg, '') : rows[start])) {
         html.push('<ul class="mdeditor-ul">');
         for (; i < rows.length; i++) {
-            var row = rows[i];
+            var row, repRow = row = rows[i];
+
             if (reg) {
-                row = row.replace(reg, '');
+                repRow = row.replace(reg, '');
             }
-            if (!regLib.ul.test(row)) {
+
+            if (/^\s+/.test(repRow)) {
+
+                repRow = repRow.replace(/^\s+/, '');
+
+                if (regLib.ul.test(repRow)) {
+                    var ul = handleUl(rows, i, /^\s+/);
+                    html = html.concat(ul.html);
+                    markdowns = markdowns.concat(ul.markdown);
+                    i = ul.index;
+                } else if (regLib.ol.test(repRow)) {
+                    var ol = handleOl(rows, i, /^\s+/);
+                    html = html.concat(ol.html);
+                    markdowns = markdowns.concat(ol.markdown);
+                    i = ol.index;
+                } else {
+                    html.push(handleParagraph(repRow));
+                }
+                html.push('</li>');
+                continue
+            } else if (!regLib.ul.test(repRow) || (reg && !reg.test(row) )) {
+                html.push('</li>');
                 break
+            } else if (i != start) {
+                html.push('</li>');
             }
             markdowns.push(row);
-            row = replaceHtmlTag(row);
-            row = row.replace(/^[\.\*\-]\s*/, '');
 
-            html.push('<li>' + handleInlineSet(row) + '</li>');
+            repRow = replaceHtmlTag(repRow);
+            repRow = repRow.replace(/^[\.\*\-]\s*/, '');
+            html.push('<li>' + handleInlineSet(repRow));
         }
         html.push('</ul>');
     }
     return {
         type: 'ul',
-        markdown:markdowns,
+        markdown: markdowns,
         html: html,
         index: i - 1
     }
 }
+
 
 /**
  * 有序列表<ol>
@@ -260,7 +285,7 @@ function handleOl(rows, start, reg) {
     }
     return {
         type: 'ol',
-        markdown:markdowns,
+        markdown: markdowns,
         html: html,
         index: i - 1
     }
@@ -298,7 +323,7 @@ function handlePre(rows, start) {
     }
     return {
         type: 'pre',
-        markdown:markdowns,
+        markdown: markdowns,
         html: html,
         extra: {
             codeType: codeType
@@ -341,7 +366,7 @@ function handleTable(rows, start) {
     }
     return {
         type: 'table',
-        markdown:markdowns,
+        markdown: markdowns,
         html: html,
         index: i - 1
     }
