@@ -51,7 +51,6 @@ export function initEvent(md) {
         if (row && (!row.hasAttr('md') || md.cursor.in('CODE'))) {
             var txt = row.text()
             if (row.attr('type') == 'pre' && row.hasAttr('md')) {
-                console.log(txt)
                 txt = '```\n' + txt
                 if (!/\n$/.test(txt)) {
                     txt += '\n'

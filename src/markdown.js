@@ -20,10 +20,10 @@ var regLib = {
 
 /**
  * 引用<blockquote>
- * 
- * @param {any} rows 
- * @param {any} start 
- * @returns 
+ *
+ * @param {any} rows
+ * @param {any} start
+ * @returns
  */
 function handleBlockquote(rows, start) {
     var html = []
@@ -35,18 +35,19 @@ function handleBlockquote(rows, start) {
             if (!regLib.blockquote.test(rows[i])) {
                 break
             }
+            var row = rows[i]
             markdowns.push(row)
-            var row = rows[i].replace(/>/, '')
-            if (regLib.ul.test(row)) {
+            var repRow = row.replace(/^>/, '')
+            if (regLib.ul.test(repRow)) {
                 var ul = handleUl(rows, i, />/)
                 html = html.concat(ul.html)
                 i = ul.index
-            } else if (regLib.ol.test(row)) {
+            } else if (regLib.ol.test(repRow)) {
                 var ol = handleOl(rows, i, />/)
                 html = html.concat(ol.html)
                 i = ol.index
             } else {
-                html.push(handleParagraph(row))
+                html.push(handleParagraph(repRow))
             }
         }
         html.push('</blockquote>')
@@ -61,11 +62,11 @@ function handleBlockquote(rows, start) {
 
 /**
  * 无序列表<ul>
- * 
- * @param {any} rows 
- * @param {any} start 
- * @param {any} reg 
- * @returns 
+ *
+ * @param {any} rows
+ * @param {any} start
+ * @param {any} reg
+ * @returns
  */
 function handleUl(rows, start, reg) {
     var html = []
@@ -99,11 +100,11 @@ function handleUl(rows, start, reg) {
 
 /**
  * 有序列表<ol>
- * 
- * @param {any} rows 
- * @param {any} start 
- * @param {any} reg 
- * @returns 
+ *
+ * @param {any} rows
+ * @param {any} start
+ * @param {any} reg
+ * @returns
  */
 function handleOl(rows, start, reg) {
     var html = []
@@ -240,7 +241,7 @@ function handleTdAlign(txt) {
     return align
 }
 
-function handleTitle(txt, toc) {
+function handleTitle(txt) {
     return txt.replace(/(#{1,6})(.+)/, function (match, $1, $2) {
         var hno = $1.length
         $2 = replaceHtmlTag($2)
@@ -318,7 +319,6 @@ export function mdToHtml(md) {
     if (rowsCount > 0) {
 
         for (var i = 0; i < rowsCount; i++) {
-            var row = rows[i]
             var row = rows[i]
             if (regLib.title.test(row)) {
                 html.push(dataFormat('h', row, handleTitle(row)))
