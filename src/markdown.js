@@ -4,13 +4,13 @@ var regLib = {
     ul_flag: /^[\.\-\*]/,
     ol: /^\d+\.\s?.+$/,
     img: /\!\[(.*?)\]\((.*?)\)/g,
-    title: /^#{1,6}.+$/,
+    title: /^(#{1,6}).+$/,
     a: /\[((?:[^\(\)\[\]]|\\\[|\\\]|\\\(|\\\))+)\]\((.+?)\)/g,
     b: /\*\*(.+?)\*\*/g,
     i: /\*(.+?)\*/g,
     inline_code: /\`(.+?)\`/g,
     blockquote: /^>(.+?)$/,
-    hr: /^(\*\s*){3,}|(-\s*){3,}|(_\s*){3,}$/,
+    hr: /^(\*|\_|\-){3,}$/,
     table: /^(\|[^|]+)+\|\s*$/,
     table_td_align: /^(\|\s*:?-+:?\s*)+\|\s*$/,
     table_td_align_left: /^\s*:-+\s*$/,
@@ -122,6 +122,36 @@ function handleUl(rows, start, reg) {
     }
 }
 
+
+function toLi(rows) {
+    var tree = []
+
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i]
+        if (/^\s+/.test(row)) {
+
+            var _blank = []
+            for (; i < rows.length; i++) {
+                if (/^\s+/.test(rows[i])) {
+                    _blank.push(rows[i].replace(/^\s+/, ''))
+                } else {
+                    i--
+                    break
+                }
+            }
+            tree[tree.length - 1].children = toTree(_blank)
+
+        } else {
+            tree.push({
+                tag: 'li',
+                md: rows[i],
+                text: rows[i].replace(/^[\.\*\-]\s*/, '')
+            })
+        }
+
+    }
+    return tree
+}
 
 /**
  * 有序列表<ol>
@@ -336,12 +366,171 @@ function dataFormat(type, markdown, html) {
     }
 }
 
+
+function toBlockquote(rows) {
+    var tree = []
+
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i]
+        if (/^\s+/.test(row)) {
+
+            var _blank = []
+            for (; i < rows.length; i++) {
+                if (/^\s+/.test(rows[i])) {
+                    _blank.push(rows[i].replace(/^\s+/, ''))
+                } else {
+                    i--
+                    break
+                }
+            }
+            tree[tree.length - 1].children = toTree(_blank)
+
+        } else {
+            tree.push({
+                tag: 'p',
+                md: row,
+                text: row.replace(/^>/, '')
+            })
+        }
+
+    }
+    return tree
+}
+
+function toTree(rows) {
+    var html = []
+    var rowsCount = rows.length
+    for (var i = 0; i < rowsCount; i++) {
+        var row = rows[i]
+        if (regLib.title.test(row)) {
+            html.push({
+                tag: 'h' + (RegExp.$1 ? RegExp.$1.length : 1),
+                md: row,
+                text: row.replace(/^#{1,6}/, '')
+            })
+
+        } else if (regLib.hr.test(row)) {
+            html.push({
+                tag: 'hr',
+                md: row
+            })
+
+        } else if (regLib.ul.test(row)) {
+            var _raw = []
+            for (var j = i; j < rowsCount; j++) {
+                var _rawRow = rows[j]
+                if (!regLib.ul.test(_rawRow) && !/^\s+.+/.test(_rawRow)) {
+                    break
+                }
+                _raw.push(_rawRow)
+
+            }
+            i = j - 1
+            html.push({
+                tag: 'ul',
+                children: toLi(_raw),
+                md: _raw
+            })
+
+        } else if (regLib.ol.test(row)) {
+
+            var _raw = []
+            for (var j = i; j < rowsCount; j++) {
+                var _rawRow = rows[j]
+                if (!regLib.ol.test(_rawRow) && !/^\s+.+/.test(_rawRow)) {
+                    break
+                }
+                _raw.push(_rawRow)
+            }
+            i = j - 1
+            html.push({
+                tag: 'ol',
+                children: toLi(_raw),
+                md: _raw
+            })
+
+
+        } else if (regLib.table.test(row)) {
+            var table = handleTable(rows, i)
+            html.push(table)
+            i = table.index
+
+        } else if (regLib.blockquote.test(row)) {
+            var _raw = [row]
+            i++
+            for (; i < rowsCount; i++) {
+                var _rawRow = rows[i]
+                if (!regLib.blockquote.test(_rawRow) && !/^\s+.+/.test(_rawRow)) {
+                    i--
+                    break
+                }
+                _raw.push(_rawRow)
+            }
+            html.push({
+                tag: 'blockquote',
+                children: toBlockquote(_raw),
+                md: _raw
+            })
+
+        } else if (regLib.code.test(row)) {
+            var _raw = [row]
+            i++
+            for (; i < rowsCount; i++) {
+                var _rawRow = rows[i]
+                _raw.push(_rawRow)
+                if (regLib.code.test(_rawRow)) {
+                    break
+                }
+            }
+            html.push({
+                tag: 'pre',
+                children: [{
+                    tag: 'code',
+                    text: _raw.join('\n')
+                }],
+                md: _raw
+            })
+
+        } else {
+            html.push({
+                tag: 'p',
+                md: row,
+                text: row
+            })
+        }
+    }
+    return html
+}
+
+export function treeToHtml(nodes) {
+    var html = []
+    for (var i = 0; i < nodes.length; i++) {
+        var node = nodes[i]
+        html.push('<' + node.tag + '>')
+        if (node.text) {
+            html.push(node.text)
+        }
+        if (node.children) {
+            html.push(treeToHtml(node.children))
+        }
+        html.push('</' + node.tag + '>')
+    }
+    return html.join('')
+}
+
+export function mdToTree(md) {
+
+    var rows = md.match(/.+/mg) || [];
+    return toTree(rows)
+}
+
 export function mdToHtml(md) {
     var rows = md.match(/.+/mg) || [],
         html = [],
         rowsCount = rows.length;
 
     if (rowsCount > 0) {
+
 
         for (var i = 0; i < rowsCount; i++) {
             var row = rows[i]
