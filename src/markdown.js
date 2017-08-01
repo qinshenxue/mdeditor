@@ -1,5 +1,5 @@
 var regLib = {
-    code: /^\`{3}.*$/,
+    code: /^\`{3}(.*)$/,
     ul: /^[\.\-\*]\s+.+$/,
     ul_flag: /^[\.\-\*]/,
     ol: /^\d+\.\s?.+$/,
@@ -474,20 +474,24 @@ function toTree(rows) {
 
         } else if (regLib.code.test(row)) {
             var _raw = [row]
+            var codeType = RegExp.$1 || ''
+            var _code = []
             i++
             for (; i < rowsCount; i++) {
                 var _rawRow = rows[i]
-                _raw.push(_rawRow)
                 if (regLib.code.test(_rawRow)) {
                     break
                 }
+                _code.push(_rawRow)
             }
+            _raw.push('```')
             html.push({
                 tag: 'pre',
                 children: [{
                     tag: 'code',
-                    text: _raw.join('\n')
+                    text: _code.join('\n')
                 }],
+                class: codeType.trim(),
                 md: _raw
             })
 
@@ -506,7 +510,11 @@ export function treeToHtml(nodes) {
     var html = []
     for (var i = 0; i < nodes.length; i++) {
         var node = nodes[i]
-        html.push('<' + node.tag + '>')
+        html.push('<' + node.tag)
+        if (node.class) {
+            html.push(' class="' + node.class + '" ')
+        }
+        html.push('>')
         if (node.text) {
             html.push(node.text)
         }
