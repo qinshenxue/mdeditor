@@ -7,7 +7,9 @@ var gulp = require('gulp'),
     syncConfig = require('./sync-config');
 
 var eslint = require('gulp-eslint');
-
+var uglify = require('rollup-plugin-uglify')
+var babel = require('rollup-plugin-babel')
+var flow = require('rollup-plugin-flow');
 
 gulp.task('jshint', function () {
     return gulp.src('src/*.js')
@@ -67,18 +69,41 @@ gulp.task('build', function () {
         entry: 'src/index.js',
 
 
-        plugins: [
-        ]
+        plugins: []
     }).then(function (bundle) {
         return bundle.write({
             format: 'umd',
-            moduleName:'mdeditor',
+            moduleName: 'mdeditor',
             dest: 'dist/md.js'
         });
     });
 });
 
-gulp.task('watch',function () {
+gulp.task('markdown', function () {
+    return rollup({
+        entry: 'src/markdown.js',
+
+        plugins: [
+            flow()
+            , babel({
+                exclude: 'node_modules/**'
+            })
+            , uglify()
+        ]
+    }).then(function (bundle) {
+        return bundle.write({
+            format: 'iife',
+            moduleName: 'md',
+            dest: 'dist/markdown.js'
+        });
+    });
+});
+
+gulp.task('watch-markdown', function () {
+    gulp.watch(['src/markdown.js'], ['markdown']);
+})
+
+gulp.task('watch', function () {
     gulp.watch(['src/**.js'], ['build']);
 })
 

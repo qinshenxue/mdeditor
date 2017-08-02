@@ -151,7 +151,7 @@
     border-radius: 2px;
 }
 
-.mdeditor-blockquote {
+.mdeditor blockquote {
     margin: 0 0 1.2em;
     padding: 10px;
     color: #888;
@@ -159,7 +159,7 @@
     border-left: 1px solid #aaa;
 }
 
-.mdeditor-blockquote > :last-child {
+.mdeditor blockquote > :last-child {
     margin-bottom: 0;
 }
 
@@ -171,51 +171,68 @@
     list-style: inherit;
 }
 
-.mdeditor .mdeditor-code {
+.mdeditor pre {
     margin-bottom: 20px;
     border: 0;
-    overflow: auto;
+    overflow: hidden;
+    position: relative;
 }
 
-.mdeditor .mdeditor-code code {
+.mdeditor pre:after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    color: #ccc;
+    text-align: right;
+    font-size: 0.75em;
+    padding: 5px 10px 0;
+    line-height: 15px;
+    height: 15px;
+    font-weight: 600;
+    content: attr(data-lang);
+}
+
+.mdeditor pre code {
     display: block;
     font-size: 13px;
+    line-height: 1.5;
     padding: 1em 2em;
-    background: #f5f5f5;
     word-wrap: normal;
+    overflow: auto;
+    background: #f5f5f5;
 }
 
-.mdeditor .mdeditor-code ol {
+.mdeditor code ol {
     margin: 0;
     padding: 0;
     color: #aaa;
 }
 
-.mdeditor .mdeditor-code li {
+.mdeditor code li {
     line-height: 1.7em;
     list-style: none;
 }
 
-.mdeditor .mdeditor-code li > div {
+.mdeditor code li > div {
     white-space: pre;
     color: #222;
     word-wrap: normal;
 }
 
-.mdeditor-table {
+.mdeditor table {
     width: 100%;
     margin-bottom: 10px;
     border-collapse: collapse;
     border-spacing: 0;
 }
 
-.mdeditor-table th {
+.mdeditor table th {
     background: #f1f1f1;
     color: #666;
     font-weight: 400;
 }
 
-.mdeditor-table td, .mdeditor-table th {
+.mdeditor table td, .mdeditor table th {
     padding: 8px 10px;
     border: 1px solid #e6e6e6;
 }
