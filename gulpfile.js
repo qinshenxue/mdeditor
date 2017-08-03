@@ -88,7 +88,7 @@ gulp.task('markdown', function () {
             , babel({
                 exclude: 'node_modules/**'
             })
-            , uglify()
+            //, uglify()
         ]
     }).then(function (bundle) {
         return bundle.write({
