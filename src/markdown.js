@@ -1,21 +1,19 @@
 // @flow
 var regLib = {
-    code: /^\`{3}.*$/,
+    title: /^(#{1,6}).+$/,
     ul: /^[\.\-\*]\s+.+$/,
     ol: /^\d+\.\s?.+$/,
+    blockquote: /^!?>.+?$/,
+    code: /^\`{3}.*$/,
+    table: /^(\|[^|]+)+\|\s*$/,
+    align: /^(\|\s*:?-+:?\s*)+\|\s*$/,
+    hr: /^(\*|\_|\-){3,}$/,
     img: /\!\[(.*?)\]\((.*?)\)/g,
-    title: /^(#{1,6}).+$/,
     a: /\[((?:[^\(\)\[\]]|\\\[|\\\]|\\\(|\\\))+)\]\((.+?)\)/g,
     b: /\*\*(.+?)\*\*/g,
     i: /\*(.+?)\*/g,
-    inlineCode: /\`(.+?)\`/g,
-    blockquote: /^!?>.+?$/,
-    hr: /^(\*|\_|\-){3,}$/,
-    table: /^(\|[^|]+)+\|\s*$/,
-    tdSplit: /[^|]+/g,
-    tdAlign: /^(\|\s*:?-+:?\s*)+\|\s*$/
+    inlineCode: /\`(.+?)\`/g
 }
-
 
 function toLi(tag: string, rows: Array<string>): Array<MdTree> {
     var tree: Array<MdTree> = []
@@ -59,9 +57,7 @@ function handleInlineSet(txt: string): string {
 }
 
 function handleImg(txt: string): string {
-    return txt.replace(regLib.img, function (match, $1, $2) {
-        return '<img class="mdeditor-img" alt="' + $1 + '" src="' + $2 + '">'
-    })
+    return txt.replace(regLib.img, '<img class="mdeditor-img" alt="$1" src="$2">')
 }
 
 function handleLink(txt: string): string {
@@ -71,29 +67,20 @@ function handleLink(txt: string): string {
 }
 
 function handleBold(txt: string): string {
-    return txt.replace(regLib.b, function (match, $1) {
-        return '<b>' + $1 + '</b>'
-    })
+    return txt.replace(regLib.b, '<b>$1</b>')
 }
 
 function handleItalic(txt: string): string {
-
-    return txt.replace(regLib.i, function (match, $1) {
-        return '<i>' + $1 + '</i>'
-    })
+    return txt.replace(regLib.i, '<i>$1</i>')
 }
 
 function handleInlineCode(txt: string): string {
-
-    return txt.replace(regLib.inlineCode, function (txt, $1) {
-        return '<span class="mdeditor-inline-code">' + $1 + '</span>'
-    })
+    return txt.replace(regLib.inlineCode, '<span class="mdeditor-inline-code">$1</span>')
 }
 
 function replaceHtmlTag(txt: string): string {
     return txt.replace(/\</g, '&lt;').replace(/\>/g, '&gt;')
 }
-
 
 function toBlockquote(rows: Array<string>) {
     var tree = []
@@ -128,8 +115,9 @@ function toBlockquote(rows: Array<string>) {
 
 function toTable(rows: Array<string>) {
 
+    var tdSplit = /[^|]+/g
 
-    var alignRaw = rows[1].match(regLib.tdSplit) || []
+    var alignRaw = rows[1].match(tdSplit) || []
     var align = []
 
     for (let i = 0, j = alignRaw.length; i < j; i++) {
@@ -141,7 +129,6 @@ function toTable(rows: Array<string>) {
             align.push('left')
         }
     }
-
 
     var thead = {
         tag: 'tr',
@@ -156,7 +143,7 @@ function toTable(rows: Array<string>) {
         }
     }
 
-    var thRaw = rows[0].match(regLib.tdSplit) || []
+    var thRaw = rows[0].match(tdSplit) || []
     var tdCount = thRaw.length
     for (let i = 0; i < tdCount; i++) {
         thead.children.push({
@@ -174,7 +161,7 @@ function toTable(rows: Array<string>) {
             children: []
         }
         var tdCountCopy = tdCount
-        var tbodyTds = rows[i].match(regLib.tdSplit) || []
+        var tbodyTds = rows[i].match(tdSplit) || []
         while (tdCountCopy--) {
             var tdMd = tbodyTds[tdCountCopy]
             tbodyTr.children.unshift({
@@ -198,11 +185,12 @@ function toTree(rows: Array<string>) {
     for (var i = 0; i < rowsCount; i++) {
         var row = rows[i]
         if (regLib.title.test(row)) {
-            var hno = row.match(/^#{1,6}/)
+            var hFlagReg = /^#{1,6}/
+            var hno = row.match(hFlagReg)
             html.push({
-                tag: 'h' + (hno ? hno[0].length : 1),
+                tag: 'h' + hno[0].length,
                 md: row,
-                text: handleInlineSet(row.replace(/^#{1,6}/, ''))
+                text: handleInlineSet(row.replace(hFlagReg, ''))
             })
 
         } else if (regLib.hr.test(row)) {
@@ -229,7 +217,7 @@ function toTree(rows: Array<string>) {
                 md: _raw
             })
 
-        } else if (regLib.table.test(row) && rows[i + 1] && regLib.tdAlign.test(rows[i + 1])) {
+        } else if (regLib.table.test(row) && rows[i + 1] && regLib.align.test(rows[i + 1])) {
 
             var _raw = [row, rows[i + 1]]
             i += 2
@@ -309,7 +297,7 @@ function toTree(rows: Array<string>) {
     return html
 }
 
-function treeToHtml(nodes): string {
+function treeToHtml(nodes: Array<MdTree>): string {
     var html = []
     for (var i = 0; i < nodes.length; i++) {
         var node = nodes[i]
@@ -345,11 +333,9 @@ function treeToHtml(nodes): string {
             }
             html.push('</' + node.tag + '>')
         }
-
     }
     return html.join('')
 }
-
 
 function mdToTree(md: string) {
     var rows = md.match(/.+|^\n/mg) || [];
