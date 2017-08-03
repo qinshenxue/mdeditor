@@ -84,11 +84,10 @@ gulp.task('markdown', function () {
         entry: 'src/markdown.js',
 
         plugins: [
-            flow()
-            , babel({
+            babel({
                 exclude: 'node_modules/**'
             })
-            //, uglify()
+            , uglify()
         ]
     }).then(function (bundle) {
         return bundle.write({

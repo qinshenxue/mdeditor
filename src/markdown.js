@@ -1,24 +1,19 @@
 // @flow
 var regLib = {
-    code: /^\`{3}(.*)$/,
-    code_type: /[^`\s]+/,
+    code: /^\`{3}.*$/,
     ul: /^[\.\-\*]\s+.+$/,
-    ul_flag: /^[\.\-\*]/,
     ol: /^\d+\.\s?.+$/,
     img: /\!\[(.*?)\]\((.*?)\)/g,
     title: /^(#{1,6}).+$/,
     a: /\[((?:[^\(\)\[\]]|\\\[|\\\]|\\\(|\\\))+)\]\((.+?)\)/g,
     b: /\*\*(.+?)\*\*/g,
     i: /\*(.+?)\*/g,
-    inline_code: /\`(.+?)\`/g,
-    blockquote: /^(!?)>(.+?)$/,
+    inlineCode: /\`(.+?)\`/g,
+    blockquote: /^!?>.+?$/,
     hr: /^(\*|\_|\-){3,}$/,
     table: /^(\|[^|]+)+\|\s*$/,
-    td_split: /[^|]+/g,
-    table_td_align: /^(\|\s*:?-+:?\s*)+\|\s*$/,
-    table_td_align_left: /^\s*:-+\s*$/,
-    table_td_align_center: /^\s*:-+:\s*$/,
-    table_td_align_right: /^\s*-+:\s*$/
+    tdSplit: /[^|]+/g,
+    tdAlign: /^(\|\s*:?-+:?\s*)+\|\s*$/
 }
 
 
@@ -90,7 +85,7 @@ function handleItalic(txt: string): string {
 
 function handleInlineCode(txt: string): string {
 
-    return txt.replace(regLib.inline_code, function (txt, $1) {
+    return txt.replace(regLib.inlineCode, function (txt, $1) {
         return '<span class="mdeditor-inline-code">' + $1 + '</span>'
     })
 }
@@ -134,13 +129,13 @@ function toBlockquote(rows: Array<string>) {
 function toTable(rows: Array<string>) {
 
 
-    var alignRaw = rows[1].match(regLib.td_split) || []
+    var alignRaw = rows[1].match(regLib.tdSplit) || []
     var align = []
 
     for (let i = 0, j = alignRaw.length; i < j; i++) {
-        if (regLib.table_td_align_right.test(alignRaw[i])) {
+        if (/^\s*-+:\s*$/.test(alignRaw[i])) {
             align.push('right')
-        } else if (regLib.table_td_align_center.test(alignRaw[i])) {
+        } else if (/^\s*:-+:\s*$/.test(alignRaw[i])) {
             align.push('center')
         } else {
             align.push('left')
@@ -161,7 +156,7 @@ function toTable(rows: Array<string>) {
         }
     }
 
-    var thRaw = rows[0].match(regLib.td_split) || []
+    var thRaw = rows[0].match(regLib.tdSplit) || []
     var tdCount = thRaw.length
     for (let i = 0; i < tdCount; i++) {
         thead.children.push({
@@ -179,7 +174,7 @@ function toTable(rows: Array<string>) {
             children: []
         }
         var tdCountCopy = tdCount
-        var tbodyTds = rows[i].match(regLib.td_split) || []
+        var tbodyTds = rows[i].match(regLib.tdSplit) || []
         while (tdCountCopy--) {
             var tdMd = tbodyTds[tdCountCopy]
             tbodyTr.children.unshift({
@@ -234,7 +229,7 @@ function toTree(rows: Array<string>) {
                 md: _raw
             })
 
-        } else if (regLib.table.test(row) && rows[i + 1] && regLib.table_td_align.test(rows[i + 1])) {
+        } else if (regLib.table.test(row) && rows[i + 1] && regLib.tdAlign.test(rows[i + 1])) {
 
             var _raw = [row, rows[i + 1]]
             i += 2
@@ -255,7 +250,7 @@ function toTree(rows: Array<string>) {
 
         } else if (regLib.blockquote.test(row)) {
             var _raw = [row]
-            var _class = row.indexOf('!') === 0 ? 'warning' : ''
+            var _class = row.indexOf('!') == 0 ? 'warning' : ''
             i++
             for (; i < rowsCount; i++) {
                 var _rawRow = rows[i]
@@ -274,7 +269,7 @@ function toTree(rows: Array<string>) {
 
         } else if (regLib.code.test(row)) {
             var _raw = [row]
-            var codeType = row.match(regLib.code_type)
+            var codeType = row.match(/[^`\s]+/)
             codeType = codeType ? codeType[0] : ''
             var _code = ''
             for (i++; i < rowsCount; i++) {
@@ -318,38 +313,37 @@ function treeToHtml(nodes): string {
     var html = []
     for (var i = 0; i < nodes.length; i++) {
         var node = nodes[i]
-        switch (node.tag) {
-            case 'text':
+
+        if (node.tag == 'text') {
+            html.push(node.text)
+            if (node.children) {
+                html.push(treeToHtml(node.children))
+            }
+        } else {
+            html.push('<' + node.tag)
+            if (node.class) {
+                html.push(' class="' + node.class + '" ')
+            }
+            if (node.style) {
+                html.push(' style="')
+                for (var p in node.style) {
+                    html.push(p + ':' + node.style[p] + ';')
+                }
+                html.push('" ')
+            }
+            if (node.attr) {
+                for (var a in node.attr) {
+                    html.push(' ' + a + '="' + node.attr[a] + '" ')
+                }
+            }
+            html.push('>')
+            if (node.text) {
                 html.push(node.text)
-                if (node.children) {
-                    html.push(treeToHtml(node.children))
-                }
-                break
-            default:
-                html.push('<' + node.tag)
-                if (node.class) {
-                    html.push(' class="' + node.class + '" ')
-                }
-                if (node.style) {
-                    html.push(' style="')
-                    for (var p in node.style) {
-                        html.push(p + ':' + node.style[p] + ';')
-                    }
-                    html.push('" ')
-                }
-                if (node.attr) {
-                    for (var a in node.attr) {
-                        html.push(' ' + a + '="' + node.attr[a] + '" ')
-                    }
-                }
-                html.push('>')
-                if (node.text) {
-                    html.push(node.text)
-                }
-                if (node.children) {
-                    html.push(treeToHtml(node.children))
-                }
-                html.push('</' + node.tag + '>')
+            }
+            if (node.children) {
+                html.push(treeToHtml(node.children))
+            }
+            html.push('</' + node.tag + '>')
         }
 
     }
