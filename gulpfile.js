@@ -69,7 +69,9 @@ gulp.task('build', function () {
         entry: 'src/index.js',
 
 
-        plugins: []
+        plugins: [babel({
+            exclude: 'node_modules/**'
+        })]
     }).then(function (bundle) {
         return bundle.write({
             format: 'umd',

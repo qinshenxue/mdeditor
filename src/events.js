@@ -2,7 +2,7 @@
  * Created by qinsx on 2017/6/13.
  */
 
-import { mdToHtml } from './markdown'
+import {treeToHtml, mdToTree} from './markdown'
 
 export function eventsMixin(mdeditor) {
 
@@ -78,6 +78,7 @@ export function initEvent(md) {
             if (row) {
                 var rowNo = row.attr('row')
                 row.text(md._value[rowNo])
+                console.log(md._value[rowNo])
                 row.removeAttr('md')
                 row.removeAttr('code')
             }
@@ -94,12 +95,12 @@ export function initEvent(md) {
             } else if (!oldRow.hasAttr('md')) {
                 var text = oldRow.text()
                 if (text !== '') {
-                    var mdHtml = mdToHtml(text)
-                    if (mdHtml.length == 1) {
-                        oldRow.html(mdHtml[0].html.join(''))
-                        oldRow.attr('type', mdHtml[0].type)
+                    var tree = mdToTree(text)
+                    if (tree.length == 1) {
+                        oldRow.html(treeToHtml(tree))
+                        oldRow.attr('type', tree[0].tag)
                     } else {
-                        var rows = this.htmlToRow(mdHtml)
+                        var rows = this.htmlToRow(tree)
                         oldRow.replaceWith(rows)
                     }
                     oldRow.attr('md', 1)

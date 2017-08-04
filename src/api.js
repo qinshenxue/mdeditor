@@ -1,4 +1,4 @@
-import {mdToHtml} from './markdown'
+import {mdToTree} from './markdown'
 
 /**
  * 实例可用api
@@ -47,8 +47,8 @@ export function apiMixin(mdeditor) {
         this._rowNo = 0
         this._value = []
         this.el.empty()
-        var html = mdToHtml(markdown)
-        var rows = this.htmlToRow(html)
+        var tree = mdToTree(markdown)
+        var rows = this.htmlToRow(tree)
         var me = this
         rows.forEach(function (row) {
             me.el.append(row)

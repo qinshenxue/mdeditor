@@ -5,7 +5,7 @@ declare type MdTree = {
 
     tag: string;  // html 标签名
     children?: Array<MdTree>; // 子节点
-    text?: string;
+    html?: string;
     class?: string;
     attr?: Object;
     style?: Object;

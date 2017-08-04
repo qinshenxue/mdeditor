@@ -2,6 +2,7 @@
  * Created by qinsx on 2017/6/13.
  */
 import {isTextNode, createElement}  from './util'
+import {treeToHtml}  from './markdown'
 
 export function rowMixin(mdeditor) {
 
@@ -65,19 +66,19 @@ export function rowMixin(mdeditor) {
      * @param html 由mdToHtml返回的html数组
      * @returns {Array}
      */
-    mdeditor.prototype.htmlToRow = function (html) {
+    mdeditor.prototype.htmlToRow = function (tree: Array<MdTree>) {
         var rows = []
-        for (var i = 0; i < html.length; i++) {
+        for (var i = 0; i < tree.length; i++) {
             var div = createElement(['div', {
                 attrs: {
                     'row': this._rowNo,
                     'md': 1,
-                    type: html[i].type
+                    type: tree[i].tag
                 },
-                innerHTML: html[i].html.join('')
+                innerHTML: treeToHtml([tree[i]])
             }])
             rows.push(div)
-            this._value[this._rowNo] = html[i].markdown.join('\n')
+            this._value[this._rowNo] = tree[i].md
             this._rowNo++
         }
         return rows

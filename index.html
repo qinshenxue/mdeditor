@@ -4,16 +4,23 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <link rel="stylesheet" href="src/markdown.css">
     <link rel="stylesheet" href="src/mdeditor.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/vs.min.css"
+          integrity="sha256-w6kCMnFvhY2tI1OnsYR/rb5DG9yFGodJknvFZOkp51E=" crossorigin="anonymous"/>
     <style>
         html,
         body {
             height: 100%;
+            background: #f4f4f4;
         }
 
-        .mdeditor {
+        .md {
+            background: #fff;
             width: 800px;
             margin: 0 auto;
+            padding: 50px;
+            color: #333;
         }
 
     </style>
@@ -22,88 +29,2150 @@
 <body>
 
 
-<div id="md" class="mdeditor1" contenteditable="true"></div>
+<div id="md" class="mdeditor md" contenteditable="true"></div>
 
-<textarea id="mdv" class="mdeditor">
-
-#[asdfasdfasfd](asdfasdfasfd)
-##h2<div></div>
-###h3
-####h4
-##### h5
-###### h6
-- li1
-* li2
-. li3<script>alert(1)</script>
-- sdsfd<div></div>
-1. dsfsdf
-2. dsfdsf
-     sdsdsdf
-    | 项目        | 价格   |  数量  |
-    | --------   | -----:  | :----:  |
-    | 计算机     | \$1600 |
-    | 计算机<script>alert(1)</script>     | \$1600 |
-    | 计算机<div></div>     | \$1600 |
-
-> asdfasdfsadf
-> <script>alert(1)</script>
-
-!> asdfasdfsadf
- <div></div>
-
-``` js
-function toLi(tag, rows) {
-    var tree = []
-    for (var i = 0; i < rows.length; i++) {
-        var row = rows[i]
-        if (/^\s+/.test(row)) {
-
-
-            var _blank = []
-            for (; i < rows.length; i++) {
-                if (/^\s+/.test(rows[i])) {
-                    _blank.push(rows[i].replace(/^\s+/, ''))
-                } else {
-                    i--
-                    break
-                }
-            }
-            tree[tree.length - 1].children = toTree(_blank)
-
-        } else {
-            tree.push({
-                tag: 'li',
-                md: rows[i],
-                text: handleInlineSet(tag == 'ul' ? rows[i].replace(/^[\.\*\-]\s*/, '') : rows[i].replace(/^\d\.\s*/, ''))
-            })
-        }
-    }
-    return tree
+<textarea id="mdv" class="mdeditor" style="display: none">
+# 从零搭建vue2+vue-router2+webpack2工程
+一直在维护一篇从零搭建 vue2+webpack1 工程的文章——《vue2 vue-router2 webpack1》，期间也计划着等 Webpack2 正式发布了再来写这篇文章，现在已经正式发布了，官方文档也已经全部完成，相比旧版，新版的文档不仅指导你该如何配置，还解释了各个环节的原理。
+下面的步骤只讲如何操作，简化作用及原理的讲解，同时标注 Webpack2 需要注意的点。
+本文项目 GitHub：[https://github.com/qinshenxue/vue2-vue-router2-webpack2](https://github.com/qinshenxue/vue2-vue-router2-webpack2)
+Webpack2 中文文档地址：[https://doc.webpack-china.org/](https://doc.webpack-china.org/)
+##初始化工程
+新建工程目录 vue2practice，在目录下执行`npm init -y`来创建一个 package.json，在 package.json 中先添加以下必备模块：
+```
+"dependencies": {
+    "vue": "^2.4.2",
+    "vue-loader": "^13.0.2",
+    "vue-router": "^2.7.0",
+    "vue-template-compiler": "^2.4.2",
+    "webpack": "^3.4.1",
+    "webpack-dev-server": "^2.6.1"
 }
 ```
+!>vue-template-compiler 是 vue-loader 的 peerDependencies，npm3 不会自动安装 peerDependencies，然而 vue-template-compiler 又是必备的，那为什么作者不将其放到 dependencies 中呢？有人在 github 上提过这个问题，我大致翻译一下作者的回答（仅供参考）：这样做的原因是因为没有可靠的方式来固定嵌套依赖的关系，怎么理解这句话？首先 vue-template-compiler 和 vue 的版本号是一致的（目前是同步更新），将 vue-template-compiler 指定为 vue-loader 的 dependencies 并不能保证 vue-template-compiler 和 vue 的版本号是相同的，让用户自己指定版本才能保证这一点。点击查看作者的回答（英文） 。
+新建目录结构如下，新增的目录及文件先空着，下面的步骤会说明添加什么内容。
+```
+vue2pratice
+    |-- package.json
+    |-- index.html         // 启动页面
+    |-- webpack.config.js  // webpack配置文件
+    |-- src
+        |-- views       // vue页面组件目录
+        |-- main.js     // 入口文件
+        |-- router.js   // vue-router配置
+        |-- app.vue     // 工程首页组件
+```
+##配置Webpack
+Webpack 默认读取 webpack.config.js，文件名不能随便改，其中 entry 是必须配置的。
+``` js
+module.exports = {
+    entry: './src/main.js',
+    output: {
+        path: __dirname + '/dist',
+        publicPath: '/static/',
+        filename: 'build.js'
+    }
+}
+```
+Webpack2 要求配置项`output.path`必须为绝对路径。关于 Webpack 的各种路径在[《详解Webpack2的那些路径》](http://www.qinshenxue.com/article/20170315092242.html)有详细介绍。
+配置 webpack-dev-server，只需在 package.json 添加以下启动命令即可。
+``` js
+"scripts": {
+  "dev": "webpack-dev-server --hot --open"
+}
+```
+webpack-dev-server2 默认为 inline 模式，热模块替换仍需自己设置。
+##验证配置
+为了验证上述配置是否正确，下面将在一些文件中添加测试代码。
+在 index.html 中添加测试文字，引入打包后的 JS 文件。
+``` xml
+    <!-- index.html -->
+<body>
+    Hello, Webpack 2.
+    <br>
+    <script src="/static/build.js"></script>
+</body>
+```
+在 main.js 中添加如下测试代码。
+``` js
+// main.js
+document.write('来自main.js的问候！')
+```
+执行下面的命令来安装模块并启动服务器。
+```
+npm i && npm run dev
+```
+启动后浏览器会自动打开`http://localhost:8080`，如果控制台没有报错，且浏览器显示如下界面，则表示配置没问题。
+![](http://www.qinshenxue.com/resource/2017_02_21_12_36_26_802575.png)
+##Vue
+###新建页面
+在 views 目录下新建about.vue。
+``` xml
+<template>
+    <div>
+        这是{{page}}页面
+    </div>
+</template>
+<script>
+    module.exports = {
+        data: function () {
+            return {
+                page: 'about'
+            }
+        }
+    }
+</script>
+```
+###配置路由
+将 vue-router 实例化传入的参数提取到 router.js 形成路由配置文件。
+``` js
+module.exports = {
+    routes: [
+        {
+            path: '/about',
+            component: require('./views/about.vue')
+        }
+    ]
+}
+```
+###首页
+首页引入 ouput 配置的 JS，添加 Vue 实例的挂载目标。
+``` xml
+<body>
+<div id="app"></div>
+<script src="/static/build.js"></script>
+</body>
+```
+入口JS完成路由配置、初始化Vue实例。
+``` js
+import Vue from 'vue';
+import VueRouter from 'vue-router';
+const App = require('./app.vue');
+Vue.use(VueRouter);
+const router = new VueRouter(require('./router'))
+new Vue({
+    el: '#app',
+    router: router,
+    render: h => h(App)
+});
+```
+从 Vue 2.2.0 后使用 `require('vue')` 会报错，需使用 ES6 module（import），具体原因请参考 Vue 更新说明 https://github.com/vuejs/vue/releases，截图如下：
+![](http://www.qinshenxue.com/resource/2017_03_09_14_54_47_762820.png)
+在首页组件 app.vue 中添加路由链接、路由视图组件。
+``` xml
+<template>
+    <div>
+        <div>
+            <router-link to="/about">about</router-link>
+        </div>
+        <div>
+            <router-view></router-view>
+        </div>
+    </div>
+</template>
+```
+###配置loader
+配置vue文件对应的loader。
+``` js
+module: {
+    rules: [
+        {
+            test: /\.vue$/,
+            use: ["vue-loader"]
+        }
+    ]
+}
+```
+必须在module.rules下配置loader。'-loader'不能省略，必须将loader名写全。可以使用Rule.use或Rule.loader来配置loader（Rule.loader 是 Rule.use: [ { loader } ] 的简写），建议用use。
+上面完成了新增页面及访问该页面所需的配置，下面来测试下是否能正常访问/about。执行npm run dev，浏览器显示如图界面。
+![](http://www.qinshenxue.com/resource/2017_02_22_08_52_39_635702.gif)
+##支持CSS
+安装 css-loader 后即可在 vue 文件中使用 <style>，不需要配置Rule。
+`
 
-| 项目        | 价格   |  数量  |
-| --------   | -----:  | :----:  |
-| `计算机`     | \$1600 |
-| **计算机<script>alert(1)</script>**     | \$1600 |
-| *计算机<div></div>*     | \$1600 |
-![](http://qinshenxue.com/assets/img/favicon.ico?20170420) ![](http://qinshenxue.com/assets/img/favicon.ico?20170420)
+`
+`
+npm i css-loader -D
+`
+
+`
+`
+想要支持` import
+
+/
+require` 引入CSS文件，则需要配置对应的Rule。
+`
+
+`
+`
+js {
+    test: / \.css $ /,
+    use: [ "vue-style-loader", "css-loader" ]
+}
+
+`
+`
+`
+#
+#支持CSS预处理语言
+以stylus为例，安装stylus及stylus-loader。
+`
+
+`
+`
+npm install stylus stylus-loader -D
+`
+
+`
+`
+增加.styl文件对应的loader配置。
+
+`
+`
+`
+js {
+    test: / \.styl $ /,
+    use: [ "vue-style-loader", "css-loader", "stylus-loader" ]
+}
+
+`
+`
+`
+#
+#支持图片及图标字体
+安装图片及图标字体依赖的loader。
+`
+
+`
+`
+npm install url-loader file-loader -D
+`
+
+`
+`
+增加图片及图标字体的loader配置。
+`
+
+`
+`
+js {
+
+test:
+
+/
+\.
+(
+png|jpe? g|gif |svg
+
+)
+(
+\?. *
+
+)
+?
+$
+/
+,
+use: [ {
+
+loader:
+
+"url-loader"
+,
+options: {
+    limit: 10000,
+    name: 'images/[name].[hash:7].[ext]' / / 将图片都放入images文件夹下， [ hash: 7 ] 防缓存
+}
+
+}
+]
+}
+,
+{
+test:
+
+/
+\.
+(
+woff2? |eot |ttf |otf
+
+)
+(
+\?. *
+
+)
+?
+$
+/
+,
+use: [ {
+
+loader:
+
+"url-loader"
+,
+options: {
+    limit: 10000,
+    name: 'fonts/[name].[hash:7].[ext]' / / 将字体放入fonts文件夹下
+}
+
+}
+]
+}
+`
+`
+`
+#
+#构建
+添加打包命令如下：
+`
+
+`
+`
+js
+
+"build"
+:
+
+"webpack --progress --colors"
+`
+`
+`
+执行` npm run build` 开始构建，完成后，可以看到工程目录下多了dist目录以及 dist
+
+/
+build.js。
+
+#
+#使用 Webpack 插件
+#
+
+#
+#压缩JS
+在之前的文章提到过，打开未压缩版的build.js，你会发现ES6的语法没有被转化为ES5，因此需要安装babel套件来完成语法的转化，否则压缩的时候就会报错。
+
+`
+`
+`
+npm i babel-loader babel-core babel-preset-es2015 -D
+`
+
+`
+`
+增加babel的配置文件` .babelrc` 。
+`
+
+`
+`
+json {
+"presets": [ "es2015" ],
+"comments": false
+}
+
+`
+`
+`
+接着配置 JS 文件的 loader。
+`
+
+`
+`
+js {
+    test: / \.js $ /,
+    use: "babel-loader",
+    include: [path . resolve(__dirname, 'src') ]
+}
+
+`
+`
+`
+注意：Webpack2建议尽量避免exclude，更倾向于使用include。
+压缩 JS 采用` webpack.optimize.UglifyJsPlugin` ，配置如下：
+`
+
+`
+`
+js
+new webpack.optimize.
+
+UglifyJsPlugin
+(
+)
+`
+`
+`
+官网称warnings默认为false，你可能会遇到即使没有配置` warnings: true` ，控制台仍显示警告，看下面这段源码就知道了。[查看源码]
+
+(
+https:
+
+/
+/
+github.com /webpack/ webpack /blob/ master /lib/ optimize
+
+/
+UglifyJsPlugin.js#L85
+
+)
+!
+[]
+
+(
+http:
+
+/
+/
+www.qinshenxue.com /resource/
+
+2017
+_02_27_12_46_25_913363.png
+
+)
+只有当` options.compress
+
+!=
+=
+false` 时 warnings 才会被设置默认值 false，所以一旦配置了 compress 其它选项，那就需同时配置` warnings: false` 。
+warnings作用是当插件在压缩过程中移除的无效代码或定义是显示警告信息（display warnings when dropping unreachable code or unused declarations etc.）。
+
+#
+#
+#提取CSS
+使用` extract-text-webpack-plugin` 插件提取CSS。更改 css 及 less 的 loader 配置如下。
+`
+
+`
+`
+/
+/
+安装插件
+npm i extract-text-webpack-plugin -D
+`
+
+`
+`
+`
+`
+`
+js
+
+/
+/
+var ExtractTextPlugin
+
+=
+require
+(
+"extract-text-webpack-plugin"
+)
+{
+test:
+
+/
+\.css$
+
+/
+,
+use: ExtractTextPlugin.
+
+extract
+(
+{
+    use: "css-loader"
+}
+)
+}
+,
+{
+test:
+
+/
+\.styl$
+
+/
+,
+use: ExtractTextPlugin.
+
+extract
+(
+{
+    use: [ "css-loader", "stylus-loader" ]
+}
+)
+}
+`
+`
+`
+上述配置并不能提取 vue 文件中的 style，需要设置 vue-loader 参数才可以。
+`
+
+`
+`
+js {
+
+test:
+
+/
+\.vue$
+
+/
+,
+use: {
+
+loader:
+
+"vue-loader"
+,
+options: {
+
+loaders: {
+
+css: ExtractTextPlugin.
+
+extract
+(
+{
+    use: 'css-loader'
+}
+)
+,
+stylus: ExtractTextPlugin.
+
+extract
+(
+{
+    use: [ "css-loader", "stylus-loader" ]
+}
+)
+}
+}
+}
+}
+`
+`
+`
+初始化插件，filename 可以指定 CSS 文件的目录。
+`
+
+`
+`
+js
+new
+
+ExtractTextPlugin
+(
+{
+    filename: "css/style.css"
+}
+)
+`
+`
+`
+#
+#
+#PostCSS
+安装postcss-loader及postcss插件。
+`
+
+`
+`
+npm i postcss-loader autoprefixer cssnano -D
+`
+
+`
+`
+配置loader如下：
+`
+
+`
+`
+js
+
+/
+/
+css-loader配置改为
+use: [
+
+'css-loader'
+,
+"postcss-loader"
+]
+/
+/
+stylus-loader配置改为
+use: [
+
+"css-loader"
+,
+"postcss-loader"
+,
+"stylus-loader"
+]
+`
+`
+`
+postcss-loader 要放在 css-loader 和 style-loader 之后，CSS 预处理语言 loader 之前（stylus-loader）。
+配置 postcss-loader 的插件。建议新增 postcss.config.js 来配置postcss插件，以免要给每个 postcss-loader 去配置。更多 postcss-loader 的配置方式请参考 [postcss-load-config]
+
+(
+https:
+
+/
+/
+github.com /michael-ciniawsky/ postcss-load-config
+
+)
+。
+`
+
+`
+`
+js
+module.exports
+
+=
+{
+    plugins: [ require('autoprefixer'),
+    require('cssnano') ]
+}
+`
+`
+`
+注意插件配置的顺序，比如上面cssnano配置在前的话，autoprefixer会失效
+附：postcss插件分类搜索网站：[http:
+
+/
+/
+postcss.parts
+
+/
+]
+(
+http:
+
+/
+/
+postcss.parts
+
+/
+)
+#
+#
+#生成首页
+安装 html-webpack-plugin 插件。
+`
+
+`
+`
+npm i html-webpack-plugin -D
+`
+
+`
+`
+初始化插件。
+`
+
+`
+`
+js
+
+/
+/
+var HtmlWebpackPlugin
+
+=
+require
+(
+'html-webpack-plugin'
+)
+;
+new
+
+HtmlWebpackPlugin
+(
+{
+    filename: 'index.html',
+    template: 'index.tpl.html'
+}
+)
+`
+`
+`
+#
+#
+#其它插件
+指定生产环境，以便在压缩时可以让 UglifyJS 自动删除代码块内的警告语句。
+`
+
+`
+`
+js
+new webpack.
+
+DefinePlugin
+(
+{
+'process.env.NODE_ENV'
+:
+JSON
+.
+stringify
+(
+'production'
+)
+}
+)
+`
+`
+`
+因为这个插件直接做的文本替换，给定的值必须包含字符串本身内的实际引号。通常，有两种方式来达到这个效果，使用
+
+'"production"'
+， 或者使用 JSON.
+
+stringify
+(
+'production'
+)
+。
+你完全可以在自己的代码中使用` process.env.NODE_ENV` 来区分开发和生产，从而针对不同的环境做一些事情。不用担心这部分代码会被保留，最终会被 UglifyJS 删除。例如：
+`
+
+`
+`
+js
+if
+
+(
+process.env.NODE_ENV
+
+!=
+"production"
+)
+{
+/
+/
+开发环境
+}
+/
+/
+webpack.DefinePlugin插件替换后，上述代码会变成
+if
+
+(
+"production"
+!=
+"production"
+)
+{
+/
+/
+开发环境
+}
+/
+/
+输出
+if
+
+(
+false
+
+)
+{
+/
+/
+开发环境
+}
+/
+/
+UglifyJS 会删除这段无效代码
+`
+
+`
+`
+使用上述插件后再次构建，会发现生成的JS相比原来的体积小了不少。
+friendly-errors-webpack-plugin：https:
+
+/
+/
+github.com /geowarin/ friendly-errors-webpack-plugin
+# #分离Webpack配置
+将开发和生产配置文件分离，方便增加各个环境下的个性配置。Webpack2文档中也详细阐述了如何为多环境配置webpack。基本思路如下：
+
+-
+编写一个基本配置文件（webpack.base.config.js）
+
+-
+使用webpack-merge合并这个基础配置和针对环境的特定的配置（webpack.dev.config.js，webpack.prod.config.js）
+webpack.base.config.js 内容如下：
+`
+
+`
+`
+js
+var webpack
+
+=
+require
+(
+'webpack'
+)
+;
+var path
+
+=
+require
+(
+'path'
+)
+;
+var utils
+
+=
+require
+(
+'./utils'
+)
+;
+function
+
+resolve
+(
+relPath
+
+)
+{
+    return path . resolve(__dirname, relPath)
+;
+}
+module.exports
+
+=
+{
+entry: {
+    app: resolve('../src/main.js')
+}
+
+,
+output: {
+    filename: 'js/[name].js'
+}
+
+,
+module: {
+
+rules: [ {
+    test: / \.js $ /,
+    use: "babel-loader",
+    include: [ resolve('../src') ]
+}
+
+,
+{
+test:
+
+/
+\.vue$
+
+/
+,
+use: {
+    loader: "vue-loader",
+    options: utils . vueLoaderOptions()
+}
+
+}
+,
+{
+test:
+
+/
+\.
+(
+png|jpe? g|gif |svg
+
+)
+(
+\?. *
+
+)
+?
+$
+/
+,
+use: {
+
+loader:
+
+"url-loader"
+,
+options: {
+    limit: 10000,
+    name: 'images/[name].[hash:7].[ext]'
+}
+
+}
+}
+,
+{
+test:
+
+/
+\.
+(
+woff2? |eot |ttf |otf
+
+)
+(
+\?. *
+
+)
+?
+$
+/
+,
+use: [ {
+
+loader:
+
+"url-loader"
+,
+options: {
+    limit: 10000,
+    name: 'fonts/[name].[hash:7].[ext]'
+}
+
+}
+]
+}
+]
+}
+}
+`
+`
+`
+为什么要将vue-loader的options提取出来？其主要是用来配置CSS及CSS预处理语言的loader，开发环境可以不用配置，但是生产环境需要提取CSS、增加postcss-loader等，因此需要提取出来针对不同环境返回相应的options。后面会列出utils.vueLoaderOptions的内容。
+为什么没有配置CSS的loader？理由和上面的vue-loader一样。
+为什么没有配置path和publicPath？一方面是个性化参数，另外开发和生产可能不相同，因此在webpack.dev.config和webpack.prod.config中分别配置更为合适。
+webpack.dev.config.js 内容如下：
+`
+
+`
+`
+js
+var webpack
+
+=
+require
+(
+'webpack'
+)
+;
+var merge
+
+=
+require
+(
+'webpack-merge'
+)
+;
+var HtmlWebpackPlugin
+
+=
+require
+(
+'html-webpack-plugin'
+)
+;
+var baseWebpackConfig
+
+=
+require
+(
+'./webpack.base.config'
+)
+;
+var utils
+
+=
+require
+(
+'./utils'
+)
+;
+var config
+
+=
+require
+(
+'./config'
+)
+;
+
+Object.
+
+keys
+(
+baseWebpackConfig.entry
+
+)
+.
+
+forEach
+(
+function
+(
+name
+
+)
+{
+    baseWebpackConfig . entry [name] = [ ` webpack-dev-server / client ?
+    http: / /
+    localhost: ${config.dev.port} / `,
+    "webpack/hot/dev-server" ] . concat(baseWebpackConfig . entry [name])
+}
+)
+;
+
+module.exports
+
+=
+merge
+(
+baseWebpackConfig, {
+
+output: {
+    path: config . dev . outputPath,
+    publicPath: config . dev . outputPublicPath
+}
+
+,
+module: {
+    rules: utils . styleLoaders()
+}
+
+,
+plugins: [
+        new webpack.
+
+HotModuleReplacementPlugin
+(
+)
+,
+new
+
+HtmlWebpackPlugin
+(
+{
+    filename: 'index.html',
+    template: 'index.html',
+    inject: true
+}
+)
+]
+}
+)
+`
+`
+`
+添加了HtmlWebpackPlugin后，index.html中就不需要在自己去引用打包的JS了，会自动根据打包的JS添加引用，这样更加方便，关于HtmlWebpackPlugin的配置，需要说明两点：
+
+1
+. template的路径是相对于webpack编译时的上下文目录，说白了就是项目根目录，因此上面可以直接配置index.html，其指向的就是根目录下的index.html；
+
+2
+. filename则是相对于webpack配置项output.path（打包资源存储路径）。
+html-webpack-plugin关于template和filename路径源码如下：
+`
+
+`
+`
+js
+
+/
+/
+https:
+
+/
+/
+github.com /jantimon/ html-webpack-plugin /blob/ master
+
+/
+index.js
+
+/
+/
+template
+this.options.template
+
+=
+this.
+
+getFullTemplatePath
+(
+this.options.template, compiler.context
+
+)
+;
+/
+/
+filename
+this.options.filename
+
+=
+path.
+
+relative
+(
+compiler.options.output.path, filename
+
+)
+;
+`
+`
+`
+config.js内容如下：
+
+`
+`
+`
+js
+module.exports
+
+=
+{
+dev: {
+    outputPath: path . resolve(__dirname, '../static'),
+    outputPublicPath: '/',
+    port: 8000
+}
+
+,
+prod: {
+    outputPath: path . resolve(__dirname, '../static'),
+    outputPublicPath: '/static/'
+}
+
+}
+`
+`
+`
+utils.js内容如下：
+
+`
+`
+`
+js
+var ExtractTextPlugin
+
+=
+require
+(
+'extract-text-webpack-plugin'
+)
+;
+var isProd
+
+=
+process.env.NODE_ENV
+
+=
+=
+=
+"production"
+;
+/
+/
+根据项目需求添加CSS预处理语言并安装相应的loader，以stylus-loader为例
+var cssLang
+
+=
+[ {
+    name: 'css',
+    reg: / \.css $ /,
+    loader: 'css-loader'
+}
+
+,
+{
+    name: 'stylus',
+    reg: / \.styl $ /,
+    loader: "stylus-loader"
+}
+]
+;
+
+function
+
+genLoaders
+(
+lang
+
+)
+{
+    var loaders = [ 'css-loader', 'postcss-loader' ]
+;
+if
+
+(
+lang.name
+
+!=
+=
+'css'
+)
+{
+    loaders . push(lang . loader)
+;
+}
+if
+
+(
+isProd
+
+)
+{
+/
+/
+生产环境需要提取CSS
+loaders
+
+=
+ExtractTextPlugin.
+
+extract
+(
+{
+    use: loaders
+}
+)
+;
+}
+else {
+/ / 开发环境需要vue-style-loader将CSS提取到页面头部 loaders . unshift('vue-style-loader');
+}
+
+return loaders
+
+;
+}
+/
+/
+各种CSS的loader
+exports.styleLoaders
+
+=
+function
+(
+)
+{
+    var output = []
+;
+cssLang.
+
+forEach
+(
+lang
+
+=
+>
+{
+output.
+
+push
+(
+{
+    test: lang . reg,
+    use: genLoaders(lang)
+}
+)
+}
+)
+return output
+
+;
+}
+;
+/
+/
+vue-loader的options
+exports.vueLoaderOptions
+
+=
+function
+(
+)
+{
+var options
+
+=
+{
+loaders: {
+}
+
+}
+;
+cssLang.
+
+forEach
+(
+lang
+
+=
+>
+{
+    options . loaders [lang . name ] = genLoaders(lang)
+;
+}
+)
+;
+return options
+
+;
+}
+`
+`
+`
+接下来就是如何启动webpack-dev-server，vue-cli的webpack模板工程用的express及webpack中间件做开发服务器，其实用webpack-dev-server就能满足需求，当然用express能够做更多的事情，毕竟webpack-dev-server是一个轻量级的express。dev.js内容如下：
+
+`
+`
+`
+js
+var webpack
+
+=
+require
+(
+'webpack'
+)
+;
+var webpackDevServer
+
+=
+require
+(
+'webpack-dev-server'
+)
+;
+var devConfig
+
+=
+require
+(
+"./webpack.dev.config"
+)
+;
+var config
+
+=
+require
+(
+"./config"
+)
+;
+var compiler
+
+=
+webpack
+(
+devConfig
+
+)
+;
+var server
+
+=
+new
+
+webpackDevServer
+(
+compiler, {
+
+hot: true,
+noInfo: true,
+publicPath: config.dev.outputPublicPath,
+stats: {
+    colors: true
+}
+
+}
+)
+;
+server.
+
+listen
+(
+config.dev.port,
+
+"0.0.0.0"
+)
+;
+var url
+
+=
+`
+http:
+
+/
+/
+localhost:${config.dev.port}
+
+/
+`
+;
+/
+/
+需先安装 opn 模块 npm i opn -D
+var opn
+
+=
+require
+(
+'opn'
+)
+;
+/
+/
+打包完毕后启动浏览器
+server.middleware.
+
+waitUntilValid
+(
+function
+(
+)
+{
+    console . log(` > Listening at ${url} `)
+;
+opn
+(
+`
+${url}
+`
+)
+;
+}
+)
+`
+`
+`
+生产配置文件（webpack.prod.config.js）内容如下：
+
+`
+`
+`
+js
+
+/
+/
+设定为生产环境
+process.env.NODE_ENV
+
+=
+'production'
+;
+var webpack
+
+=
+require
+(
+'webpack'
+)
+;
+var merge
+
+=
+require
+(
+'webpack-merge'
+)
+;
+var HtmlWebpackPlugin
+
+=
+require
+(
+'html-webpack-plugin'
+)
+;
+var ExtractTextPlugin
+
+=
+require
+(
+'extract-text-webpack-plugin'
+)
+;
+var baseWebpackConfig
+
+=
+require
+(
+'./webpack.base.config'
+)
+;
+var utils
+
+=
+require
+(
+'./utils'
+)
+;
+var config
+
+=
+require
+(
+'./config'
+)
+;
+
+module.exports
+
+=
+merge
+(
+baseWebpackConfig, {
+
+output: {
+    path: config . prod . outputPath,
+    publicPath: config . prod . outputPublicPath
+}
+
+,
+module: {
+    rules: utils . styleLoaders()
+}
+
+,
+plugins: [
+        new webpack.
+
+DefinePlugin
+(
+{
+'process.env.NODE_ENV'
+:
+'"production"'
+}
+)
+,
+new webpack.optimize.
+
+UglifyJsPlugin
+(
+)
+,
+new
+
+ExtractTextPlugin
+(
+{
+    filename: "css/style.css?[contenthash:8]"
+}
+)
+,
+new
+
+HtmlWebpackPlugin
+(
+{
+    filename: 'index.html',
+    template: 'index.html',
+    inject: true
+}
+)
+]
+}
+)
+`
+`
+`
+生产构建（prod.js）内容如下：
+
+`
+`
+`
+js
+var webpack
+
+=
+require
+(
+"webpack"
+)
+;
+var webpackProdConfig
+
+=
+require
+(
+'./webpack.prod.config'
+)
+;
+webpack
+(
+webpackProdConfig,
+
+function
+(
+err, stats
+
+)
+{
+    process . stdout . write(stats . toString())
+;
+}
+)
+;
+`
+`
+`
+对应在package.json中添加开发和生产构建的命令如下：
+
+`
+`
+`
+"scripts"
+: {
+"dev": "node build/dev.js",
+"build": "node build/prod.js"
+}
+
+`
+`
+`
+#
+#代码分割
+参照vue-cli及webpack文档的提取公共代码的方式，利用插件webpack.optimize.CommonsChunkPlugin将来自node_modules下的模块提取到vendor.js（一般来讲都是外部库，短时间不会发生变化）。于是有如下代码：
+
+`
+`
+`
+js
+new webpack.optimize.
+
+CommonsChunkPlugin
+(
+{
+name:
+
+'vendor'
+,
+minChunks:
+
+function
+(
+module, count
+
+)
+{
+    return module . resource & & / \.js $ / . test(module . resource) & & module . resource . indexOf(path . join(__dirname, '../node_modules')) = = = 0
+}
+}
+)
+`
+`
+`
+如果你查看未压缩版的vendor.js，会发现不仅包含vue的代码，还包含了webpackBootstrap（webpack模块加载器）的代码，按理说放在vendor里面也没啥问题，毕竟后面的模块都需要依赖于此，但是如果你的chunk使用了hash，一旦app代码发生了改变，相应的hash值会发生变化，webpackBootstrap的代码也会发生变化（如图），而我们提取vendor的初心就是这部分代码改变频率不大，显然这不符合我们的目标，那么应当将webpackBootstrap再提取到一个文件中，代码如下：
+
+`
+`
+`
+js
+new webpack.optimize.
+
+CommonsChunkPlugin
+(
+{
+    name: 'manifest',
+    chunks: [ 'vendor' ]
+}
+)
+`
+`
+`
+!
+[]
+
+(
+http:
+
+/
+/
+www.qinshenxue.com /resource/
+
+2017
+_03_07_09_11_22_749457.png
+
+)
+#
+#用 import 还是 require
+vue
+
+2.2
+.0
+后不能直接使用 require 来加载 vue，那么到底改是该使用 ES6 Module 还是 CommonJS 呢？，先看一个对比图：
+全部使用 ES6 Module，即import、export default，最终打包的app.js为1
+
+.20
+KB。
+! []
+
+(
+http:
+
+/
+/
+www.qinshenxue.com /resource/
+
+2017
+_03_09_19_22_40_243281.png
+
+)
+全部使用 CommonJS（除了vue），即require、module.exports，最终打包的app.js为1
+
+.12
+KB。
+! []
+
+(
+http:
+
+/
+/
+www.qinshenxue.com /resource/
+
+2017
+_03_09_19_23_05_337513.png
+
+)
+虽然两者大小相差不大，但是这不禁让人觉得用 CommonJS 似乎是一条优化措施，那么代码层面到底是怎么回事呢？
+为了一探究竟，注释了压缩插件，以about.vue最终构建的代码来看，使用 CommonJS 的代码如下：
+`
+
+`
+`
+js
+
+(
+function
+
+(
+module, exports, __webpack_require__
+
+)
+{
+"use strict"
+;
+module.exports
+
+=
+{
+data: function
+
+data
+(
+)
+{
+return {
+    page: 'about'
+}
+
+;
+}
+}
+;
+}
+)
+,
+```
+这基本上和 about.vue 中的代码相差无几，而使用 ES6 Module 构建的代码如下：
+`
+
+`
+`
+js
+
+(
+function
+
+(
+module, exports, __webpack_require__
+
+)
+{
+"use strict"
+;
+Object.
+
+defineProperty
+(
+exports,
+
+"__esModule"
+,
+{
+    value: true
+}
+)
+;
+exports.default
+
+=
+{
+data: function
+
+data
+(
+)
+{
+return {
+    page: 'about'
+}
+
+;
+}
+}
+;
+}
+)
+,
+`
+`
+`
+对比两种规范下构建后的代码，使用 ES6 Module 主要是多了 Object.defineProperty 那一部分，从而导致了最终打包的文件大一点儿。那是不是为了最终文件体积能小些就全部使用 CommonJS 呢？这个需要你充分理解 CommonJS 和 ES6 Module 的区别，引用《ECMAScript
+
+6
+入门》这本书的解释如下：
+ES6模块加载的机制，与CommonJS模块完全不同。CommonJS模块输出的是一个值的拷贝，而ES6模块输出的是值的引用。
+为了更清楚的理解这段话，我们稍微做一下测试，在 src 下增加一个test.js，内容如下（分别将两种写法列出）：
+
+`
+`
+`
+js
+
+/
+/
+CommonJS
+var counter
+
+=
+1
+;
+function
+
+incCounter
+(
+)
+{
+    counter + +
+;
+}
+module.exports
+
+=
+{
+    counter: counter,
+    incCounter: incCounter,
+}
+;
+
+/
+/
+ES6 Module
+export let counter
+
+=
+1
+;
+export function
+
+incCounter
+(
+)
+{
+    counter + +
+;
+}
+`
+`
+`
+在about.vue中测试如下：
+
+`
+`
+`
+js
+
+/
+/
+CommonJS
+var test
+
+=
+require
+(
+'../test'
+)
+;
+export default {
+
+created
+(
+)
+{
+    console . log(test . counter)
+;
+/
+/
+1
+test
+.
+incCounter
+(
+)
+;
+    console . log(test . counter)
+;
+/
+/
+1
+}
+}
+
+/
+/
+ES6 Module
+import {
+    counter, incCounter
+}
+
+from
+
+'../test'
+;
+export default {
+
+created
+(
+)
+{
+    console . log(counter)
+;
+/
+/
+1
+incCounter
+(
+)
+;
+    console . log(counter)
+;
+/
+/
+2
+}
+}
+`
+`
+`
+最终的输出值也印证了前面的解释，更详细的解读请查阅相关资料或书籍。只有深入理解了两者的区别，自然就能明白何时该使用何种规范。当然 ES6 作为未来的趋势，我们应该去做更多的尝试。
+# #使用SASS启动报错的解决办法
+部分同学反映使用sass后报错，使用stylus没问题，如果你也是下图中的错误，可以尝试下我的解决办法。
+! []
+
+(
+http:
+
+/
+/
+www.qinshenxue.com /resource/
+
+2017
+_03_29_16_09_49_620553.png
+
+)
+这个是由于sass本身构建的机制（对sass不是很了解），图中也提示了解决办法，就是执行` npm rebuild node-sass --force` ，执行后如图所示：
+! []
+
+(
+http:
+
+/
+/
+www.qinshenxue.com /resource/
+
+2017
+_03_29_16_12_01_373082.png
+
+)
+但是发现下载慢（需要梯子下载才快），而且不容易成功，于是自己手动下载（[下载地址]
+
+(
+https:
+
+/
+/
+github.com /sass/ node-sass /releases/ download
+
+/
+v4
+
+.5
+.1
+/
+win32-x64-48_binding.node
+
+)
+）。下载完成后，将` win32-x64-48_binding.node` 放到` \node_modules\node-sass\vendor\win32-x64-48\`文件夹下，` win32-x64-48_binding.node` 要改名为` binding.node` ，在启动应该就可以了。
+如果无法下载，我在github项目中已经上传了win32-x64-48_binding.node，不能保证版本等是否适合。
+
+!
+[]
+
+(
+http:
+
+/
+/
+www.qinshenxue.com /resource/
+
+2017
+_03_29_16_25_23_794738.png
+
+)
+摘自网友的另外一种更好的解决办法：
+使用淘宝镜像：` npm set disturl https:
+
+/
+/
+npm.taobao.org
+
+/
+dist`
+也可以单独设置node-sass镜像：` npm set sass_binary_site http:
+
+/
+/
+cdn.npm.taobao.org /dist/ node-sass`
+设置好后，在安装依赖的时候，node-sass就能顺利安装好。
+! []
+
+(
+http:
+
+/
+/
+www.qinshenxue.com /resource/
+
+2017
+_03_30_09_13_00_107101.png
+
+)
+安装的时候发现地址变为了设置的淘宝的库，下载会很快。
+# #后续
+后面还会陆续补充webpack打包性能优化、单元测试配置等章节。
+[《vue2 vue-router2 webpack1》
+
+]
+(
+http:
+
+/
+/
+www.qinshenxue.com /article/
+
+20161106163608
+.html
+
+)
+中提出了文章会和vue最新版保持一致，本文将继续和vue及webpack最新版本（限小版本调整），敬请持续关注。
 </textarea>
-<div id="html" class="mdeditor"></div>
+  < div id
+
+=
+"html"
+class
+
+=
+"md"
+>
+<
+/
+div >
 <button onclick="mdtree()">查看md tree</button>
 <script src="dist/md.js"></script>
-<script src="dist/markdown.js"></script>
+                           < script src
+
+=
+"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"
+>
+<
+/
+script >
 <script>
-    // var md = mdeditor('#md')
+var md
 
-    // md.setMarkdown(document.getElementById('mdv').value)
-    function mdtree() {
-        var source = document.getElementById('mdv').value
-        var htm = md.mdToHtml(source);
-        document.getElementById('html').innerHTML = htm
-    }
+=
+mdeditor
+(
+'#md'
+)
 
-    mdtree()
+md.
+
+setMarkdown
+(
+document.
+
+getElementById
+(
+'mdv'
+)
+.value
+
+)
+Array.prototype.slice.
+
+call
+(
+document.
+
+querySelectorAll
+(
+'pre code'
+)
+)
+.
+
+forEach
+(
+function
+
+(
+block
+
+)
+{
+    hljs . highlightBlock(block)
+;
+}
+)
+/* function mdtree() {
+     var source = document.getElementById('mdv').value
+     var htm = md.mdToHtml(source);
+     document.getElementById('html').innerHTML = htm
+
+     Array.prototype.slice.call( document.querySelectorAll('pre code')).forEach(function (block) {
+         hljs.highlightBlock(block);
+     })
+ }
+
+ mdtree()*/
 </script>
 
 </body>

@@ -38,7 +38,7 @@ function toLi(tag: string, rows: Array<string>): Array<MdTree> {
                 tag: 'li',
                 md: rows[i],
                 children: [],
-                text: handleInlineSet(tag == 'ul' ? rows[i].replace(/^[\.\*\-]\s*/, '') : rows[i].replace(/^\d\.\s*/, ''))
+                html: handleInlineSet(tag == 'ul' ? rows[i].replace(/^[\.\*\-]\s*/, '') : rows[i].replace(/^\d\.\s*/, ''))
             })
         }
     }
@@ -57,12 +57,12 @@ function handleInlineSet(txt: string): string {
 }
 
 function handleImg(txt: string): string {
-    return txt.replace(regLib.img, '<img class="mdeditor-img" alt="$1" src="$2">')
+    return txt.replace(regLib.img, '<img alt="$1" src="$2">')
 }
 
 function handleLink(txt: string): string {
     return txt.replace(regLib.a, function (txt, $1, $2) {
-        return '<a href="' + $2 + '" target="_blank">' + handleBold($1.replace(/\\([\(\)\[\])])/g, '$1')) + '</a>'
+        return '<a href="' + $2 + '" target="_blank">' + handleInlineSet($1.replace(/\\([\(\)\[\])])/g, '$1')) + '</a>'
     })
 }
 
@@ -75,7 +75,7 @@ function handleItalic(txt: string): string {
 }
 
 function handleInlineCode(txt: string): string {
-    return txt.replace(regLib.inlineCode, '<span class="mdeditor-inline-code">$1</span>')
+    return txt.replace(regLib.inlineCode, '<code>$1</code>')
 }
 
 function replaceHtmlTag(txt: string): string {
@@ -105,7 +105,7 @@ function toBlockquote(rows: Array<string>) {
                 tag: 'text',
                 md: row,
                 children: [],
-                text: handleInlineSet(row.replace(/^(!)?>/, ''))
+                html: handleInlineSet(row.replace(/^(!)?>/, ''))
             })
         }
 
@@ -150,7 +150,7 @@ function toTable(rows: Array<string>) {
             tag: 'th',
             style: _tdStyle(i),
             md: thRaw[i],
-            text: handleInlineSet(thRaw[i].trim())
+            html: handleInlineSet(thRaw[i].trim())
         })
     }
 
@@ -168,7 +168,7 @@ function toTable(rows: Array<string>) {
                 tag: 'td',
                 style: _tdStyle(tdCountCopy),
                 md: tdMd,
-                text: tdMd ? handleInlineSet(tdMd.trim()) : ''
+                html: tdMd ? handleInlineSet(tdMd.trim()) : ''
             })
         }
         tbody.push(tbodyTr)
@@ -190,7 +190,7 @@ function toTree(rows: Array<string>) {
             html.push({
                 tag: 'h' + hno[0].length,
                 md: row,
-                text: handleInlineSet(row.replace(hFlagReg, ''))
+                html: handleInlineSet(row.replace(hFlagReg, ''))
             })
 
         } else if (regLib.hr.test(row)) {
@@ -214,7 +214,7 @@ function toTree(rows: Array<string>) {
             html.push({
                 tag: tag,
                 children: toLi(tag, _raw),
-                md: _raw
+                md: _raw.join('\n')
             })
 
         } else if (regLib.table.test(row) && rows[i + 1] && regLib.align.test(rows[i + 1])) {
@@ -233,7 +233,7 @@ function toTree(rows: Array<string>) {
             html.push({
                 tag: 'table',
                 children: toTable(_raw),
-                md: _raw
+                md: _raw.join('\n')
             })
 
         } else if (regLib.blockquote.test(row)) {
@@ -252,7 +252,7 @@ function toTree(rows: Array<string>) {
                 tag: 'blockquote',
                 class: _class,
                 children: toBlockquote(_raw),
-                md: _raw
+                md: _raw.join('\n')
             })
 
         } else if (regLib.code.test(row)) {
@@ -261,7 +261,7 @@ function toTree(rows: Array<string>) {
             codeType = codeType ? codeType[0] : ''
             var _code = ''
             for (i++; i < rowsCount; i++) {
-                var _rawRow = rows[i]
+                var _rawRow = replaceHtmlTag(rows[i])
                 if (regLib.code.test(_rawRow)) {
                     break
                 }
@@ -277,20 +277,20 @@ function toTree(rows: Array<string>) {
                 tag: 'pre',
                 children: [{
                     tag: 'code',
-                    text: _code
+                    html: _code
                 }],
                 attr: {
                     'data-lang': codeType
                 },
                 class: codeType,
-                md: _raw
+                md: _raw.join('\n')
             })
 
         } else if (!/^\n+/.test(row)) {
             html.push({
                 tag: 'p',
                 md: row,
-                text: handleInlineSet(row)
+                html: handleInlineSet(row)
             })
         }
     }
@@ -303,7 +303,7 @@ function treeToHtml(nodes: Array<MdTree>): string {
         var node = nodes[i]
 
         if (node.tag == 'text') {
-            html.push(node.text)
+            html.push(node.html)
             if (node.children) {
                 html.push(treeToHtml(node.children))
             }
@@ -325,8 +325,8 @@ function treeToHtml(nodes: Array<MdTree>): string {
                 }
             }
             html.push('>')
-            if (node.text) {
-                html.push(node.text)
+            if (node.html) {
+                html.push(node.html)
             }
             if (node.children) {
                 html.push(treeToHtml(node.children))
@@ -337,7 +337,7 @@ function treeToHtml(nodes: Array<MdTree>): string {
     return html.join('')
 }
 
-function mdToTree(md: string) {
+function mdToTree(md: string): Array<MdTree> {
     var rows = md.match(/.+|^\n/mg) || [];
     return toTree(rows)
 }
@@ -346,4 +346,4 @@ function mdToHtml(md: string): string {
     return treeToHtml(mdToTree(md))
 }
 
-export {mdToTree, mdToHtml}
+export {mdToTree, mdToHtml, treeToHtml}

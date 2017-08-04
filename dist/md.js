@@ -19,9 +19,8 @@ function extend(source, dest) {
 
 
 function isTextNode(node) {
-    return node instanceof Text
+    return node instanceof Text;
 }
-
 
 
 
@@ -44,8 +43,8 @@ function createElement() {
         }
         elms.push(elm);
     });
-    if (args.length == 1) return elms[0]
-    return elms
+    if (args.length == 1) return elms[0];
+    return elms;
 }
 
 /**
@@ -62,63 +61,63 @@ function el(selector) {
 el.prototype.insertAfter = function () {
     var brother = createElement.apply(null, arguments);
     this[0].parentNode.insertBefore(brother, this[0].nextSibling);
-    return brother
+    return brother;
 };
 el.prototype.insertBefore = function () {
     var brother = createElement.apply(null, arguments);
     this[0].parentNode.insertBefore(brother, this[0]);
-    return brother
+    return brother;
 };
 
 el.prototype.prepend = function () {
     var child = createElement.apply(null, arguments);
     this[0].insertBefore(child, this[0].firstChild);
-    return child
+    return child;
 };
 
 el.prototype.append = function (node) {
-    var child = (node instanceof Text || node instanceof HTMLElement) ? node : createElement.apply(null, arguments);
+    var child = node instanceof Text || node instanceof HTMLElement ? node : createElement.apply(null, arguments);
     this[0].appendChild(child);
-    return child
+    return child;
 };
 el.prototype.empty = function () {
     this[0].innerHTML = '';
 };
 el.prototype.children = function () {
-    return this[0].childNodes
+    return this[0].childNodes;
 };
 el.prototype.text = function (text) {
     if (text === undefined) {
-        return this[0].textContent
+        return this[0].textContent;
     }
     this[0].textContent = text;
 };
 el.prototype.html = function (html) {
     if (html === undefined) {
-        return this[0].innerHTML
+        return this[0].innerHTML;
     }
     this[0].innerHTML = html;
 };
 el.prototype.find = function (selector) {
     var found = this[0].querySelector(selector);
-    return found ? new el(found) : found
+    return found ? new el(found) : found;
 };
 el.prototype.hasAttr = function (attrName) {
-    return this[0].hasAttribute(attrName)
+    return this[0].hasAttribute(attrName);
 };
 el.prototype.removeAttr = function (attrName) {
-    return this[0].removeAttribute(attrName)
+    return this[0].removeAttribute(attrName);
 };
 el.prototype.attr = function (attrName, attrVal) {
     if (attrVal !== undefined) {
-        return this[0].setAttribute(attrName, attrVal)
+        return this[0].setAttribute(attrName, attrVal);
     }
-    return this[0].getAttribute(attrName)
+    return this[0].getAttribute(attrName);
 };
 
 el.prototype.attr = function (name, value) {
     if (value === undefined) {
-        return this[0].getAttribute(name)
+        return this[0].getAttribute(name);
     }
     this[0].setAttribute(name, value);
 };
@@ -130,386 +129,336 @@ el.prototype.replaceWith = function (nodes) {
 };
 
 var regLib = {
-    code: /^\`{3}.*$/,
+    title: /^(#{1,6}).+$/,
     ul: /^[\.\-\*]\s+.+$/,
-    ul_flag: /^[\.\-\*]/,
     ol: /^\d+\.\s?.+$/,
+    blockquote: /^!?>.+?$/,
+    code: /^\`{3}.*$/,
+    table: /^(\|[^|]+)+\|\s*$/,
+    align: /^(\|\s*:?-+:?\s*)+\|\s*$/,
+    hr: /^(\*|\_|\-){3,}$/,
     img: /\!\[(.*?)\]\((.*?)\)/g,
-    title: /^#{1,6}.+$/,
     a: /\[((?:[^\(\)\[\]]|\\\[|\\\]|\\\(|\\\))+)\]\((.+?)\)/g,
     b: /\*\*(.+?)\*\*/g,
     i: /\*(.+?)\*/g,
-    inline_code: /\`(.+?)\`/g,
-    blockquote: /^>(.+?)$/,
-    hr: /^(\*\s*){3,}|(-\s*){3,}|(_\s*){3,}$/,
-    table: /^(\|[^|]+)+\|\s*$/,
-    table_td_align: /^(\|\s*:?-+:?\s*)+\|\s*$/,
-    table_td_align_left: /^\s*:-+\s*$/,
-    table_td_align_center: /^\s*:-+:\s*$/,
-    table_td_align_right: /^\s*-+:\s*$/
+    inlineCode: /\`(.+?)\`/g
 };
 
-/**
- * 引用<blockquote>
- *
- * @param {any} rows
- * @param {any} start
- * @returns
- */
-function handleBlockquote(rows, start) {
-    var html = [];
-    var markdowns = [];
-    var i = start;
-    if (regLib.blockquote.test(rows[start])) {
-        html.push('<blockquote class="mdeditor-blockquote">');
-        for (; i < rows.length; i++) {
-            if (!regLib.blockquote.test(rows[i])) {
-                break
-            }
-            var row = rows[i];
-            markdowns.push(row);
-            var repRow = row.replace(/^>/, '');
-            if (regLib.ul.test(repRow)) {
-                var ul = handleUl(rows, i, />/);
-                html = html.concat(ul.html);
-                i = ul.index;
-            } else if (regLib.ol.test(repRow)) {
-                var ol = handleOl(rows, i, />/);
-                html = html.concat(ol.html);
-                i = ol.index;
-            } else {
-                html.push(handleParagraph(repRow));
-            }
-        }
-        html.push('</blockquote>');
-    }
-    return {
-        type: 'blockquote',
-        markdown: markdowns,
-        html: html,
-        index: i - 1
-    }
-}
+function toLi(tag, rows) {
+    var tree = [];
 
-/**
- * 无序列表<ul>
- *
- * @param {any} rows
- * @param {any} start
- * @param {any} reg
- * @returns
- */
-function handleUl(rows, start, reg) {
-    var html = [];
-    var markdowns = [];
-    var i = start;
-    if (regLib.ul.test(reg ? rows[start].replace(reg, '') : rows[start])) {
-        html.push('<ul class="mdeditor-ul">');
-        for (; i < rows.length; i++) {
-            var row, repRow = row = rows[i];
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        if (/^\s+/.test(row)) {
 
-            if (reg) {
-                repRow = row.replace(reg, '');
-            }
-
-            if (/^\s+/.test(repRow)) {
-
-                repRow = repRow.replace(/^\s+/, '');
-
-                if (regLib.ul.test(repRow)) {
-                    var ul = handleUl(rows, i, /^\s+/);
-                    html = html.concat(ul.html);
-                    markdowns = markdowns.concat(ul.markdown);
-                    i = ul.index;
-                } else if (regLib.ol.test(repRow)) {
-                    var ol = handleOl(rows, i, /^\s+/);
-                    html = html.concat(ol.html);
-                    markdowns = markdowns.concat(ol.markdown);
-                    i = ol.index;
+            var _blank = [];
+            for (; i < rows.length; i++) {
+                if (/^\s+/.test(rows[i])) {
+                    _blank.push(rows[i].replace(/^\s+/, ''));
                 } else {
-                    html.push(handleParagraph(repRow));
+                    i--;
+                    break;
                 }
-                html.push('</li>');
-                continue
-            } else if (!regLib.ul.test(repRow) || (reg && !reg.test(row) )) {
-                html.push('</li>');
-                break
-            } else if (i != start) {
-                html.push('</li>');
             }
-            markdowns.push(row);
-
-            repRow = replaceHtmlTag(repRow);
-            repRow = repRow.replace(/^[\.\*\-]\s*/, '');
-            html.push('<li>' + handleInlineSet(repRow));
-        }
-        html.push('</ul>');
-    }
-    return {
-        type: 'ul',
-        markdown: markdowns,
-        html: html,
-        index: i - 1
-    }
-}
-
-
-/**
- * 有序列表<ol>
- *
- * @param {any} rows
- * @param {any} start
- * @param {any} reg
- * @returns
- */
-function handleOl(rows, start, reg) {
-    var html = [];
-    var markdowns = [];
-    var i = start;
-    if (regLib.ol.test(reg ? rows[start].replace(reg, '') : rows[start])) {
-        html.push('<ol class="mdeditor-ol">');
-        for (; i < rows.length; i++) {
-            var row = rows[i];
-            if (reg) {
-                row = row.replace(reg, '');
-            }
-            if (!regLib.ol.test(row)) {
-                break
-            }
-            markdowns.push(row);
-            row = replaceHtmlTag(row);
-            row = row.replace(/^\d+\.\s*/, '');
-            html.push('<li>' + handleInlineSet(row) + '</li>');
-        }
-        html.push('</ol>');
-    }
-    return {
-        type: 'ol',
-        markdown: markdowns,
-        html: html,
-        index: i - 1
-    }
-}
-
-
-function handlePre(rows, start) {
-    var html = [];
-    var markdowns = [];
-    var i = start;
-    var firstRow = rows[start];
-    var codeType = '';
-
-    if (regLib.code.test(firstRow)) {
-        codeType = firstRow.replace(/[`\s]/g, '').toLowerCase();
-        html.push('<pre class="mdeditor-code">');
-        html.push('<code class="' + codeType + '">');
-        markdowns.push(firstRow);
-        i++;
-        for (; i < rows.length; i++) {
-            var row = rows[i];
-            if (regLib.code.test(row)) {
-                markdowns.push(row);
-                break
-            }
-            markdowns.push(row);
-            row = replaceHtmlTag(row);
-            html.push(row + '\n');
-        }
-        if (html.length === 2) {
-            html.push('<br>');
-        }
-        html.push('</code>');
-        html.push('</pre>');
-    }
-    return {
-        type: 'pre',
-        markdown: markdowns,
-        html: html,
-        extra: {
-            codeType: codeType
-        },
-        index: i
-    }
-}
-
-function handleTable(rows, start) {
-    var html = [];
-    var markdowns = [];
-    var i = start;
-    var firstRow = rows[start];
-    var nextRow = rows[start + 1];
-    if (nextRow && regLib.table.test(firstRow) && regLib.table_td_align.test(nextRow)) {
-
-        html.push('<table class="mdeditor-table">');
-        html.push('<tr>');
-        var tdArr = firstRow.match(/[^|]+/g);
-        var tdAlign = handleTdAlign(nextRow);
-        for (var m = 0, n = tdArr.length; m < n; m++) {
-            html.push('<th style="text-align:' + tdAlign[m] + '">' + replaceHtmlTag(tdArr[m]) + '</th>');
-        }
-        html.push('</tr>');
-        markdowns.push(firstRow);
-        markdowns.push(nextRow);
-        i += 2;
-
-        for (; i < rows.length; i++) {
-            var row = rows[i];
-            if (!regLib.table.test(row)) {
-                break
-            }
-            markdowns.push(row);
-            row = replaceHtmlTag(row);
-            html.push(handleTr(row, tdAlign));
-        }
-
-        html.push('</table>');
-    }
-    return {
-        type: 'table',
-        markdown: markdowns,
-        html: html,
-        index: i - 1
-    }
-}
-
-function handleTr(txt, align) {
-    var arr = txt.match(/[^|]+/g);
-    var tr = '<tr>';
-    for (var i = 0, j = arr.length; i < j; i++) {
-        tr += '<td style="text-align:' + align[i] + '">' + handleInlineSet(arr[i]) + '</td>';
-    }
-    tr += '</tr>';
-    return tr
-}
-
-function handleTdAlign(txt) {
-    var arr = txt.match(/[^|]+/g);
-    var align = [];
-    for (var i = 0, j = arr.length; i < j; i++) {
-        if (regLib.table_td_align_right.test(arr[i])) {
-            align.push('right');
-        } else if (regLib.table_td_align_center.test(arr[i])) {
-            align.push('center');
+            tree[tree.length - 1].children = toTree(_blank);
         } else {
-            align.push('left');
+            tree.push({
+                tag: 'li',
+                md: rows[i],
+                children: [],
+                html: handleInlineSet(tag == 'ul' ? rows[i].replace(/^[\.\*\-]\s*/, '') : rows[i].replace(/^\d\.\s*/, ''))
+            });
         }
     }
-    return align
-}
-
-function handleTitle(txt) {
-    return txt.replace(/(#{1,6})(.+)/, function (match, $1, $2) {
-        var hno = $1.length;
-        $2 = replaceHtmlTag($2);
-        return '<h' + hno + ' id="' + $2 + '" >' + $2 + '</h' + hno + '>'
-    })
-}
-
-function handleParagraph(txt) {
-    txt = replaceHtmlTag(txt);
-    return '<p>' + handleInlineSet(txt) + '</p>'
+    return tree;
 }
 
 function handleInlineSet(txt) {
+    txt = replaceHtmlTag(txt);
     txt = handleImg(txt);
     txt = handleInlineCode(txt);
     txt = handleLink(txt);
     txt = handleBold(txt);
     txt = handleItalic(txt);
-    return txt
+    return txt;
 }
 
 function handleImg(txt) {
-    return txt.replace(regLib.img, function (match, $1, $2) {
-        return '<img class="mdeditor-img" alt="' + $1 + '" src="' + $2 + '">'
-    })
+    return txt.replace(regLib.img, '<img alt="$1" src="$2">');
 }
 
 function handleLink(txt) {
     return txt.replace(regLib.a, function (txt, $1, $2) {
-        return '<a href="' + $2 + '" target="_blank">' + handleBold($1.replace(/\\([\(\)\[\])])/g, '$1')) + '</a>'
-    })
+        return '<a href="' + $2 + '" target="_blank">' + handleInlineSet($1.replace(/\\([\(\)\[\])])/g, '$1')) + '</a>';
+    });
 }
 
 function handleBold(txt) {
-    return txt.replace(regLib.b, function (match, $1) {
-        return '<b>' + $1 + '</b>'
-    })
+    return txt.replace(regLib.b, '<b>$1</b>');
 }
 
 function handleItalic(txt) {
-
-    return txt.replace(regLib.i, function (match, $1) {
-        return '<i>' + $1 + '</i>'
-    })
+    return txt.replace(regLib.i, '<i>$1</i>');
 }
 
 function handleInlineCode(txt) {
-
-    return txt.replace(regLib.inline_code, function (txt, $1) {
-        return '<span class="mdeditor-inline-code">' + $1 + '</span>'
-    })
+    return txt.replace(regLib.inlineCode, '<code>$1</code>');
 }
 
 function replaceHtmlTag(txt) {
-    return txt.replace(/\</g, '&lt;').replace(/\>/g, '&gt;')
+    return txt.replace(/\</g, '&lt;').replace(/\>/g, '&gt;');
 }
 
-function dataFormat(type, markdown, html) {
-    return {
-        html: [html],
-        markdown: [markdown],
-        type: type
-    }
-}
+function toBlockquote(rows) {
+    var tree = [];
 
-function mdToHtml(md) {
-    var rows = md.match(/.+/mg) || [],
-        html = [],
-        rowsCount = rows.length;
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        if (/^\s+/.test(row)) {
 
-    if (rowsCount > 0) {
-
-        for (var i = 0; i < rowsCount; i++) {
-            var row = rows[i];
-            if (regLib.title.test(row)) {
-                html.push(dataFormat('h', row, handleTitle(row)));
-
-            } else if (regLib.hr.test(row)) {
-                html.push(dataFormat('hr', row, '<hr>'));
-
-            } else if (regLib.ul.test(row)) {
-                var ul = handleUl(rows, i);
-                html.push(ul);
-                i = ul.index;
-
-            } else if (regLib.ol.test(row)) {
-                var ol = handleOl(rows, i);
-                html.push(ol);
-                i = ol.index;
-
-            } else if (regLib.table.test(row)) {
-                var table = handleTable(rows, i);
-                html.push(table);
-                i = table.index;
-
-            } else if (regLib.blockquote.test(row)) {
-                var blockquote = handleBlockquote(rows, i);
-                html.push(blockquote);
-                i = blockquote.index;
-
-            } else if (regLib.code.test(row)) {
-                var pre = handlePre(rows, i);
-                html.push(pre);
-                i = pre.index;
-
-            } else {
-                html.push(dataFormat('p', row, handleParagraph(row)));
+            var _blank = [];
+            for (; i < rows.length; i++) {
+                if (/^\s+/.test(rows[i])) {
+                    _blank.push(rows[i].replace(/^\s+/, ''));
+                } else {
+                    i--;
+                    break;
+                }
             }
+            tree[tree.length - 1].children = toTree(_blank);
+        } else {
+            tree.push({
+                tag: 'text',
+                md: row,
+                children: [],
+                html: handleInlineSet(row.replace(/^(!)?>/, ''))
+            });
+        }
+    }
+    return tree;
+}
+
+function toTable(rows) {
+
+    var tdSplit = /[^|]+/g;
+
+    var alignRaw = rows[1].match(tdSplit) || [];
+    var align = [];
+
+    for (var i = 0, j = alignRaw.length; i < j; i++) {
+        if (/^\s*-+:\s*$/.test(alignRaw[i])) {
+            align.push('right');
+        } else if (/^\s*:-+:\s*$/.test(alignRaw[i])) {
+            align.push('center');
+        } else {
+            align.push('left');
         }
     }
 
-    return html
+    var thead = {
+        tag: 'tr',
+        children: []
+    };
+
+    function _tdStyle(i) {
+        if (i < align.length && align[i] !== 'left') {
+            return {
+                'text-align': align[i]
+            };
+        }
+    }
+
+    var thRaw = rows[0].match(tdSplit) || [];
+    var tdCount = thRaw.length;
+    for (var _i = 0; _i < tdCount; _i++) {
+        thead.children.push({
+            tag: 'th',
+            style: _tdStyle(_i),
+            md: thRaw[_i],
+            html: handleInlineSet(thRaw[_i].trim())
+        });
+    }
+
+    var tbody = [];
+    for (var _i2 = 2, _j = rows.length; _i2 < _j; _i2++) {
+        var tbodyTr = {
+            tag: 'tr',
+            children: []
+        };
+        var tdCountCopy = tdCount;
+        var tbodyTds = rows[_i2].match(tdSplit) || [];
+        while (tdCountCopy--) {
+            var tdMd = tbodyTds[tdCountCopy];
+            tbodyTr.children.unshift({
+                tag: 'td',
+                style: _tdStyle(tdCountCopy),
+                md: tdMd,
+                html: tdMd ? handleInlineSet(tdMd.trim()) : ''
+            });
+        }
+        tbody.push(tbodyTr);
+    }
+
+    return [thead].concat(tbody);
+}
+
+function toTree(rows) {
+    var html = [];
+    var rowsCount = rows.length;
+    var tag = '';
+
+    for (var i = 0; i < rowsCount; i++) {
+        var row = rows[i];
+        if (regLib.title.test(row)) {
+            var hFlagReg = /^#{1,6}/;
+            var hno = row.match(hFlagReg);
+            html.push({
+                tag: 'h' + hno[0].length,
+                md: row,
+                html: handleInlineSet(row.replace(hFlagReg, ''))
+            });
+        } else if (regLib.hr.test(row)) {
+            html.push({
+                tag: 'hr',
+                md: row
+            });
+        } else if ((tag = regLib.ul.test(row) ? 'ul' : false) || (tag = regLib.ol.test(row) ? 'ol' : false)) {
+            var _raw = [];
+
+            for (; i < rowsCount; i++) {
+                var _rawRow = rows[i];
+                if (!regLib[tag].test(_rawRow) && !/^\s+.+/.test(_rawRow)) {
+                    i--;
+                    break;
+                }
+                _raw.push(_rawRow);
+            }
+
+            html.push({
+                tag: tag,
+                children: toLi(tag, _raw),
+                md: _raw.join('\n')
+            });
+        } else if (regLib.table.test(row) && rows[i + 1] && regLib.align.test(rows[i + 1])) {
+
+            var _raw = [row, rows[i + 1]];
+            i += 2;
+            for (; i < rowsCount; i++) {
+                var _rawRow = rows[i];
+                if (!regLib.table.test(_rawRow)) {
+                    i--;
+                    break;
+                }
+                _raw.push(_rawRow);
+            }
+
+            html.push({
+                tag: 'table',
+                children: toTable(_raw),
+                md: _raw.join('\n')
+            });
+        } else if (regLib.blockquote.test(row)) {
+            var _raw = [row];
+            var _class = row.indexOf('!') == 0 ? 'warning' : '';
+            i++;
+            for (; i < rowsCount; i++) {
+                var _rawRow = rows[i];
+                if (!regLib.blockquote.test(_rawRow) && !/^\s+.+/.test(_rawRow)) {
+                    i--;
+                    break;
+                }
+                _raw.push(_rawRow);
+            }
+            html.push({
+                tag: 'blockquote',
+                class: _class,
+                children: toBlockquote(_raw),
+                md: _raw.join('\n')
+            });
+        } else if (regLib.code.test(row)) {
+            var _raw = [row];
+            var codeType = row.match(/[^`\s]+/);
+            codeType = codeType ? codeType[0] : '';
+            var _code = '';
+            for (i++; i < rowsCount; i++) {
+                var _rawRow = replaceHtmlTag(rows[i]);
+                if (regLib.code.test(_rawRow)) {
+                    break;
+                }
+                _raw.push(_rawRow);
+                _code += _rawRow;
+                if (!/^\n/.test(_rawRow)) {
+                    _code += '\n';
+                }
+            }
+            _raw.push('```');
+
+            html.push({
+                tag: 'pre',
+                children: [{
+                    tag: 'code',
+                    html: _code
+                }],
+                attr: {
+                    'data-lang': codeType
+                },
+                class: codeType,
+                md: _raw.join('\n')
+            });
+        } else if (!/^\n+/.test(row)) {
+            html.push({
+                tag: 'p',
+                md: row,
+                html: handleInlineSet(row)
+            });
+        }
+    }
+    return html;
+}
+
+function treeToHtml(nodes) {
+    var html = [];
+    for (var i = 0; i < nodes.length; i++) {
+        var node = nodes[i];
+
+        if (node.tag == 'text') {
+            html.push(node.html);
+            if (node.children) {
+                html.push(treeToHtml(node.children));
+            }
+        } else {
+            html.push('<' + node.tag);
+            if (node.class) {
+                html.push(' class="' + node.class + '" ');
+            }
+            if (node.style) {
+                html.push(' style="');
+                for (var p in node.style) {
+                    html.push(p + ':' + node.style[p] + ';');
+                }
+                html.push('" ');
+            }
+            if (node.attr) {
+                for (var a in node.attr) {
+                    html.push(' ' + a + '="' + node.attr[a] + '" ');
+                }
+            }
+            html.push('>');
+            if (node.html) {
+                html.push(node.html);
+            }
+            if (node.children) {
+                html.push(treeToHtml(node.children));
+            }
+            html.push('</' + node.tag + '>');
+        }
+    }
+    return html.join('');
+}
+
+function mdToTree(md) {
+    var rows = md.match(/.+|^\n/mg) || [];
+    return toTree(rows);
 }
 
 /**
@@ -534,7 +483,6 @@ function eventsMixin(mdeditor) {
     };
 }
 
-
 /**
  * 绑定事件
  * @param md
@@ -548,15 +496,14 @@ function initEvent(md) {
         // enter
         if (e.keyCode === 13) {
             if (md.cursor.in('PRE')) {
-                return
+                return;
             }
             if (md.cursor.closest('[row]') && e.shiftKey) {
-                return
+                return;
             }
             e.preventDefault();
             md.addRow();
         }
-
     });
     md.on('input', function input() {
         var row = md.cursor.closestRow();
@@ -590,6 +537,7 @@ function initEvent(md) {
             if (row) {
                 var rowNo = row.attr('row');
                 row.text(md._value[rowNo]);
+                console.log(md._value[rowNo]);
                 row.removeAttr('md');
                 row.removeAttr('code');
             }
@@ -606,12 +554,12 @@ function initEvent(md) {
             } else if (!oldRow.hasAttr('md')) {
                 var text = oldRow.text();
                 if (text !== '') {
-                    var mdHtml = mdToHtml(text);
-                    if (mdHtml.length == 1) {
-                        oldRow.html(mdHtml[0].html.join(''));
-                        oldRow.attr('type', mdHtml[0].type);
+                    var tree = mdToTree(text);
+                    if (tree.length == 1) {
+                        oldRow.html(treeToHtml(tree));
+                        oldRow.attr('type', tree[0].tag);
                     } else {
-                        var rows = this.htmlToRow(mdHtml);
+                        var rows = this.htmlToRow(tree);
                         oldRow.replaceWith(rows);
                     }
                     oldRow.attr('md', 1);
@@ -633,19 +581,21 @@ function initEvent(md) {
             newRow.removeAttr('md');
             md.cursor.set(newRow[0], newRowTxt.length);
         }
-
     });
     document.addEventListener('selectionchange', function selectionchange() {
         // 目前仅支持非选择区域
         if (window.getSelection().isCollapsed) {
             var row = md.cursor.closestRow();
             if (row) {
-                if (md._lastRow && md._lastRow.attr('row') !== row.attr('row')) {  // 光标所在行和之前行号不相等才触发rowchange
+                if (md._lastRow && md._lastRow.attr('row') !== row.attr('row')) {
+                    // 光标所在行和之前行号不相等才触发rowchange
                     md.trigger('rowchange', md._lastRow, row);
-                } else if (!md._lastRow) {  // 首次换行
+                } else if (!md._lastRow) {
+                    // 首次换行
                     md.trigger('rowchange', md._lastRow, row);
                 }
-            } else if (md._lastRow) {   // 离开编辑器，但是仍然触发了selectionchange，说明光标仍然在当前页面上
+            } else if (md._lastRow) {
+                // 离开编辑器，但是仍然触发了selectionchange，说明光标仍然在当前页面上
                 md.trigger('rowchange', md._lastRow);
             }
             md._lastRow = row;
@@ -658,12 +608,10 @@ function initEvent(md) {
  */
 function rowMixin(mdeditor) {
 
-
     /**
      * 给编辑器增加一行
      */
     mdeditor.prototype.addRow = function () {
-
 
         var offset = this.cursor.offset;
         var newRow;
@@ -673,7 +621,6 @@ function rowMixin(mdeditor) {
             },
             innerHTML: '<br>'
         }];
-
 
         // 计算offset（主要是用了shift换行输入的情况）
         var cursorNode = this.cursor.node;
@@ -702,7 +649,6 @@ function rowMixin(mdeditor) {
                 this._value[this._rowNo] = newRowTxt;
                 newRow = curRow.insertAfter(newRowData);
             }
-
         } else if (offset === 0) {
             newRow = this.el.prepend(newRowData);
         }
@@ -718,24 +664,23 @@ function rowMixin(mdeditor) {
      * @param html 由mdToHtml返回的html数组
      * @returns {Array}
      */
-    mdeditor.prototype.htmlToRow = function (html) {
+    mdeditor.prototype.htmlToRow = function (tree) {
         var rows = [];
-        for (var i = 0; i < html.length; i++) {
+        for (var i = 0; i < tree.length; i++) {
             var div = createElement(['div', {
                 attrs: {
                     'row': this._rowNo,
                     'md': 1,
-                    type: html[i].type
+                    type: tree[i].tag
                 },
-                innerHTML: html[i].html.join('')
+                innerHTML: treeToHtml([tree[i]])
             }]);
             rows.push(div);
-            this._value[this._rowNo] = html[i].markdown.join('\n');
+            this._value[this._rowNo] = tree[i].md;
             this._rowNo++;
         }
-        return rows
+        return rows;
     };
-
 }
 
 /**
@@ -760,24 +705,23 @@ function Cursor(editor) {
     this.path = [];
 
     def(this, 'sel', {
-        get: function () {
-            return window.getSelection()
+        get: function get() {
+            return window.getSelection();
         }
     });
     def(this, 'node', {
-        get: function () {
+        get: function get() {
             if (me.sel.type === 'Range') {
-                return me.sel.anchorNode
+                return me.sel.anchorNode;
             }
-            return me.sel.focusNode
+            return me.sel.focusNode;
         }
     });
     def(this, 'offset', {
-        get: function () {
-            return me.sel.focusOffset
+        get: function get() {
+            return me.sel.focusOffset;
         }
     });
-
 }
 /**
  * 鼠标是否在绑定的编辑器内
@@ -792,7 +736,7 @@ Cursor.prototype._inside = function () {
         _path.push(node);
     }
     this.path = _path;
-    return !!node && node.isEqualNode(this.editor)
+    return !!node && node.isEqualNode(this.editor);
 };
 /**
  * 向上查找符合selector的节点
@@ -805,11 +749,11 @@ Cursor.prototype.closest = function (selector) {
         this.path.some(function (p) {
             if (p.matches && p.matches(selector)) {
                 match = p;
-                return true
+                return true;
             }
         });
     }
-    return match ? new el(match) : match
+    return match ? new el(match) : match;
 };
 
 /**
@@ -817,7 +761,7 @@ Cursor.prototype.closest = function (selector) {
  * @returns {el}
  */
 Cursor.prototype.closestRow = function () {
-    return this.closest('[row]')
+    return this.closest('[row]');
 };
 
 /**
@@ -831,12 +775,12 @@ Cursor.prototype.in = function (nodeName) {
         var i = _path.length;
         while (i--) {
             if (_path[i].nodeName === nodeName) {
-                return true
+                return true;
             }
         }
-        return false
+        return false;
     }
-    return false
+    return false;
 };
 
 /**
@@ -875,7 +819,6 @@ function initMixin(mdeditor) {
         }
 
         this.options = options;
-
     };
     mdeditor.prototype._init.prototype = mdeditor.prototype;
 }
@@ -885,7 +828,7 @@ function initMixin(mdeditor) {
  */
 
 function initGlobalApi(mdeditor) {
-    mdeditor.extend = extend;
+  mdeditor.extend = extend;
 }
 
 /**
@@ -893,7 +836,6 @@ function initGlobalApi(mdeditor) {
  * @param mdeditor
  */
 function apiMixin(mdeditor) {
-
 
     /**
      * 返回markdown
@@ -908,7 +850,7 @@ function apiMixin(mdeditor) {
                 markdown.push(this._value[rowNo]);
             }
         }
-        return markdown
+        return markdown;
     };
 
     /**
@@ -923,7 +865,7 @@ function apiMixin(mdeditor) {
                 html.push(rows[i].innerHTML);
             }
         }
-        return html
+        return html;
     };
 
     /**
@@ -935,8 +877,8 @@ function apiMixin(mdeditor) {
         this._rowNo = 0;
         this._value = [];
         this.el.empty();
-        var html = mdToHtml(markdown);
-        var rows = this.htmlToRow(html);
+        var tree = mdToTree(markdown);
+        var rows = this.htmlToRow(tree);
         var me = this;
         rows.forEach(function (row) {
             me.el.append(row);
@@ -948,9 +890,8 @@ function apiMixin(mdeditor) {
  * Created by qinsx on 2017/6/13.
  */
 
-
 function mdeditor(options) {
-    return new mdeditor.prototype._init(options)
+  return new mdeditor.prototype._init(options);
 }
 initGlobalApi(mdeditor);
 initMixin(mdeditor);
