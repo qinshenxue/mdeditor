@@ -1,3 +1,4 @@
+// @flow
 /**
  * Created by qinsx on 2017/6/13.
  */
