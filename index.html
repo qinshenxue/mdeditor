@@ -33,9 +33,18 @@
 
 <button onclick="preview()">查看html</button>
 <button onclick="source()">查看md</button>
+<button onclick="setMd()">设置md</button>
 <div id="md" class="mdeditor" contenteditable="true"></div>
 <div class="md" id="preview" style="display: none"></div>
 <script src="dist/md.js"></script>
+<script type="text/plain" id="md_test">
+``` js
+var a=2
+
+var b=1
+```
+
+</script>
 <script>
     var md = mdeditor('#md')
 
@@ -65,6 +74,10 @@
     function source() {
         dom_source.style.display = 'block'
         dom_preview.style.display = 'none'
+    }
+
+    function setMd() {
+        md.setMarkdown(document.getElementById('md_test').innerText);
     }
 </script>
 

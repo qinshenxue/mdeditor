@@ -256,7 +256,7 @@ function toTree(rows: Array<string>) {
             })
 
         } else if (regLib.code.test(row)) {
-            var _raw = [row]
+
             var codeType = row.match(/[^`\s]+/)
             codeType = codeType ? codeType[0] : ''
             var _code = ''
@@ -265,13 +265,11 @@ function toTree(rows: Array<string>) {
                 if (regLib.code.test(_rawRow)) {
                     break
                 }
-                _raw.push(_rawRow)
                 _code += _rawRow
                 if (!/^\n/.test(_rawRow)) {
                     _code += '\n'
                 }
             }
-            _raw.push('```')
 
             html.push({
                 tag: 'pre',
@@ -283,7 +281,7 @@ function toTree(rows: Array<string>) {
                     'data-lang': codeType
                 },
                 class: codeType,
-                md: _raw.join('\n')
+                md: row + '\n' + _code + '```'
             })
 
         } else if (!/^\n+/.test(row)) {
