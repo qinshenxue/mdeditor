@@ -31,34 +31,43 @@ export function initEvent(md) {
     md._events = []
     md._lastRow = null
     md._value = []
+    var lastKey = ''
     md.on('keydown', function keydown(e) {
 
         // enter
-        if (e.keyCode === 13) {
-            if (md.cursor.in('PRE')) {
-                return
-            }
-            if (md.cursor.closest('[row]') && e.shiftKey) {
-                return
-            }
+        if (e.keyCode === 13 && !e.shiftKey) {
+            /*if (md.cursor.in('PRE')) {
+             return
+             }
+             if (md.cursor.closest('[row]') && e.shiftKey) {
+             return
+             }*/
             e.preventDefault()
             md.addRow()
+            /* console.log(lastKey)
+             if(lastKey=='enter'){
+             e.preventDefault()
+             md.addRow()
+             lastKey=''
+             }else{
+             lastKey='enter'
+             }*/
         }
 
     })
     md.on('input', function input() {
-        var row = md.cursor.closestRow()
-        if (row && (!row.hasAttr('md') || md.cursor.in('CODE'))) {
-            var txt = row.text()
-            if (row.attr('type') == 'pre' && row.hasAttr('md')) {
-                txt = '```\n' + txt
-                if (!/\n$/.test(txt)) {
-                    txt += '\n'
-                }
-                txt += '```'
-            }
-            md._value[row.attr('row')] = txt
-        }
+        /*var row = md.cursor.closestRow()
+         if (row && (!row.hasAttr('md') || md.cursor.in('CODE'))) {
+         var txt = row.text()
+         if (row.attr('type') == 'pre' && row.hasAttr('md')) {
+         txt = '```\n' + txt
+         if (!/\n$/.test(txt)) {
+         txt += '\n'
+         }
+         txt += '```'
+         }
+         md._value[row.attr('row')] = txt
+         }*/
 
         if (!md.el.children().length) {
             md.el.empty()
@@ -67,60 +76,49 @@ export function initEvent(md) {
     })
 
     md.on('blur', function blur() {
-        md.trigger('rowchange', md._lastRow)
-        md._lastRow = null
+        //  md.trigger('rowchange', md._lastRow)
+        //  md._lastRow = null
     })
 
-    md.on('dblclick', function dblclick() {
-
-        if (md.cursor.in('CODE')) {
-            var row = md.cursor.closestRow()
-            if (row) {
-                var rowNo = row.attr('row')
-                row.text(md._value[rowNo])
-                console.log(md._value[rowNo])
-                row.removeAttr('md')
-                row.removeAttr('code')
-            }
-        }
-    })
 
     md.on('rowchange', function rowchange(oldRow, newRow) {
-        var oldRemoved = null
+
 
         if (oldRow) {
-            var oldRowNo = oldRow.attr('row')
-            if (!md.el.find('[row="' + oldRowNo + '"]')) {
-                oldRemoved = oldRowNo
-            } else if (!oldRow.hasAttr('md')) {
-                var text = oldRow.text()
-                if (text !== '') {
-                    var tree = mdToTree(text)
-                    if (tree.length == 1) {
-                        oldRow.html(treeToHtml(tree))
-                        oldRow.attr('type', tree[0].tag)
-                    } else {
-                        var rows = this.htmlToRow(tree)
-                        oldRow.replaceWith(rows)
+
+            var text = oldRow.text()
+            if (text !== '') {
+                console.log(text)
+                var tree = mdToTree(text)
+                // debugger
+                if (tree.length == 1) {
+                    if (tree[0].tag == 'pre') {
+                        // console.log(tree[0])
+                        oldRow.text(tree[0].md)
                     }
-                    oldRow.attr('md', 1)
+                    oldRow.attr('class', tree[0].tag)
+                } else {
+
+                    var rows = this.htmlToRow(tree)
+                    oldRow.replaceWith(rows)
                 }
             }
+
         }
 
         if (newRow && newRow.hasAttr('md') && !(newRow.attr('type') == 'pre')) {
 
-            var newRowNo = newRow.attr('row')
-            var newRowTxt = md._value[newRowNo]
-            newRowTxt = newRowTxt ? newRowTxt : ''
-            if (oldRemoved && md._value[oldRemoved]) {
-                newRowTxt += md._value[oldRemoved]
-                md._value[oldRemoved] = ''
-            }
+            /* var newRowNo = newRow.attr('row')
+             var newRowTxt = md._value[newRowNo]
+             newRowTxt = newRowTxt ? newRowTxt : ''
+             if (oldRemoved && md._value[oldRemoved]) {
+             newRowTxt += md._value[oldRemoved]
+             md._value[oldRemoved] = ''
+             }*/
 
-            newRow.text(newRowTxt)
-            newRow.removeAttr('md')
-            md.cursor.set(newRow[0], newRowTxt.length)
+            //newRow.text(newRowTxt)
+            //newRow.removeAttr('md')
+            // md.cursor.set(newRow[0], newRowTxt.length)
         }
 
     })

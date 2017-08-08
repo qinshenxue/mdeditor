@@ -41,9 +41,9 @@ el.prototype.children = function () {
 }
 el.prototype.text = function (text) {
     if (text === undefined) {
-        return this[0].textContent
+        return this[0].innerText
     }
-    this[0].textContent = text
+    this[0].innerText = text
 }
 el.prototype.html = function (html) {
     if (html === undefined) {

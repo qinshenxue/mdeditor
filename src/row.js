@@ -73,13 +73,11 @@ export function rowMixin(mdeditor) {
             var div = createElement(['div', {
                 attrs: {
                     'row': this._rowNo,
-                    'md': 1,
-                    type: tree[i].tag
+                    class: tree[i].tag
                 },
-                innerHTML: treeToHtml([tree[i]])
+                innerHTML: tree[i].md
             }])
             rows.push(div)
-            this._value[this._rowNo] = tree[i].md
             this._rowNo++
         }
         return rows

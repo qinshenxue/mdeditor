@@ -88,9 +88,9 @@ el.prototype.children = function () {
 };
 el.prototype.text = function (text) {
     if (text === undefined) {
-        return this[0].textContent;
+        return this[0].innerText;
     }
-    this[0].textContent = text;
+    this[0].innerText = text;
 };
 el.prototype.html = function (html) {
     if (html === undefined) {
@@ -416,46 +416,6 @@ function toTree(rows) {
     return html;
 }
 
-function treeToHtml(nodes) {
-    var html = [];
-    for (var i = 0; i < nodes.length; i++) {
-        var node = nodes[i];
-
-        if (node.tag == 'text') {
-            html.push(node.html);
-            if (node.children) {
-                html.push(treeToHtml(node.children));
-            }
-        } else {
-            html.push('<' + node.tag);
-            if (node.class) {
-                html.push(' class="' + node.class + '" ');
-            }
-            if (node.style) {
-                html.push(' style="');
-                for (var p in node.style) {
-                    html.push(p + ':' + node.style[p] + ';');
-                }
-                html.push('" ');
-            }
-            if (node.attr) {
-                for (var a in node.attr) {
-                    html.push(' ' + a + '="' + node.attr[a] + '" ');
-                }
-            }
-            html.push('>');
-            if (node.html) {
-                html.push(node.html);
-            }
-            if (node.children) {
-                html.push(treeToHtml(node.children));
-            }
-            html.push('</' + node.tag + '>');
-        }
-    }
-    return html.join('');
-}
-
 function mdToTree(md) {
     var rows = md.match(/.+|^\n/mg) || [];
     return toTree(rows);
@@ -491,33 +451,42 @@ function initEvent(md) {
     md._events = [];
     md._lastRow = null;
     md._value = [];
+    var lastKey = '';
     md.on('keydown', function keydown(e) {
 
         // enter
-        if (e.keyCode === 13) {
-            if (md.cursor.in('PRE')) {
-                return;
-            }
-            if (md.cursor.closest('[row]') && e.shiftKey) {
-                return;
-            }
+        if (e.keyCode === 13 && !e.shiftKey) {
+            /*if (md.cursor.in('PRE')) {
+             return
+             }
+             if (md.cursor.closest('[row]') && e.shiftKey) {
+             return
+             }*/
             e.preventDefault();
             md.addRow();
+            /* console.log(lastKey)
+             if(lastKey=='enter'){
+             e.preventDefault()
+             md.addRow()
+             lastKey=''
+             }else{
+             lastKey='enter'
+             }*/
         }
     });
     md.on('input', function input() {
-        var row = md.cursor.closestRow();
-        if (row && (!row.hasAttr('md') || md.cursor.in('CODE'))) {
-            var txt = row.text();
-            if (row.attr('type') == 'pre' && row.hasAttr('md')) {
-                txt = '```\n' + txt;
-                if (!/\n$/.test(txt)) {
-                    txt += '\n';
-                }
-                txt += '```';
-            }
-            md._value[row.attr('row')] = txt;
-        }
+        /*var row = md.cursor.closestRow()
+         if (row && (!row.hasAttr('md') || md.cursor.in('CODE'))) {
+         var txt = row.text()
+         if (row.attr('type') == 'pre' && row.hasAttr('md')) {
+         txt = '```\n' + txt
+         if (!/\n$/.test(txt)) {
+         txt += '\n'
+         }
+         txt += '```'
+         }
+         md._value[row.attr('row')] = txt
+         }*/
 
         if (!md.el.children().length) {
             md.el.empty();
@@ -526,60 +495,46 @@ function initEvent(md) {
     });
 
     md.on('blur', function blur() {
-        md.trigger('rowchange', md._lastRow);
-        md._lastRow = null;
-    });
-
-    md.on('dblclick', function dblclick() {
-
-        if (md.cursor.in('CODE')) {
-            var row = md.cursor.closestRow();
-            if (row) {
-                var rowNo = row.attr('row');
-                row.text(md._value[rowNo]);
-                console.log(md._value[rowNo]);
-                row.removeAttr('md');
-                row.removeAttr('code');
-            }
-        }
+        //  md.trigger('rowchange', md._lastRow)
+        //  md._lastRow = null
     });
 
     md.on('rowchange', function rowchange(oldRow, newRow) {
-        var oldRemoved = null;
 
         if (oldRow) {
-            var oldRowNo = oldRow.attr('row');
-            if (!md.el.find('[row="' + oldRowNo + '"]')) {
-                oldRemoved = oldRowNo;
-            } else if (!oldRow.hasAttr('md')) {
-                var text = oldRow.text();
-                if (text !== '') {
-                    var tree = mdToTree(text);
-                    if (tree.length == 1) {
-                        oldRow.html(treeToHtml(tree));
-                        oldRow.attr('type', tree[0].tag);
-                    } else {
-                        var rows = this.htmlToRow(tree);
-                        oldRow.replaceWith(rows);
+
+            var text = oldRow.text();
+            if (text !== '') {
+                console.log(text);
+                var tree = mdToTree(text);
+                // debugger
+                if (tree.length == 1) {
+                    if (tree[0].tag == 'pre') {
+                        // console.log(tree[0])
+                        oldRow.text(tree[0].md);
                     }
-                    oldRow.attr('md', 1);
+                    oldRow.attr('class', tree[0].tag);
+                } else {
+
+                    var rows = this.htmlToRow(tree);
+                    oldRow.replaceWith(rows);
                 }
             }
         }
 
         if (newRow && newRow.hasAttr('md') && !(newRow.attr('type') == 'pre')) {
 
-            var newRowNo = newRow.attr('row');
-            var newRowTxt = md._value[newRowNo];
-            newRowTxt = newRowTxt ? newRowTxt : '';
-            if (oldRemoved && md._value[oldRemoved]) {
-                newRowTxt += md._value[oldRemoved];
-                md._value[oldRemoved] = '';
-            }
+            /* var newRowNo = newRow.attr('row')
+             var newRowTxt = md._value[newRowNo]
+             newRowTxt = newRowTxt ? newRowTxt : ''
+             if (oldRemoved && md._value[oldRemoved]) {
+             newRowTxt += md._value[oldRemoved]
+             md._value[oldRemoved] = ''
+             }*/
 
-            newRow.text(newRowTxt);
-            newRow.removeAttr('md');
-            md.cursor.set(newRow[0], newRowTxt.length);
+            //newRow.text(newRowTxt)
+            //newRow.removeAttr('md')
+            // md.cursor.set(newRow[0], newRowTxt.length)
         }
     });
     document.addEventListener('selectionchange', function selectionchange() {
@@ -670,13 +625,11 @@ function rowMixin(mdeditor) {
             var div = createElement(['div', {
                 attrs: {
                     'row': this._rowNo,
-                    'md': 1,
-                    type: tree[i].tag
+                    class: tree[i].tag
                 },
-                innerHTML: treeToHtml([tree[i]])
+                innerHTML: tree[i].md
             }]);
             rows.push(div);
-            this._value[this._rowNo] = tree[i].md;
             this._rowNo++;
         }
         return rows;
