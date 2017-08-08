@@ -493,7 +493,6 @@ function initEvent(md) {
     md._events = [];
     md._lastRow = null;
     md._value = [];
-    var lastKey = '';
     md.on('keydown', function keydown(e) {
 
         // enter
@@ -547,7 +546,6 @@ function initEvent(md) {
 
             var text = oldRow.text();
             if (text !== '') {
-                console.log(text);
                 var tree = mdToTree(text);
                 // debugger
                 if (tree.length == 1) {
@@ -812,10 +810,8 @@ function initMixin(mdeditor) {
             initEvent(md);
             md.addRow();
         }
-
         this.options = options;
     };
-    mdeditor.prototype._init.prototype = mdeditor.prototype;
 }
 
 /**
@@ -876,8 +872,9 @@ function apiMixin(mdeditor) {
  * Created by qinsx on 2017/6/13.
  */
 
-function mdeditor(options) {
-  return new mdeditor.prototype._init(options);
+function mdeditor(id, options) {
+  this._init(id, options);
+  return this;
 }
 initGlobalApi(mdeditor);
 initMixin(mdeditor);

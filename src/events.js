@@ -2,7 +2,7 @@
  * Created by qinsx on 2017/6/13.
  */
 
-import {treeToHtml, mdToTree} from './markdown'
+import {mdToTree} from './markdown'
 
 export function eventsMixin(mdeditor) {
 
@@ -31,7 +31,6 @@ export function initEvent(md) {
     md._events = []
     md._lastRow = null
     md._value = []
-    var lastKey = ''
     md.on('keydown', function keydown(e) {
 
         // enter
@@ -88,7 +87,6 @@ export function initEvent(md) {
 
             var text = oldRow.text()
             if (text !== '') {
-                console.log(text)
                 var tree = mdToTree(text)
                 // debugger
                 if (tree.length == 1) {

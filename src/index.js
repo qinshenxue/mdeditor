@@ -8,8 +8,9 @@ import {eventsMixin} from './events'
 import {initGlobalApi} from './global'
 import {rowMixin} from './row'
 import {apiMixin} from './api'
-function mdeditor(options) {
-    return new mdeditor.prototype._init(options)
+function mdeditor(id, options) {
+    this._init(id, options)
+    return this
 }
 initGlobalApi(mdeditor)
 initMixin(mdeditor)

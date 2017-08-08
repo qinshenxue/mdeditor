@@ -16,10 +16,7 @@ export function initMixin(mdeditor) {
             initEvent(md)
             md.addRow()
         }
-
         this.options = options
-
     }
-    mdeditor.prototype._init.prototype = mdeditor.prototype
 }
 
