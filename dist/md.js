@@ -40,6 +40,9 @@ function createElement() {
             if (elmData.innerHTML) {
                 elm.innerHTML = elmData.innerHTML;
             }
+            if (elmData.text) {
+                elm.innerText = elmData.text;
+            }
         }
         elms.push(elm);
     });
@@ -381,7 +384,7 @@ function toTree(rows) {
             codeType = codeType ? codeType[0] : '';
             var _code = '';
             for (i++; i < rowsCount; i++) {
-                var _rawRow = replaceHtmlTag(rows[i]);
+                var _rawRow = rows[i];
                 if (regLib.code.test(_rawRow)) {
                     break;
                 }
@@ -667,7 +670,7 @@ function rowMixin(mdeditor) {
                     'row': this._rowNo,
                     class: tree[i].tag
                 },
-                innerHTML: tree[i].md
+                text: tree[i].md
             }]);
             rows.push(div);
             this._rowNo++;

@@ -75,7 +75,7 @@ export function rowMixin(mdeditor) {
                     'row': this._rowNo,
                     class: tree[i].tag
                 },
-                innerHTML: tree[i].md
+                text: tree[i].md
             }])
             rows.push(div)
             this._rowNo++

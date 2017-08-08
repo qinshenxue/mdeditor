@@ -261,7 +261,7 @@ function toTree(rows: Array<string>) {
             codeType = codeType ? codeType[0] : ''
             var _code = ''
             for (i++; i < rowsCount; i++) {
-                var _rawRow = replaceHtmlTag(rows[i])
+                var _rawRow = rows[i]
                 if (regLib.code.test(_rawRow)) {
                     break
                 }
