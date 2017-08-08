@@ -384,7 +384,7 @@ function toTree(rows) {
             codeType = codeType ? codeType[0] : '';
             var _code = '';
             for (i++; i < rowsCount; i++) {
-                var _rawRow = rows[i];
+                var _rawRow = replaceHtmlTag(rows[i]);
                 if (regLib.code.test(_rawRow)) {
                     break;
                 }
@@ -554,7 +554,7 @@ function initEvent(md) {
                 if (tree.length == 1) {
                     if (tree[0].tag == 'pre') {
                         // console.log(tree[0])
-                        oldRow.text(tree[0].md);
+                        oldRow.html(tree[0].md);
                     }
                     oldRow.attr('class', tree[0].tag);
                 } else {
@@ -670,7 +670,7 @@ function rowMixin(mdeditor) {
                     'row': this._rowNo,
                     class: tree[i].tag
                 },
-                text: tree[i].md
+                innerHTML: tree[i].md
             }]);
             rows.push(div);
             this._rowNo++;

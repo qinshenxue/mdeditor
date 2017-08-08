@@ -92,7 +92,7 @@ export function initEvent(md) {
                 if (tree.length == 1) {
                     if (tree[0].tag == 'pre') {
                         // console.log(tree[0])
-                        oldRow.text(tree[0].md)
+                        oldRow.html(tree[0].md)
                     }
                     oldRow.attr('class', tree[0].tag)
                 } else {
