@@ -416,9 +416,53 @@ function toTree(rows) {
     return html;
 }
 
+function treeToHtml(nodes) {
+    var html = [];
+    for (var i = 0; i < nodes.length; i++) {
+        var node = nodes[i];
+
+        if (node.tag == 'text') {
+            html.push(node.html);
+            if (node.children) {
+                html.push(treeToHtml(node.children));
+            }
+        } else {
+            html.push('<' + node.tag);
+            if (node.class) {
+                html.push(' class="' + node.class + '" ');
+            }
+            if (node.style) {
+                html.push(' style="');
+                for (var p in node.style) {
+                    html.push(p + ':' + node.style[p] + ';');
+                }
+                html.push('" ');
+            }
+            if (node.attr) {
+                for (var a in node.attr) {
+                    html.push(' ' + a + '="' + node.attr[a] + '" ');
+                }
+            }
+            html.push('>');
+            if (node.html) {
+                html.push(node.html);
+            }
+            if (node.children) {
+                html.push(treeToHtml(node.children));
+            }
+            html.push('</' + node.tag + '>');
+        }
+    }
+    return html.join('');
+}
+
 function mdToTree(md) {
     var rows = md.match(/.+|^\n/mg) || [];
     return toTree(rows);
+}
+
+function mdToHtml(md) {
+    return treeToHtml(mdToTree(md));
 }
 
 /**
@@ -795,15 +839,7 @@ function apiMixin(mdeditor) {
      * @returns {Array}
      */
     mdeditor.prototype.getMarkdown = function () {
-        var rows = this.el.children();
-        var markdown = [];
-        for (var i = 0; i < rows.length; i++) {
-            var rowNo = rows[i].getAttribute('row');
-            if (rowNo) {
-                markdown.push(this._value[rowNo]);
-            }
-        }
-        return markdown;
+        return this.el.text();
     };
 
     /**
@@ -811,14 +847,7 @@ function apiMixin(mdeditor) {
      * @returns {Array}
      */
     mdeditor.prototype.getHtml = function () {
-        var rows = this.el.children();
-        var html = [];
-        for (var i = 0; i < rows.length; i++) {
-            if (rows[i].hasAttribute('md')) {
-                html.push(rows[i].innerHTML);
-            }
-        }
-        return html;
+        return mdToHtml(this.getMarkdown());
     };
 
     /**
