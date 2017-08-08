@@ -228,7 +228,7 @@ function toBlockquote(rows) {
             tree[tree.length - 1].children = toTree(_blank);
         } else {
             tree.push({
-                tag: 'text',
+                tag: 'p',
                 md: row,
                 children: [],
                 html: handleInlineSet(row.replace(/^(!)?>/, ''))
@@ -839,7 +839,13 @@ function apiMixin(mdeditor) {
      * @returns {Array}
      */
     mdeditor.prototype.getMarkdown = function () {
-        return this.el.text();
+
+        var rows = this.el.children();
+        var markdown = '';
+        for (var i = 0; i < rows.length; i++) {
+            markdown += rows[i].innerText + '\n\n';
+        }
+        return markdown;
     };
 
     /**

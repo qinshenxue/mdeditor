@@ -12,7 +12,13 @@ export function apiMixin(mdeditor) {
      * @returns {Array}
      */
     mdeditor.prototype.getMarkdown = function () {
-        return this.el.text()
+
+        var rows = this.el.children()
+        var markdown = ''
+        for (var i = 0; i < rows.length; i++) {
+            markdown += rows[i].innerText + '\n\n'
+        }
+        return markdown
     }
 
     /**

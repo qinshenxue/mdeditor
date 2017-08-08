@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <link rel="stylesheet" href="src/mdeditor.css">
+    <link rel="stylesheet" href="src/markdown.css">
     <style>
         html,
         body {
@@ -12,6 +13,7 @@
             background: #f4f4f4;
         }
 
+        .md,
         .mdeditor {
             background: #fff;
             width: 800px;
@@ -21,13 +23,18 @@
             min-height: 100%;
         }
 
+        .hide {
+            display: none;
+        }
     </style>
 </head>
 
 <body>
 
-
+<button onclick="preview()">查看html</button>
+<button onclick="source()">查看md</button>
 <div id="md" class="mdeditor" contenteditable="true"></div>
+<div class="md" id="preview" style="display: none"></div>
 <script src="dist/md.js"></script>
 <script>
     var md = mdeditor('#md')
@@ -48,6 +55,17 @@
      }
 
      mdtree()*/
+    var dom_preview = document.getElementById('preview')
+    var dom_source = document.getElementById('md')
+    function preview() {
+        dom_source.style.display = 'none'
+        dom_preview.innerHTML = md.getHtml()
+        dom_preview.style.display = 'block'
+    }
+    function source() {
+        dom_source.style.display = 'block'
+        dom_preview.style.display = 'none'
+    }
 </script>
 
 </body>

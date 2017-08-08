@@ -102,7 +102,7 @@ function toBlockquote(rows: Array<string>) {
 
         } else {
             tree.push({
-                tag: 'text',
+                tag: 'p',
                 md: row,
                 children: [],
                 html: handleInlineSet(row.replace(/^(!)?>/, ''))
