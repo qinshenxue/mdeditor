@@ -869,6 +869,15 @@ function apiMixin(mdeditor) {
             me.el.append(row);
         });
     };
+
+    mdeditor.prototype.insertMarkdown = function (markdown) {
+        var row = this.cursor.closestRow();
+        if (row) {
+            var txt = row.text();
+            var offset = this.cursor.offset;
+            row.text(txt.slice(0, offset) + markdown + txt.slice(offset));
+        }
+    };
 }
 
 /**
