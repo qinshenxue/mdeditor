@@ -1,6 +1,6 @@
 // @flow
 var regLib = {
-    title: /^#{1,6}.+$/,
+    title: /^#{1,6}\s+.+$/,
     ul: /^[\.\-\*]\s+.+$/,
     ol: /^\d+\.\s?.+$/,
     blockquote: /^!?>.+?$/,
