@@ -190,7 +190,7 @@ function toTree(rows: Array<string>) {
             html.push({
                 tag: 'h' + hno[0].length,
                 md: row,
-                html: handleInlineSet(row.replace(hFlagReg, ''))
+                html: handleInlineSet(row.replace(hFlagReg, '').slice(1))  // slice(1) 去除空格
             })
 
         } else if (regLib.hr.test(row)) {
