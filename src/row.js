@@ -47,8 +47,8 @@ export function rowMixin(mdeditor) {
                 if (newRowTxt !== '') {
                     newRowData[1].innerHTML = newRowTxt
                 }
-                this._value[curRow.attr('row')] = curRowTxt
-                this._value[this._rowNo] = newRowTxt
+                //this._value[curRow.attr('row')] = curRowTxt
+                //this._value[this._rowNo] = newRowTxt
                 newRow = curRow.insertAfter(newRowData)
             }
 
@@ -75,9 +75,10 @@ export function rowMixin(mdeditor) {
                     'row': this._rowNo,
                     class: tree[i].tag
                 },
-                innerHTML: tree[i].md
+                text: tree[i].md
             }])
             rows.push(div)
+            this._value[this._rowNo] = tree[i].md
             this._rowNo++
         }
         return rows

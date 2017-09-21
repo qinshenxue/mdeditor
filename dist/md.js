@@ -132,7 +132,7 @@ el.prototype.replaceWith = function (nodes) {
 };
 
 var regLib = {
-    title: /^#{1,6}.+$/,
+    title: /^#{1,6}\s+.+$/,
     ul: /^[\.\-\*]\s+.+$/,
     ol: /^\d+\.\s?.+$/,
     blockquote: /^!?>.+?$/,
@@ -145,9 +145,13 @@ var regLib = {
     b: /\*\*(.+?)\*\*/g,
     i: /\*(.+?)\*/g,
     inlineCode: /\`(.+?)\`/g
-};
-
-function toLi(tag, rows) {
+    /**
+     *
+     * @param tag  ul or li
+     * @param rows
+     * @returns {Array.<MdTree>}
+     */
+};function toLi(tag, rows) {
     var tree = [];
 
     for (var i = 0; i < rows.length; i++) {
@@ -318,7 +322,7 @@ function toTree(rows) {
             html.push({
                 tag: 'h' + hno[0].length,
                 md: row,
-                html: handleInlineSet(row.replace(hFlagReg, ''))
+                html: handleInlineSet(row.replace(hFlagReg, '').slice(1)) // slice(1) 去除空格
             });
         } else if (regLib.hr.test(row)) {
             html.push({
@@ -550,11 +554,9 @@ function initEvent(md) {
             var text = oldRow.text();
             if (text !== '') {
                 var tree = mdToTree(text);
-                // debugger
                 if (tree.length == 1) {
                     if (tree[0].tag == 'pre') {
-                        // console.log(tree[0])
-                        oldRow.html(tree[0].md);
+                        oldRow.text(tree[0].md);
                     }
                     oldRow.attr('class', tree[0].tag);
                 } else {
@@ -643,8 +645,8 @@ function rowMixin(mdeditor) {
                 if (newRowTxt !== '') {
                     newRowData[1].innerHTML = newRowTxt;
                 }
-                this._value[curRow.attr('row')] = curRowTxt;
-                this._value[this._rowNo] = newRowTxt;
+                //this._value[curRow.attr('row')] = curRowTxt
+                //this._value[this._rowNo] = newRowTxt
                 newRow = curRow.insertAfter(newRowData);
             }
         } else if (offset === 0) {
@@ -670,9 +672,10 @@ function rowMixin(mdeditor) {
                     'row': this._rowNo,
                     class: tree[i].tag
                 },
-                innerHTML: tree[i].md
+                text: tree[i].md
             }]);
             rows.push(div);
+            this._value[this._rowNo] = tree[i].md;
             this._rowNo++;
         }
         return rows;

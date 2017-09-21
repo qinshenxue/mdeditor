@@ -88,11 +88,9 @@ export function initEvent(md) {
             var text = oldRow.text()
             if (text !== '') {
                 var tree = mdToTree(text)
-                // debugger
                 if (tree.length == 1) {
                     if (tree[0].tag == 'pre') {
-                        // console.log(tree[0])
-                        oldRow.html(tree[0].md)
+                        oldRow.text(tree[0].md)
                     }
                     oldRow.attr('class', tree[0].tag)
                 } else {

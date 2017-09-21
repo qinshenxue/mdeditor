@@ -14,7 +14,12 @@ var regLib = {
     i: /\*(.+?)\*/g,
     inlineCode: /\`(.+?)\`/g
 }
-
+/**
+ *
+ * @param tag  ul or li
+ * @param rows
+ * @returns {Array.<MdTree>}
+ */
 function toLi(tag: string, rows: Array<string>): Array<MdTree> {
     var tree: Array<MdTree> = []
 
