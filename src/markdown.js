@@ -1,6 +1,6 @@
 // @flow
 var regLib = {
-    title: /^#{1,6}\s+.+$/,
+    title: /^#{1,6}.+$/,
     ul: /^[\.\-\*]\s+.+$/,
     ol: /^\d+\.\s?.+$/,
     blockquote: /^!?>.+?$/,
@@ -195,7 +195,7 @@ function toTree(rows: Array<string>) {
             html.push({
                 tag: 'h' + hno[0].length,
                 md: row,
-                html: handleInlineSet(row.replace(hFlagReg, '').slice(1))  // slice(1) 去除空格
+                html: handleInlineSet(row.replace(hFlagReg, '').replace(/^\s*/, ''))
             })
 
         } else if (regLib.hr.test(row)) {
