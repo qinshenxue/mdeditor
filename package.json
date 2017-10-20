@@ -1,40 +1,41 @@
 {
-  "name": "mdeditor",
-  "version": "1.0.0",
-  "description": "简单markdown编辑器，用textarea编辑，同步预览html效果。不依赖任何插件，使用简单，原创，造轮子中。。。更新中。。。",
-  "homepage": "http://mdeditor.qinshenxue.com",
-  "repository": {
-    "type": "git",
-    "url": "https://git.oschina.net/qinshenxue/mdeditor"
-  },
-  "main": "",
-  "scripts": {
-    "build": "gulp build",
-      "flow": "flow",
-    "start": "gulp watch",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": {
-    "name": "qinshenxue",
-    "email": "qinshenxue@qinshenxue.com"
-  },
-  "license": "ISC",
-  "devDependencies": {
-      "babel-preset-es2015": "^6.24.1",
-      "babel-preset-flow": "^6.23.0",
-      "flow-bin": "^0.51.1",
-    "ftp": "^0.3.10",
-    "gulp": "^3.9.1",
-    "gulp-clean-css": "^2.0.2",
-    "gulp-eslint": "^4.0.0",
-    "gulp-ftp": "^1.1.0",
-    "gulp-jshint": "^2.0.1",
-    "gulp-rename": "^1.2.2",
-    "gulp-uglify": "^1.5.3",
-    "jshint": "^2.9.2",
-      "rollup": "^0.42.0",
-      "rollup-plugin-babel": "^2.7.1",
-      "rollup-plugin-flow": "^1.1.1",
-      "rollup-plugin-uglify": "^2.0.1"
-  }
+    "name": "mdeditor",
+    "version": "1.0.0",
+    "description": "简单markdown编辑器，用textarea编辑，同步预览html效果。不依赖任何插件，使用简单，原创，造轮子中。。。更新中。。。",
+    "homepage": "http://mdeditor.qinshenxue.com",
+    "repository": {
+        "type": "git",
+        "url": "https://git.oschina.net/qinshenxue/mdeditor"
+    },
+    "main": "",
+    "scripts": {
+        "build": "gulp build",
+        "enote": "gulp enote",
+        "flow": "flow",
+        "start": "gulp watch",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": {
+        "name": "qinshenxue",
+        "email": "qinshenxue@qinshenxue.com"
+    },
+    "license": "ISC",
+    "devDependencies": {
+        "babel-preset-es2015": "^6.24.1",
+        "babel-preset-flow": "^6.23.0",
+        "flow-bin": "^0.51.1",
+        "ftp": "^0.3.10",
+        "gulp": "^3.9.1",
+        "gulp-clean-css": "^2.0.2",
+        "gulp-eslint": "^4.0.0",
+        "gulp-ftp": "^1.1.0",
+        "gulp-jshint": "^2.0.1",
+        "gulp-rename": "^1.2.2",
+        "gulp-uglify": "^1.5.3",
+        "jshint": "^2.9.2",
+        "rollup": "^0.42.0",
+        "rollup-plugin-babel": "^2.7.1",
+        "rollup-plugin-flow": "^1.1.1",
+        "rollup-plugin-uglify": "^2.0.1"
+    }
 }

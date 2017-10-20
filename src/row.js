@@ -2,8 +2,13 @@
 /**
  * Created by qinsx on 2017/6/13.
  */
-import {isTextNode, createElement}  from './util'
-import {treeToHtml}  from './markdown'
+import {
+    isTextNode,
+    createElement
+} from './util'
+import {
+    treeToHtml
+} from './markdown'
 
 export function rowMixin(mdeditor) {
 
@@ -12,7 +17,6 @@ export function rowMixin(mdeditor) {
      * 给编辑器增加一行
      */
     mdeditor.prototype.addRow = function () {
-
 
         var offset = this.cursor.offset
         var newRow
@@ -23,43 +27,35 @@ export function rowMixin(mdeditor) {
             innerHTML: '<br>'
         }]
 
-
         // 计算offset（主要是用了shift换行输入的情况）
         var cursorNode = this.cursor.node
-        if (isTextNode(cursorNode)) {
+        var curRow = this.cursor.closestRow()
+
+
+        if (!cursorNode) { // 在没光标的情况下添加行
+            newRow = this.el.append(newRowData)
+
+
+        } else if (!cursorNode.nextSibling && cursorNode.textContent.length === offset) { // 光标在行尾时，在当前行后添加
+            newRow = curRow.insertAfter(newRowData)
+
+        } else if (!cursorNode.previousSibling && offset === 0) { // 光标在行首时，在当前行前添加
+            newRow = curRow.insertBefore(newRowData)
+
+        } else { // 光标在段落中间
+            var rowText = curRow.text()
             while (cursorNode.previousSibling) {
                 offset += cursorNode.previousSibling.textContent.length
                 cursorNode = cursorNode.previousSibling
             }
-        }
-        var curRow = this.cursor.closestRow()
-
-        if (curRow) {
-            var rowTxt = curRow.text()
-            if (offset === 0 && rowTxt !== '') {
-                newRow = curRow.insertBefore(newRowData)
-            } else if (rowTxt === '') {
-                newRow = curRow.insertAfter(newRowData)
-            } else {
-                var curRowTxt = rowTxt.slice(0, offset)
-                curRow.text(curRowTxt)
-                var newRowTxt = rowTxt.slice(offset)
-                if (newRowTxt !== '') {
-                    newRowData[1].innerHTML = newRowTxt
-                }
-                //this._value[curRow.attr('row')] = curRowTxt
-                //this._value[this._rowNo] = newRowTxt
-                newRow = curRow.insertAfter(newRowData)
-            }
-
-        } else if (offset === 0) {
-            newRow = this.el.prepend(newRowData)
+            curRow.text(rowText.slice(0, offset))
+            newRowData[1].innerHTML = null
+            newRowData[1].text = rowText.slice(offset)
+            newRow = curRow.insertAfter(newRowData)
         }
 
-        if (newRow) {
-            this.cursor.set(newRow, 0)
-            this._rowNo++
-        }
+        this.cursor.set(newRow, 0) // 设置光标到行首
+        this._rowNo++
     }
 
     /**
@@ -67,18 +63,24 @@ export function rowMixin(mdeditor) {
      * @param html 由mdToHtml返回的html数组
      * @returns {Array}
      */
-    mdeditor.prototype.htmlToRow = function (tree: Array<MdTree>) {
+    mdeditor.prototype.htmlToRow = function (tree: Array < MdTree > ) {
         var rows = []
         for (var i = 0; i < tree.length; i++) {
-            var div = createElement(['div', {
+            var divConfig = {
                 attrs: {
-                    'row': this._rowNo,
+                    row: this._rowNo,
                     class: tree[i].tag
-                },
-                text: tree[i].md
-            }])
+                }
+            }
+            if (tree[i].tag === 'pre') {
+                divConfig.innerHTML = tree[i].md // < 和 > 被转码，用 text() 将不能正常显示 < 和 >
+            } else {
+                divConfig.text = tree[i].md
+            }
+            var div = createElement(['div', divConfig])
             rows.push(div)
             this._value[this._rowNo] = tree[i].md
+            // todo 
             this._rowNo++
         }
         return rows

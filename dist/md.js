@@ -18,9 +18,7 @@ function extend(source, dest) {
 
 
 
-function isTextNode(node) {
-    return node instanceof Text;
-}
+
 
 
 
@@ -41,7 +39,7 @@ function createElement() {
                 elm.innerHTML = elmData.innerHTML;
             }
             if (elmData.text) {
-                elm.innerText = elmData.text;
+                elm.textContent = elmData.text;
             }
         }
         elms.push(elm);
@@ -89,11 +87,12 @@ el.prototype.empty = function () {
 el.prototype.children = function () {
     return this[0].childNodes;
 };
+// 用 innerHTML 会导致换行符没有长度
 el.prototype.text = function (text) {
     if (text === undefined) {
-        return this[0].innerText;
+        return this[0].textContent;
     }
-    this[0].innerText = text;
+    this[0].textContent = text;
 };
 el.prototype.html = function (html) {
     if (html === undefined) {
@@ -383,6 +382,7 @@ function toTree(rows) {
                 md: _raw.join('\n')
             });
         } else if (regLib.code.test(row)) {
+            // 代码块
 
             var codeType = row.match(/[^`\s]+/);
             codeType = codeType ? codeType[0] : '';
@@ -554,16 +554,16 @@ function initEvent(md) {
             var text = oldRow.text();
             if (text !== '') {
                 var tree = mdToTree(text);
-                if (tree.length == 1) {
-                    if (tree[0].tag == 'pre') {
-                        oldRow.text(tree[0].md);
-                    }
-                    oldRow.attr('class', tree[0].tag);
-                } else {
+                /*  if (tree.length == 1) {
+                     if (tree[0].tag == 'pre') {
+                         oldRow.html(tree[0].md)  // < 和 > 被转码，用 text() 将不能正常显示 < 和 >
+                     }
+                     oldRow.attr('class', tree[0].tag)
+                 } else { */
 
-                    var rows = this.htmlToRow(tree);
-                    oldRow.replaceWith(rows);
-                }
+                var rows = this.htmlToRow(tree);
+                oldRow.replaceWith(rows);
+                //}
             }
         }
 
@@ -624,39 +624,32 @@ function rowMixin(mdeditor) {
 
         // 计算offset（主要是用了shift换行输入的情况）
         var cursorNode = this.cursor.node;
-        if (isTextNode(cursorNode)) {
+        var curRow = this.cursor.closestRow();
+
+        if (!cursorNode) {
+            // 在没光标的情况下添加行
+            newRow = this.el.append(newRowData);
+        } else if (!cursorNode.nextSibling && cursorNode.textContent.length === offset) {
+            // 光标在行尾时，在当前行后添加
+            newRow = curRow.insertAfter(newRowData);
+        } else if (!cursorNode.previousSibling && offset === 0) {
+            // 光标在行首时，在当前行前添加
+            newRow = curRow.insertBefore(newRowData);
+        } else {
+            // 光标在段落中间
+            var rowText = curRow.text();
             while (cursorNode.previousSibling) {
                 offset += cursorNode.previousSibling.textContent.length;
                 cursorNode = cursorNode.previousSibling;
             }
-        }
-        var curRow = this.cursor.closestRow();
-
-        if (curRow) {
-            var rowTxt = curRow.text();
-            if (offset === 0 && rowTxt !== '') {
-                newRow = curRow.insertBefore(newRowData);
-            } else if (rowTxt === '') {
-                newRow = curRow.insertAfter(newRowData);
-            } else {
-                var curRowTxt = rowTxt.slice(0, offset);
-                curRow.text(curRowTxt);
-                var newRowTxt = rowTxt.slice(offset);
-                if (newRowTxt !== '') {
-                    newRowData[1].innerHTML = newRowTxt;
-                }
-                //this._value[curRow.attr('row')] = curRowTxt
-                //this._value[this._rowNo] = newRowTxt
-                newRow = curRow.insertAfter(newRowData);
-            }
-        } else if (offset === 0) {
-            newRow = this.el.prepend(newRowData);
+            curRow.text(rowText.slice(0, offset));
+            newRowData[1].innerHTML = null;
+            newRowData[1].text = rowText.slice(offset);
+            newRow = curRow.insertAfter(newRowData);
         }
 
-        if (newRow) {
-            this.cursor.set(newRow, 0);
-            this._rowNo++;
-        }
+        this.cursor.set(newRow, 0); // 设置光标到行首
+        this._rowNo++;
     };
 
     /**
@@ -667,15 +660,21 @@ function rowMixin(mdeditor) {
     mdeditor.prototype.htmlToRow = function (tree) {
         var rows = [];
         for (var i = 0; i < tree.length; i++) {
-            var div = createElement(['div', {
+            var divConfig = {
                 attrs: {
-                    'row': this._rowNo,
+                    row: this._rowNo,
                     class: tree[i].tag
-                },
-                text: tree[i].md
-            }]);
+                }
+            };
+            if (tree[i].tag === 'pre') {
+                divConfig.innerHTML = tree[i].md; // < 和 > 被转码，用 text() 将不能正常显示 < 和 >
+            } else {
+                divConfig.text = tree[i].md;
+            }
+            var div = createElement(['div', divConfig]);
             rows.push(div);
             this._value[this._rowNo] = tree[i].md;
+            // todo 
             this._rowNo++;
         }
         return rows;
@@ -711,14 +710,14 @@ function Cursor(editor) {
     def(this, 'node', {
         get: function get() {
             if (me.sel.type === 'Range') {
-                return me.sel.anchorNode;
+                return me.sel.baseNode;
             }
-            return me.sel.focusNode;
+            return me.sel.baseNode;
         }
     });
     def(this, 'offset', {
         get: function get() {
-            return me.sel.focusOffset;
+            return me.sel.baseOffset;
         }
     });
 }

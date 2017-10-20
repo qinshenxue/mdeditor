@@ -16,35 +16,49 @@ gulp.task('jshint', function () {
         .pipe(jshint())
         .pipe(jshint.reporter('default'))
         .pipe(uglify())
-        .pipe(rename({extname: ".min.js"}))
+        .pipe(rename({
+            extname: ".min.js"
+        }))
         .pipe(gulp.dest('dist/'));
 });
 
 gulp.task('css', function () {
-    return gulp.src(['src/*.css'], {buffer: false})
+    return gulp.src(['src/*.css'], {
+            buffer: false
+        })
         .pipe(cleanCss())
-        .pipe(rename({extname: ".min.css"}))
+        .pipe(rename({
+            extname: ".min.css"
+        }))
         .pipe(gulp.dest('dist/'));
 });
 
 
 gulp.task('sync', function () {
     return gulp.src(['dist/*'])
-        .pipe(ftp(Object.assign({}, syncConfig, {remotePath: '/demo/mdeditor/dist'})));
+        .pipe(ftp(Object.assign({}, syncConfig, {
+            remotePath: '/demo/mdeditor/dist'
+        })));
 });
 
 gulp.task('sync-index', function () {
     return gulp.src(['index.html'])
-        .pipe(ftp(Object.assign({}, syncConfig, {remotePath: '/demo/mdeditor/'})));
+        .pipe(ftp(Object.assign({}, syncConfig, {
+            remotePath: '/demo/mdeditor/'
+        })));
 });
 
 gulp.task('server-css', function () {
     return gulp.src(['dist/*.css'])
-        .pipe(ftp(Object.assign({}, syncConfig, {remotePath: '/static/css/'})));
+        .pipe(ftp(Object.assign({}, syncConfig, {
+            remotePath: '/static/css/'
+        })));
 });
 gulp.task('server-js', function () {
     return gulp.src(['dist/*.js'])
-        .pipe(ftp(Object.assign({}, syncConfig, {remotePath: '/static/js/'})));
+        .pipe(ftp(Object.assign({}, syncConfig, {
+            remotePath: '/static/js/'
+        })));
 });
 
 //var tasks = ['jshint', 'css', 'sync', 'sync-index'];
@@ -56,8 +70,8 @@ gulp.task('lint', () => {
     // Also, Be sure to return the stream from the task;
     // Otherwise, the task may end before the stream has finished.
     return gulp.src(['src/**.js'])
-    // eslint() attaches the lint output to the "eslint" property
-    // of the file object so it can be used by other modules.
+        // eslint() attaches the lint output to the "eslint" property
+        // of the file object so it can be used by other modules.
         .pipe(eslint())
         // eslint.format() outputs the lint results to the console.
         // Alternatively use eslint.formatEach() (see Docs).
@@ -88,8 +102,7 @@ gulp.task('markdown', function () {
         plugins: [
             babel({
                 exclude: 'node_modules/**'
-            })
-            , uglify()
+            }), uglify()
         ]
     }).then(function (bundle) {
         return bundle.write({
@@ -107,6 +120,18 @@ gulp.task('watch-markdown', function () {
 gulp.task('watch', function () {
     gulp.watch(['src/**.js'], ['build']);
 })
+
+gulp.task('enote', function () {
+
+    gulp.src(['./dist/md.js'], {
+            buffer: false
+        })
+        .pipe(
+            gulp.dest('E:/oschina/ENote/src/lib')
+        )
+
+
+});
 
 var tasks = ['watch']
 

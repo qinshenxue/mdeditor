@@ -47,7 +47,7 @@ export function createElement() {
                 elm.innerHTML = elmData.innerHTML
             }
             if (elmData.text) {
-                elm.innerText = elmData.text
+                elm.textContent = elmData.text
             }
         }
         elms.push(elm)

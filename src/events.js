@@ -88,16 +88,17 @@ export function initEvent(md) {
             var text = oldRow.text()
             if (text !== '') {
                 var tree = mdToTree(text)
-                if (tree.length == 1) {
+               /*  if (tree.length == 1) {
                     if (tree[0].tag == 'pre') {
-                        oldRow.text(tree[0].md)
+                        oldRow.html(tree[0].md)  // < 和 > 被转码，用 text() 将不能正常显示 < 和 >
                     }
                     oldRow.attr('class', tree[0].tag)
-                } else {
+                } else { */
 
                     var rows = this.htmlToRow(tree)
                     oldRow.replaceWith(rows)
-                }
+                //}
+                
             }
 
         }

@@ -260,13 +260,13 @@ function toTree(rows: Array<string>) {
                 md: _raw.join('\n')
             })
 
-        } else if (regLib.code.test(row)) {
+        } else if (regLib.code.test(row)) {  // 代码块
 
             var codeType = row.match(/[^`\s]+/)
             codeType = codeType ? codeType[0] : ''
             var _code = ''
             for (i++; i < rowsCount; i++) {
-                var _rawRow = replaceHtmlTag(rows[i])
+                var _rawRow = replaceHtmlTag( rows[i])
                 if (regLib.code.test(_rawRow)) {
                     break
                 }

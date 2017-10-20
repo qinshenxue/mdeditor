@@ -39,11 +39,12 @@ el.prototype.empty = function () {
 el.prototype.children = function () {
     return this[0].childNodes
 }
+// 用 innerHTML 会导致换行符没有长度
 el.prototype.text = function (text) {
     if (text === undefined) {
-        return this[0].innerText
+        return this[0].textContent
     }
-    this[0].innerText = text
+    this[0].textContent = text
 }
 el.prototype.html = function (html) {
     if (html === undefined) {

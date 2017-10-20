@@ -21,14 +21,14 @@ function Cursor(editor) {
     def(this, 'node', {
         get: function () {
             if (me.sel.type === 'Range') {
-                return me.sel.anchorNode
+                return me.sel.baseNode
             }
-            return me.sel.focusNode
+            return me.sel.baseNode
         }
     })
     def(this, 'offset', {
         get: function () {
-            return me.sel.focusOffset
+            return me.sel.baseOffset
         }
     })
 
