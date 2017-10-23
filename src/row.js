@@ -63,26 +63,30 @@ export function rowMixin(mdeditor) {
      * @param html 由mdToHtml返回的html数组
      * @returns {Array}
      */
-    mdeditor.prototype.htmlToRow = function (tree: Array < MdTree > ) {
+    mdeditor.prototype.htmlToRow = function (tree: Array < MdTree > , firstRowNo) {
         var rows = []
+
         for (var i = 0; i < tree.length; i++) {
+
+            var rowNo = ((i == 0 && firstRowNo) ? firstRowNo : this._rowNo++)
+
             var divConfig = {
                 attrs: {
-                    row: this._rowNo,
+                    row: rowNo,
                     class: tree[i].tag
                 }
             }
+
             if (tree[i].tag === 'pre') {
                 divConfig.innerHTML = tree[i].md // < 和 > 被转码，用 text() 将不能正常显示 < 和 >
             } else {
                 divConfig.text = tree[i].md
             }
-            var div = createElement(['div', divConfig])
-            rows.push(div)
-            this._value[this._rowNo] = tree[i].md
-            // todo 
-            this._rowNo++
+
+            rows.push(createElement(['div', divConfig]))
+            this._value[rowNo] = tree[i].md
         }
+
         return rows
     }
 

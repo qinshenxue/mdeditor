@@ -2,7 +2,9 @@
  * Created by qinsx on 2017/6/13.
  */
 
-import {mdToTree} from './markdown'
+import {
+    mdToTree
+} from './markdown'
 
 export function eventsMixin(mdeditor) {
 
@@ -86,19 +88,20 @@ export function initEvent(md) {
         if (oldRow) {
 
             var text = oldRow.text()
+            var type = oldRow.attr('class')
             if (text !== '') {
                 var tree = mdToTree(text)
-               /*  if (tree.length == 1) {
-                    if (tree[0].tag == 'pre') {
-                        oldRow.html(tree[0].md)  // < 和 > 被转码，用 text() 将不能正常显示 < 和 >
-                    }
-                    oldRow.attr('class', tree[0].tag)
-                } else { */
 
-                    var rows = this.htmlToRow(tree)
+                var rows = this.htmlToRow(tree, oldRow.attr('row'))
+                if (rows.length === 1 && type && rows[0].className === type) {
+
+                    oldRow.text(rows[0].textContent)
+
+                } else {
                     oldRow.replaceWith(rows)
-                //}
-                
+
+                }
+
             }
 
         }
@@ -124,12 +127,12 @@ export function initEvent(md) {
         if (window.getSelection().isCollapsed) {
             var row = md.cursor.closestRow()
             if (row) {
-                if (md._lastRow && md._lastRow.attr('row') !== row.attr('row')) {  // 光标所在行和之前行号不相等才触发rowchange
+                if (md._lastRow && md._lastRow.attr('row') !== row.attr('row')) { // 光标所在行和之前行号不相等才触发rowchange
                     md.trigger('rowchange', md._lastRow, row)
-                } else if (!md._lastRow) {  // 首次换行
+                } else if (!md._lastRow) { // 首次换行
                     md.trigger('rowchange', md._lastRow, row)
                 }
-            } else if (md._lastRow) {   // 离开编辑器，但是仍然触发了selectionchange，说明光标仍然在当前页面上
+            } else if (md._lastRow) { // 离开编辑器，但是仍然触发了selectionchange，说明光标仍然在当前页面上
                 md.trigger('rowchange', md._lastRow)
             }
             md._lastRow = row

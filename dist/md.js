@@ -552,18 +552,17 @@ function initEvent(md) {
         if (oldRow) {
 
             var text = oldRow.text();
+            var type = oldRow.attr('class');
             if (text !== '') {
                 var tree = mdToTree(text);
-                /*  if (tree.length == 1) {
-                     if (tree[0].tag == 'pre') {
-                         oldRow.html(tree[0].md)  // < 和 > 被转码，用 text() 将不能正常显示 < 和 >
-                     }
-                     oldRow.attr('class', tree[0].tag)
-                 } else { */
 
-                var rows = this.htmlToRow(tree);
-                oldRow.replaceWith(rows);
-                //}
+                var rows = this.htmlToRow(tree, oldRow.attr('row'));
+                if (rows.length === 1 && type && rows[0].className === type) {
+
+                    oldRow.text(rows[0].textContent);
+                } else {
+                    oldRow.replaceWith(rows);
+                }
             }
         }
 
@@ -657,26 +656,30 @@ function rowMixin(mdeditor) {
      * @param html 由mdToHtml返回的html数组
      * @returns {Array}
      */
-    mdeditor.prototype.htmlToRow = function (tree) {
+    mdeditor.prototype.htmlToRow = function (tree, firstRowNo) {
         var rows = [];
+
         for (var i = 0; i < tree.length; i++) {
+
+            var rowNo = i == 0 && firstRowNo ? firstRowNo : this._rowNo++;
+
             var divConfig = {
                 attrs: {
-                    row: this._rowNo,
+                    row: rowNo,
                     class: tree[i].tag
                 }
             };
+
             if (tree[i].tag === 'pre') {
                 divConfig.innerHTML = tree[i].md; // < 和 > 被转码，用 text() 将不能正常显示 < 和 >
             } else {
                 divConfig.text = tree[i].md;
             }
-            var div = createElement(['div', divConfig]);
-            rows.push(div);
-            this._value[this._rowNo] = tree[i].md;
-            // todo 
-            this._rowNo++;
+
+            rows.push(createElement(['div', divConfig]));
+            this._value[rowNo] = tree[i].md;
         }
+
         return rows;
     };
 }
