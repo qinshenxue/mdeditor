@@ -43,14 +43,15 @@ export function rowMixin(mdeditor) {
             newRow = curRow.insertBefore(newRowData)
 
         } else { // 光标在段落中间
-            var rowText = curRow.text()
+            var curRowText = curRow.text()
+            // 计算光标前的字符数
             while (cursorNode.previousSibling) {
                 offset += cursorNode.previousSibling.textContent.length
                 cursorNode = cursorNode.previousSibling
             }
-            curRow.text(rowText.slice(0, offset))
+            curRow.text(curRowText.slice(0, offset))
             newRowData[1].innerHTML = null
-            newRowData[1].text = rowText.slice(offset)
+            newRowData[1].text = curRowText.slice(offset)
             newRow = curRow.insertAfter(newRowData)
         }
 
