@@ -503,8 +503,10 @@ function initEvent(md) {
     md._value = [];
     md._keyCodes = {
         enter: 13,
-        backspace: 8
+        backspace: 8,
+        z: 90
     };
+    md._history = [];
 
     md.on('keydown', function keydown(e) {
 
@@ -515,12 +517,32 @@ function initEvent(md) {
         } else if (e.keyCode === md._keyCodes.backspace && !md.el.text()) {
             // 8：backspace 编辑器没有内容时，阻止删除子节点
             e.preventDefault();
+        } else if (e.keyCode === md._keyCodes.z && e.ctrlKey) {
+            e.preventDefault();
+            md._lastRow = null;
+            md._history.pop();
+
+            if (md._history.length) {
+                var pop = md._history.pop();
+                if (pop) {
+                    md.setMarkdown(pop);
+                }
+            } else {
+                md.setMarkdown('');
+            }
         }
     });
 
     md.on('blur', function blur() {
         md.trigger('rowchange', md._lastRow);
         md._lastRow = null;
+    });
+
+    md.on('input', function input() {
+        if (md._history.length > 100) {
+            md._history.shift();
+        }
+        md._history.push(md.getMarkdown());
     });
 
     md.on('rowchange', function rowchange(oldRow) {
@@ -809,7 +831,7 @@ function apiMixin(mdeditor) {
         var rows = this.el.children();
         var markdown = '';
         for (var i = 0; i < rows.length; i++) {
-            markdown += rows[i].innerText + '\n\n';
+            markdown += rows[i].textContent + '\n\n';
         }
         return markdown;
     };
@@ -831,12 +853,21 @@ function apiMixin(mdeditor) {
         this._rowNo = 0;
         this._value = [];
         this.el.empty();
-        var tree = mdToTree(markdown);
-        var rows = this.htmlToRow(tree);
-        var me = this;
-        rows.forEach(function (row) {
-            me.el.append(row);
-        });
+        if (markdown) {
+            var tree = mdToTree(markdown);
+            var rows = this.htmlToRow(tree);
+            var me = this;
+            rows.forEach(function (row) {
+                me.el.append(row);
+            });
+        } else {
+            this.el.append(['div', {
+                attrs: {
+                    'row': this._rowNo++
+                },
+                innerHTML: '<br>'
+            }]);
+        }
     };
 
     mdeditor.prototype.insertMarkdown = function (markdown) {

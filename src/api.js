@@ -1,4 +1,7 @@
-import {mdToTree, mdToHtml} from './markdown'
+import {
+    mdToTree,
+    mdToHtml
+} from './markdown'
 
 /**
  * 实例可用api
@@ -16,7 +19,7 @@ export function apiMixin(mdeditor) {
         var rows = this.el.children()
         var markdown = ''
         for (var i = 0; i < rows.length; i++) {
-            markdown += rows[i].innerText + '\n\n'
+            markdown += rows[i].textContent + '\n\n'
         }
         return markdown
     }
@@ -38,12 +41,23 @@ export function apiMixin(mdeditor) {
         this._rowNo = 0
         this._value = []
         this.el.empty()
-        var tree = mdToTree(markdown)
-        var rows = this.htmlToRow(tree)
-        var me = this
-        rows.forEach(function (row) {
-            me.el.append(row)
-        })
+        if (markdown) {
+            var tree = mdToTree(markdown)
+            var rows = this.htmlToRow(tree)
+            var me = this
+            rows.forEach(function (row) {
+                me.el.append(row)
+            })
+        } else {
+            this.el.append(['div', {
+                attrs: {
+                    'row': this._rowNo++
+                },
+                innerHTML: '<br>'
+            }])
+        }
+
+
     }
 
     mdeditor.prototype.insertMarkdown = function (markdown) {

@@ -36,8 +36,10 @@ export function initEvent(md) {
     md._value = []
     md._keyCodes = {
         enter: 13,
-        backspace: 8
+        backspace: 8,
+        z: 90
     }
+    md._history = []
 
     md.on('keydown', function keydown(e) {
 
@@ -47,6 +49,19 @@ export function initEvent(md) {
             md.addRow()
         } else if (e.keyCode === md._keyCodes.backspace && !md.el.text()) { // 8：backspace 编辑器没有内容时，阻止删除子节点
             e.preventDefault()
+        } else if (e.keyCode === md._keyCodes.z && e.ctrlKey) {
+            e.preventDefault()
+            md._lastRow = null
+            md._history.pop()
+
+            if (md._history.length) {
+                var pop = md._history.pop()
+                if (pop) {
+                    md.setMarkdown(pop)
+                }
+            } else {
+                md.setMarkdown('')
+            }
         }
 
     })
@@ -55,6 +70,14 @@ export function initEvent(md) {
     md.on('blur', function blur() {
         md.trigger('rowchange', md._lastRow)
         md._lastRow = null
+    })
+
+
+    md.on('input', function input() {
+        if (md._history.length > 100) {
+            md._history.shift()
+        }
+        md._history.push(md.getMarkdown())
     })
 
 
