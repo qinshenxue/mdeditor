@@ -853,7 +853,7 @@ function apiMixin(mdeditor) {
         this._rowNo = 0;
         this._value = [];
         this.el.empty();
-        if (markdown) {
+        if (typeof markdown === 'string' && markdown.trim()) {
             var tree = mdToTree(markdown);
             var rows = this.htmlToRow(tree);
             var me = this;
