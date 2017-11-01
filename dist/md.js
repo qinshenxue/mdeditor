@@ -831,7 +831,7 @@ function apiMixin(mdeditor) {
         var rows = this.el.children();
         var markdown = '';
         for (var i = 0; i < rows.length; i++) {
-            markdown += rows[i].textContent + '\n\n';
+            markdown += rows[i].textContent + '\n\n'; // 用 innerText 会导致记录 _history 有空值情况
         }
         return markdown;
     };
