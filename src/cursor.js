@@ -10,7 +10,6 @@ function Cursor(editor) {
 
     this.editor = editor
 
-    var me = this
     this.path = []
 
     def(this, 'sel', {
@@ -24,8 +23,8 @@ function Cursor(editor) {
             /* if (me.sel.type === 'Range') {
              return me.sel.baseNode
              }*/
-            if (this.inside()) {
-                return me.sel.baseNode
+            if (this._inside()) {
+                return this.sel.baseNode
             }
             return null
 
@@ -33,7 +32,7 @@ function Cursor(editor) {
     })
     def(this, 'offset', {
         get: function () {
-            return me.sel.baseOffset
+            return this.sel.baseOffset
         }
     })
 
