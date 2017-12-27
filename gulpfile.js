@@ -80,19 +80,24 @@ gulp.task('lint', () => {
 
 gulp.task('build', function () {
     return rollup({
-        entry: 'src/index.js',
+        input: 'src/index.js',
 
 
         plugins: [babel({
             exclude: 'node_modules/**'
         })]
     }).then(function (bundle) {
-        return bundle.write({
+        bundle.write({
             format: 'umd',
-            moduleName: 'mdeditor',
-            dest: 'dist/md.js'
+            name: 'mdeditor',
+            file: 'dist/mdeditor.js'
         });
-    });
+
+        bundle.write({
+            format: 'es',
+            file: 'dist/mdeditor.es.js'
+        });
+    })
 });
 
 gulp.task('markdown', function () {
@@ -107,8 +112,8 @@ gulp.task('markdown', function () {
     }).then(function (bundle) {
         return bundle.write({
             format: 'iife',
-            moduleName: 'md',
-            dest: 'dist/markdown.js'
+            name: 'md',
+            file: 'dist/markdown.js'
         });
     });
 });

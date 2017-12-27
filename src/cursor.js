@@ -18,12 +18,17 @@ function Cursor(editor) {
             return window.getSelection()
         }
     })
+    // 鼠标所在的 dom 节点
     def(this, 'node', {
         get: function () {
-            if (me.sel.type === 'Range') {
+            /* if (me.sel.type === 'Range') {
+             return me.sel.baseNode
+             }*/
+            if (this.inside()) {
                 return me.sel.baseNode
             }
-            return me.sel.baseNode
+            return null
+
         }
     })
     def(this, 'offset', {
@@ -39,7 +44,7 @@ function Cursor(editor) {
  * @private
  */
 Cursor.prototype._inside = function () {
-    var node = this.node
+    var node = this.sel.baseNode
     var _path = [node]
     while (node && !node.isEqualNode(this.editor)) {
         node = node.parentNode
