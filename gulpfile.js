@@ -22,8 +22,8 @@ gulp.task('jshint', function () {
 
 gulp.task('css', function () {
     return gulp.src(['src/*.css'], {
-            buffer: false
-        })
+        buffer: false
+    })
         .pipe(cleanCss())
         .pipe(rename({
             extname: ".min.css"
@@ -40,27 +40,37 @@ gulp.task('lint', () => {
         .pipe(eslint.format())
 });
 
-gulp.task('build', function () {
+
+gulp.task('rollup-umd', function () {
     return rollup({
         input: 'src/index.js',
-
-
         plugins: [babel({
             exclude: 'node_modules/**'
-        })]
+        }), uglify()]
     }).then(function (bundle) {
         bundle.write({
             format: 'umd',
             name: 'mdeditor',
             file: 'dist/mdeditor.js'
         });
+    })
+});
 
+gulp.task('rollup-es', function () {
+    return rollup({
+        input: 'src/index.js',
+        plugins: [babel({
+            exclude: 'node_modules/**'
+        })]
+    }).then(function (bundle) {
         bundle.write({
             format: 'es',
             file: 'dist/mdeditor.es.js'
         });
     })
 });
+
+gulp.task('build', ['rollup-umd', 'rollup-es'])
 
 gulp.task('markdown', function () {
     return rollup({
