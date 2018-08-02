@@ -1,125 +1,95 @@
-/**
- * Created by qinsx on 2017/6/13.
- */
-
 import {
     mdToTree
 } from './markdown'
 
-export function eventsMixin(mdeditor) {
+function eventsMixin(mdeditor) {
 
-    mdeditor.prototype.on = function (eventName, cb) {
-        (this._events[eventName] || (this._events[eventName] = [])).push(cb)
-        this.el[0].addEventListener(eventName, cb)
-    }
-
-    mdeditor.prototype.trigger = function (eventName) {
-        var md = this
-        var params = Array.prototype.slice.call(arguments, 1)
-        if (this._events[eventName]) {
-            this._events[eventName].forEach(function (cb) {
-                cb.apply(md, params)
-            })
-        }
-    }
-}
+    mdeditor.prototype._initEvent = function () {
 
 
-/**
- * 绑定事件
- * @param md
- */
+        const me = this
+        const bind = this.elm.addEventListener
 
-export function initEvent(md) {
-    md._events = []
-    md._lastRow = null
-    md._value = []
-    md._keyCodes = {
-        enter: 13,
-        backspace: 8,
-        z: 90
-    }
-    md._history = []
 
-    md.on('keydown', function keydown(e) {
+        /*  bind('keyup', function keydown(e) {
 
-        // 按 enter，但是没有按 shift
-        if (e.keyCode === md._keyCodes.enter && !e.shiftKey) {
+            // console.log(e.shiftKey)
+             if (e.keyCode === 13 && !e.shiftKey) {
+                 
+                 var row = me.cursor.closestRow()
+                 row.setAttribute('class', '')
+                 row.setAttribute('row', me._rowNo++)
+             }
+
+         }) */
+        bind('paste', function paste(e) {
             e.preventDefault()
-            md.addRow()
-        } else if (e.keyCode === md._keyCodes.backspace && !md.el.text()) { // 8：backspace 编辑器没有内容时，阻止删除子节点
-            e.preventDefault()
-        } else if (e.keyCode === md._keyCodes.z && e.ctrlKey) {
-            e.preventDefault()
-            md._lastRow = null
-            md._history.pop()
+            var txt = e.clipboardData.getData('text/plain')
+            var div = document.createElement('div')
+            div.innerText = txt
+            document.execCommand("insertHTML", false, div.innerHTML.replace(/\s/g, '&nbsp;'));
+        })
+        bind('keydown', function keydown(e) {
+            if (e.keyCode === 13 && !e.shiftKey) {
 
-            if (md._history.length) {
-                var pop = md._history.pop()
-                if (pop) {
-                    md.setMarkdown(pop)
+                e.preventDefault()
+
+                var row = me.cursor.closestRow()
+                if (row.textContent && me.cursor.node === row.childNodes[row.childNodes.length - 1] && me.cursor.node.length === me.cursor.offset) {
+                    document.execCommand("insertHTML", false, `<div row='${me._rowNo++}'><br></div>`);
                 }
-            } else {
-                md.setMarkdown('')
+            } else if (e.keyCode === 8 && !me.elm.textContent) {
+                e.preventDefault()
+            }
+        })
+
+        bind('blur', setCls)
+
+        this._lastRow = null
+
+        function setCls() {
+            if (me._lastRow) {
+                var tree = mdToTree(me._lastRow.innerText)
+                if (tree.length) {
+                    var root = tree[0]
+                    me._lastRow.setAttribute('class', root.tag)
+                    if (root.attr) {
+                        Object.keys(root.attr).forEach(function (key) {
+                            me._lastRow.setAttribute(key, root.attr[key])
+                        })
+                    }
+                }
             }
         }
 
-    })
+        document.addEventListener('selectionchange', function selectionchange() {
 
+            if (window.getSelection().isCollapsed) {
+                var row = me.cursor.closestRow()
+                //  光标在编辑器内
+                if (row) {
 
-    md.on('blur', function blur() {
-        md.trigger('rowchange', md._lastRow)
-        md._lastRow = null
-    })
-
-
-    md.on('input', function input() {
-        if (md._history.length > 100) {
-            md._history.shift()
-        }
-        md._history.push(md.getMarkdown())
-    })
-
-
-    md.on('rowchange', function rowchange(oldRow) {
-
-        if (oldRow) {
-
-            var text = oldRow.text()
-            var type = oldRow.attr('class')
-            if (text !== '') {
-                var tree = mdToTree(text)
-
-                var rows = this.htmlToRow(tree, oldRow.attr('row'))
-                if (rows.length === 1 && type && rows[0].className === type) {
-
-                    oldRow.text(rows[0].textContent)
-
+                    if (!me._lastRow && !row.textContent) {
+                        // 选择区域，删除时，如果鼠标停留的行没有内容了，则清空之前加的CSS
+                        row.setAttribute('class', '')
+                    } else if (me._lastRow && me._lastRow.getAttribute('row') !== row.getAttribute('row')) {
+                        // 行号发生变化计算才计算，提高性能
+                        setCls()
+                    }
                 } else {
-                    oldRow.replaceWith(rows)
-
+                    setCls()
                 }
 
+                me._lastRow = row
+            } else {
+                me._lastRow = null
             }
+        })
 
-        }
-    })
-    document.addEventListener('selectionchange', function selectionchange() {
-        // 目前仅支持非选择区域
-        if (window.getSelection().isCollapsed) {
-            var row = md.cursor.closestRow()
-            if (row) {
-                if (md._lastRow && md._lastRow.attr('row') !== row.attr('row')) { // 光标所在行和之前行号不相等才触发rowchange
-                    md.trigger('rowchange', md._lastRow, row)
-                } else if (!md._lastRow) { // 首次换行
-                    md.trigger('rowchange', md._lastRow, row)
-                }
-            } else if (md._lastRow) { // 离开编辑器，但是仍然触发了selectionchange，说明光标仍然在当前页面上
-                md.trigger('rowchange', md._lastRow)
-            }
-            md._lastRow = row
-        } else {
-            md._lastRow = null
-        }
-    })
+
+
+    }
 }
+
+
+export default eventsMixin

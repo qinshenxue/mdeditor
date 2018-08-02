@@ -1,10 +1,5 @@
-/**
- * Created by qinsx on 2017/6/14.
- */
+const def = Object.defineProperty
 
-var def = Object.defineProperty
-
-import el from './el'
 
 function Cursor(editor) {
 
@@ -12,7 +7,7 @@ function Cursor(editor) {
 
     this.path = []
 
-    def(this, 'sel', {
+    def(this, 'selection', {
         get: function () {
             return window.getSelection()
         }
@@ -20,11 +15,8 @@ function Cursor(editor) {
     // 鼠标所在的 dom 节点
     def(this, 'node', {
         get: function () {
-            /* if (me.sel.type === 'Range') {
-             return me.sel.baseNode
-             }*/
             if (this._inside()) {
-                return this.sel.baseNode
+                return this.selection.baseNode
             }
             return null
 
@@ -32,7 +24,7 @@ function Cursor(editor) {
     })
     def(this, 'offset', {
         get: function () {
-            return this.sel.baseOffset
+            return this.selection.baseOffset
         }
     })
 
@@ -43,7 +35,7 @@ function Cursor(editor) {
  * @private
  */
 Cursor.prototype._inside = function () {
-    var node = this.sel.baseNode
+    var node = this.selection.baseNode
     var _path = [node]
     while (node && !node.isEqualNode(this.editor)) {
         node = node.parentNode
@@ -67,7 +59,7 @@ Cursor.prototype.closest = function (selector) {
             }
         })
     }
-    return match ? new el(match) : match
+    return match
 }
 
 /**
@@ -78,45 +70,45 @@ Cursor.prototype.closestRow = function () {
     return this.closest('[row]')
 }
 
-/**
- * 光标是否在node中
- * @param nodeName HTMLElement nodeName，全大写
- * @returns {boolean}
- */
-Cursor.prototype.in = function (nodeName) {
-    if (this._inside()) {
-        var _path = this.path
-        var i = _path.length
-        while (i--) {
-            if (_path[i].nodeName === nodeName) {
-                return true
-            }
-        }
-        return false
-    }
-    return false
-}
+// /**
+//  * 光标是否在node中
+//  * @param nodeName HTMLElement nodeName，全大写
+//  * @returns {boolean}
+//  */
+// Cursor.prototype.in = function (nodeName) {
+//     if (this._inside()) {
+//         var _path = this.path
+//         var i = _path.length
+//         while (i--) {
+//             if (_path[i].nodeName === nodeName) {
+//                 return true
+//             }
+//         }
+//         return false
+//     }
+//     return false
+// }
 
-/**
- * 设定光标位置
- * @param node 光标所在的节点
- * @param offset 光标偏移长度
- */
-Cursor.prototype.set = function (node, offset) {
-    var elm = node
-    if (node instanceof el) {
-        elm = node[0]
-    }
-    var isTxtNode = node instanceof Text
-    var selection = window.getSelection()
-    var range = document.createRange()
-    if (offset === undefined) {
-        offset = isTxtNode ? node.nodeValue.length : elm.textContent.length
-    }
-    range.setStart(isTxtNode ? node : elm.childNodes[0], offset)
-    range.collapse(true)
-    selection.removeAllRanges()
-    selection.addRange(range)
-}
+// /**
+//  * 设定光标位置
+//  * @param node 光标所在的节点
+//  * @param offset 光标偏移长度
+//  */
+// Cursor.prototype.set = function (node, offset) {
+//     var elm = node
+//     if (node instanceof el) {
+//         elm = node[0]
+//     }
+//     var isTxtNode = node instanceof Text
+//     var selection = window.getSelection()
+//     var range = document.createRange()
+//     if (offset === undefined) {
+//         offset = isTxtNode ? node.nodeValue.length : elm.textContent.length
+//     }
+//     range.setStart(isTxtNode ? node : elm.childNodes[0], offset)
+//     range.collapse(true)
+//     selection.removeAllRanges()
+//     selection.addRange(range)
+// }
 
 export default Cursor

@@ -1,32 +1,35 @@
 .md {
-    font-size: 15px;
-    line-height: 1.6;
+    line-height: 2;
     color: #555;
 }
-
 .md h1,
 .md h2,
 .md h3 {
-    color: #333
+    color: #333;
+    margin-bottom: 1em;
 }
-
-.md p {
-    word-spacing: 0.05em;
-}
-
 .md h1 {
-    margin: 0 0 1em;
+    font-size: 30px;
 }
 
 .md h2 {
-    margin: 2em 0 0.8em;
-    padding-bottom: 0.7em;
-    border-bottom: 1px solid #ddd;
+    margin-top: 3em;
+    font-size: 24px;
 }
 
 .md h3 {
-    margin: 2.5em 0 1.2em;
+    margin-top: 2em;
+    font-size: 18px;
 }
+
+.md h2 + h3 {
+    margin-top: 0;
+}
+.md h2 + *,
+.md h3 + * {
+    margin-top: 0;
+}
+
 
 .md a {
     color: #3490de;
@@ -39,11 +42,8 @@
     margin-bottom: 20px;
 }
 
-.md p,
-.md ul,
-.md ol {
-    margin: 1.5em 0 -1.5em;
-    padding-bottom: 1.5em;
+.md > * {
+    margin: 1.5em 0;
 }
 
 .md img {
@@ -55,19 +55,20 @@
     font-family: Consolas, monospace, Monaco, courier;
 }
 
-.md code {
+.md li code,
+.md td code,
+.md p code {
     display: inline;
     color: #c7254e;
     font-size: 13px;
     background-color: #f9f2f4;
     padding: 3px 5px;
-    margin: 0 2px;
+    margin: 0 5px;
     border-radius: 2px;
-    white-space: nowrap;
+    word-break: break-all;
 }
 
 .md pre {
-    margin-bottom: 20px;
     border: 0;
     overflow: hidden;
     position: relative;
@@ -96,7 +97,7 @@
     overflow: auto;
     background: #f8f8f8;
     white-space: inherit;
-    color: #333;
+    margin: 0;
 }
 
 .md blockquote {
@@ -107,6 +108,7 @@
 
 .md blockquote p {
     font-weight: 600;
+    margin-top: 0;
     margin-left: 0;
     margin-bottom: 0;
     padding-bottom: 0;
@@ -134,7 +136,7 @@
     text-align: center;
     line-height: 20px;
     font-weight: bold;
-    font-family: 'Source Sans Pro', 'Helvetica Neue', Arial, sans-serif;
+    font-family: "Source Sans Pro", "Helvetica Neue", Arial, sans-serif;
     font-size: 14px;
 }
 
@@ -143,15 +145,17 @@
 }
 
 .md blockquote.warning:before {
-    content: '!';
+    content: "!";
     background-color: #f77;
 }
 
-.md-ol, .md-ul {
+.md-ol,
+.md-ul {
     padding-left: 40px;
 }
 
-.md-ol li, .md-ul li {
+.md-ol li,
+.md-ul li {
     list-style: inherit;
 }
 

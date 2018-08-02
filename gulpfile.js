@@ -3,9 +3,7 @@ var gulp = require('gulp'),
     cleanCss = require("gulp-clean-css"),
     uglify = require('gulp-uglify'),
     jshint = require('gulp-jshint'),
-    ftp = require('gulp-ftp'),
-    syncConfig = require('./sync-config');
-
+    ftp = require('gulp-ftp');
 var eslint = require('gulp-eslint');
 var uglify = require('rollup-plugin-uglify')
 var babel = require('rollup-plugin-babel')
@@ -34,47 +32,11 @@ gulp.task('css', function () {
 });
 
 
-gulp.task('sync', function () {
-    return gulp.src(['dist/*'])
-        .pipe(ftp(Object.assign({}, syncConfig, {
-            remotePath: '/demo/mdeditor/dist'
-        })));
-});
-
-gulp.task('sync-index', function () {
-    return gulp.src(['index.html'])
-        .pipe(ftp(Object.assign({}, syncConfig, {
-            remotePath: '/demo/mdeditor/'
-        })));
-});
-
-gulp.task('server-css', function () {
-    return gulp.src(['dist/*.css'])
-        .pipe(ftp(Object.assign({}, syncConfig, {
-            remotePath: '/static/css/'
-        })));
-});
-gulp.task('server-js', function () {
-    return gulp.src(['dist/*.js'])
-        .pipe(ftp(Object.assign({}, syncConfig, {
-            remotePath: '/static/js/'
-        })));
-});
-
-//var tasks = ['jshint', 'css', 'sync', 'sync-index'];
 var rollup = require('rollup').rollup;
 
 gulp.task('lint', () => {
-    // ESLint ignores files with "node_modules" paths.
-    // So, it's best to have gulp ignore the directory as well.
-    // Also, Be sure to return the stream from the task;
-    // Otherwise, the task may end before the stream has finished.
     return gulp.src(['src/**.js'])
-        // eslint() attaches the lint output to the "eslint" property
-        // of the file object so it can be used by other modules.
         .pipe(eslint())
-        // eslint.format() outputs the lint results to the console.
-        // Alternatively use eslint.formatEach() (see Docs).
         .pipe(eslint.format())
 });
 
@@ -125,18 +87,6 @@ gulp.task('watch-markdown', function () {
 gulp.task('watch', function () {
     gulp.watch(['src/**.js'], ['build']);
 })
-
-gulp.task('enote', function () {
-
-    gulp.src(['./dist/md.js'], {
-            buffer: false
-        })
-        .pipe(
-            gulp.dest('E:/oschina/ENote/src/lib')
-        )
-
-
-});
 
 var tasks = ['watch']
 

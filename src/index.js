@@ -1,20 +1,42 @@
-/**
- * Created by qinsx on 2017/6/13.
- */
 
 
-import {initMixin} from './init'
-import {eventsMixin} from './events'
-import {initGlobalApi} from './global'
-import {rowMixin} from './row'
-import {apiMixin} from './api'
-function mdeditor(id, options) {
-    this._init(id, options)
+import eventsMixin from './events'
+
+import Cursor from './cursor'
+
+
+import {
+    apiMixin
+} from './api'
+
+import {
+    mdToTree
+} from './markdown'
+
+
+function mdeditor(el, options) {
+
+    const elm = document.querySelector(el)
+    if (elm) {
+        this.elm = elm // 编辑器dom
+        this._rowNo = 0 // 行号
+        elm.setAttribute('contenteditable', true)
+        let tree
+        if (options && options.markdown && (tree = mdToTree(options.markdown)).length) {
+            let html = ''
+            tree.forEach(item => {
+                html += `<div row="${this._rowNo++}" class="${item.tag}">${item.md}</div>`
+            });
+            elm.innerHTML = html
+        } else {
+            elm.innerHTML = `<div row="${this._rowNo++}"><br></div>`
+        }
+        this._initEvent()
+        this.cursor = new Cursor(elm)
+    }
     return this
 }
-initGlobalApi(mdeditor)
-initMixin(mdeditor)
+
 eventsMixin(mdeditor)
-rowMixin(mdeditor)
 apiMixin(mdeditor)
-export default  mdeditor
+export default mdeditor

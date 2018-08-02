@@ -16,12 +16,7 @@ export function apiMixin(mdeditor) {
      */
     mdeditor.prototype.getMarkdown = function () {
 
-        var rows = this.el.children()
-        var markdown = ''
-        for (var i = 0; i < rows.length; i++) {
-            markdown += rows[i].textContent + '\n\n'  // 用 innerText 会导致记录 _history 有空值情况
-        }
-        return markdown
+        return this.elm.innerText
     }
 
     /**
@@ -32,40 +27,20 @@ export function apiMixin(mdeditor) {
         return mdToHtml(this.getMarkdown())
     }
 
-    /**
-     * 初始化markdown值，markdown转成html
-     * @param markdown
-     */
     mdeditor.prototype.setMarkdown = function (markdown) {
-        // 初始化行号
-        this._rowNo = 0
-        this._value = []
-        this.el.empty()
-        if (typeof markdown === 'string' && markdown.trim()) {
-            var tree = mdToTree(markdown)
-            var rows = this.htmlToRow(tree)
-            var me = this
-            rows.forEach(function (row) {
-                me.el.append(row)
-            })
-        } else {
-            this.el.append(['div', {
-                attrs: {
-                    'row': this._rowNo++
-                },
-                innerHTML: '<br>'
-            }])
-        }
-
-
+        let tree = mdToTree(markdown)
+        let html = ''
+        tree.forEach(item => {
+            html += `<div row="${this._rowNo++}" class="${item.tag}">${item.md.replace(/\n/g,'<br>')}</div>`
+        });
+        this.elm.innerHTML = html
     }
 
+    /**
+     * 插入 markdown
+     * @param {String} markdown 
+     */
     mdeditor.prototype.insertMarkdown = function (markdown) {
-        var row = this.cursor.closestRow();
-        if (row) {
-            var txt = row.text()
-            var offset = this.cursor.offset
-            row.text(txt.slice(0, offset) + markdown + txt.slice(offset))
-        }
+        document.execCommand('insertText', false, markdown)
     }
 }

@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>mdeditor</title>
     <link rel="stylesheet" href="src/mdeditor.css">
     <link rel="stylesheet" href="src/markdown.css">
     <style>
@@ -26,58 +26,48 @@
         .hide {
             display: none;
         }
+
     </style>
 </head>
 
 <body>
 
-<button onclick="preview()">查看html</button>
-<button onclick="source()">查看md</button>
-<button onclick="setMd()">设置md</button>
-<div id="md" class="mdeditor" contenteditable="true"></div>
-<div class="md" id="preview" style="display: none"></div>
-<script src="dist/mdeditor.js"></script>
-<script type="text/plain" id="md_test">
-``` xml
-<div>
-<div>
-```
-</script>
-<script>
-    var md = new mdeditor('#md')
+    <button onclick="preview()">查看html</button>
+    <button onclick="source()">查看md</button>
+    <button onclick="setMd()">设置md</button>
+    <div id="md" class="mdeditor"></div>
+    <div class="md" id="preview" style="display: none"></div>
+    <script src="dist/mdeditor.js"></script>
+    <script type="text/plain" id="md_test">
+        ``` xml
+        <div>
+            <div>
+                ```
+    </script>
+    <script>
+        var md = new mdeditor('#md', {
+            markdown: '## 初始化值\n###标题'
+        })
 
+        var dom_preview = document.getElementById('preview')
+        var dom_source = document.getElementById('md')
 
-    /* Array.prototype.slice.call(
-     document.querySelectorAll('pre code')).forEach(function (block) {
-     hljs.highlightBlock(block);
-     })*/
-    /* function mdtree() {
-     var source = document.getElementById('mdv').value
-     var htm = md.mdToHtml(source);
-     document.getElementById('html').innerHTML = htm
+        function preview() {
+            dom_preview.innerHTML = md.getHtml()
+            dom_source.style.display = 'none'
+            dom_preview.style.display = 'block'
+        }
 
-     Array.prototype.slice.call( document.querySelectorAll('pre code')).forEach(function (block) {
-     hljs.highlightBlock(block);
-     })
-     }
+        function source() {
+            dom_source.style.display = 'block'
+            dom_preview.style.display = 'none'
+        }
 
-     mdtree()*/
-    var dom_preview = document.getElementById('preview')
-    var dom_source = document.getElementById('md')
-    function preview() {
-        dom_source.style.display = 'none'
-        dom_preview.innerHTML = md.getHtml()
-        dom_preview.style.display = 'block'
-    }
-    function source() {
-        dom_source.style.display = 'block'
-        dom_preview.style.display = 'none'
-    }
+        function setMd() {
+            md.setMarkdown(document.getElementById('md_test').innerText);
+        }
 
-    function setMd() {
-        md.setMarkdown(document.getElementById('md_test').innerText);
-    }
-</script>
+    </script>
 
 </body>
 

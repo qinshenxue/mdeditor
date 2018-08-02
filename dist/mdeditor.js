@@ -4,132 +4,6 @@
 	(global.mdeditor = factory());
 }(this, (function () { 'use strict';
 
-/**
- * Created by qinsx on 2017/6/13.
- */
-
-function extend(source, dest) {
-    var destKeys = Object.keys(dest);
-    var i = destKeys.length;
-    while (i--) {
-        source[destKeys[i]] = dest[destKeys[i]];
-    }
-}
-
-
-
-
-
-
-
-function createElement() {
-
-    var elms = [];
-    var args = Array.prototype.slice.call(arguments);
-    args.forEach(function (item) {
-        var elm = document.createElement(item[0]);
-        var elmData = item[1];
-        if (elmData) {
-            if (elmData.attrs) {
-                for (var attr in elmData.attrs) {
-                    elm.setAttribute(attr, elmData.attrs[attr]);
-                }
-            }
-            if (elmData.innerHTML) {
-                elm.innerHTML = elmData.innerHTML;
-            }
-            if (elmData.text) {
-                elm.textContent = elmData.text;
-            }
-        }
-        elms.push(elm);
-    });
-    if (args.length == 1) return elms[0];
-    return elms;
-}
-
-/**
- * Created by qinsx on 2017/6/13.
- */
-
-function el(selector) {
-    if (typeof selector === 'string') {
-        this[0] = document.querySelector(selector);
-    } else if (selector instanceof HTMLElement) {
-        this[0] = selector;
-    }
-}
-el.prototype.insertAfter = function () {
-    var brother = createElement.apply(null, arguments);
-    this[0].parentNode.insertBefore(brother, this[0].nextSibling);
-    return brother;
-};
-el.prototype.insertBefore = function () {
-    var brother = createElement.apply(null, arguments);
-    this[0].parentNode.insertBefore(brother, this[0]);
-    return brother;
-};
-
-el.prototype.prepend = function () {
-    var child = createElement.apply(null, arguments);
-    this[0].insertBefore(child, this[0].firstChild);
-    return child;
-};
-
-el.prototype.append = function (node) {
-    var child = node instanceof Text || node instanceof HTMLElement ? node : createElement.apply(null, arguments);
-    this[0].appendChild(child);
-    return child;
-};
-el.prototype.empty = function () {
-    this[0].innerHTML = '';
-};
-el.prototype.children = function () {
-    return this[0].childNodes;
-};
-// 用 innerHTML 会导致换行符没有长度
-el.prototype.text = function (text) {
-    if (text === undefined) {
-        return this[0].textContent;
-    }
-    this[0].textContent = text;
-};
-el.prototype.html = function (html) {
-    if (html === undefined) {
-        return this[0].innerHTML;
-    }
-    this[0].innerHTML = html;
-};
-el.prototype.find = function (selector) {
-    var found = this[0].querySelector(selector);
-    return found ? new el(found) : found;
-};
-el.prototype.hasAttr = function (attrName) {
-    return this[0].hasAttribute(attrName);
-};
-el.prototype.removeAttr = function (attrName) {
-    return this[0].removeAttribute(attrName);
-};
-el.prototype.attr = function (attrName, attrVal) {
-    if (attrVal !== undefined) {
-        return this[0].setAttribute(attrName, attrVal);
-    }
-    return this[0].getAttribute(attrName);
-};
-
-el.prototype.attr = function (name, value) {
-    if (value === undefined) {
-        return this[0].getAttribute(name);
-    }
-    this[0].setAttribute(name, value);
-};
-el.prototype.replaceWith = function (nodes) {
-    for (var i = 0; i < nodes.length; i++) {
-        this[0].parentNode.insertBefore(nodes[i], this[0]);
-    }
-    this[0].remove();
-};
-
 var regLib = {
     title: /^#{1,6}.+$/,
     ul: /^[\.\-\*]\s+.+$/,
@@ -470,217 +344,87 @@ function mdToHtml(md) {
     return treeToHtml(mdToTree(md));
 }
 
-/**
- * Created by qinsx on 2017/6/13.
- */
-
 function eventsMixin(mdeditor) {
 
-    mdeditor.prototype.on = function (eventName, cb) {
-        (this._events[eventName] || (this._events[eventName] = [])).push(cb);
-        this.el[0].addEventListener(eventName, cb);
-    };
+    mdeditor.prototype._initEvent = function () {
 
-    mdeditor.prototype.trigger = function (eventName) {
-        var md = this;
-        var params = Array.prototype.slice.call(arguments, 1);
-        if (this._events[eventName]) {
-            this._events[eventName].forEach(function (cb) {
-                cb.apply(md, params);
-            });
-        }
-    };
-}
+        var me = this;
+        var bind = this.elm.addEventListener;
 
-/**
- * 绑定事件
- * @param md
- */
-
-function initEvent(md) {
-    md._events = [];
-    md._lastRow = null;
-    md._value = [];
-    md._keyCodes = {
-        enter: 13,
-        backspace: 8,
-        z: 90
-    };
-    md._history = [];
-
-    md.on('keydown', function keydown(e) {
-
-        // 按 enter，但是没有按 shift
-        if (e.keyCode === md._keyCodes.enter && !e.shiftKey) {
+        /*  bind('keyup', function keydown(e) {
+              // console.log(e.shiftKey)
+             if (e.keyCode === 13 && !e.shiftKey) {
+                 
+                 var row = me.cursor.closestRow()
+                 row.setAttribute('class', '')
+                 row.setAttribute('row', me._rowNo++)
+             }
+           }) */
+        bind('paste', function paste(e) {
             e.preventDefault();
-            md.addRow();
-        } else if (e.keyCode === md._keyCodes.backspace && !md.el.text()) {
-            // 8：backspace 编辑器没有内容时，阻止删除子节点
-            e.preventDefault();
-        } else if (e.keyCode === md._keyCodes.z && e.ctrlKey) {
-            e.preventDefault();
-            md._lastRow = null;
-            md._history.pop();
+            var txt = e.clipboardData.getData('text/plain');
+            var div = document.createElement('div');
+            div.innerText = txt;
+            document.execCommand("insertHTML", false, div.innerHTML.replace(/\s/g, '&nbsp;'));
+        });
+        bind('keydown', function keydown(e) {
+            if (e.keyCode === 13 && !e.shiftKey) {
 
-            if (md._history.length) {
-                var pop = md._history.pop();
-                if (pop) {
-                    md.setMarkdown(pop);
+                e.preventDefault();
+
+                var row = me.cursor.closestRow();
+                if (row.textContent && me.cursor.node === row.childNodes[row.childNodes.length - 1] && me.cursor.node.length === me.cursor.offset) {
+                    document.execCommand("insertHTML", false, '<div row=\'' + me._rowNo++ + '\'><br></div>');
                 }
-            } else {
-                md.setMarkdown('');
+            } else if (e.keyCode === 8 && !me.elm.textContent) {
+                e.preventDefault();
+            }
+        });
+
+        bind('blur', setCls);
+
+        this._lastRow = null;
+
+        function setCls() {
+            if (me._lastRow) {
+                var tree = mdToTree(me._lastRow.innerText);
+                if (tree.length) {
+                    var root = tree[0];
+                    me._lastRow.setAttribute('class', root.tag);
+                    if (root.attr) {
+                        Object.keys(root.attr).forEach(function (key) {
+                            me._lastRow.setAttribute(key, root.attr[key]);
+                        });
+                    }
+                }
             }
         }
-    });
 
-    md.on('blur', function blur() {
-        md.trigger('rowchange', md._lastRow);
-        md._lastRow = null;
-    });
+        document.addEventListener('selectionchange', function selectionchange() {
 
-    md.on('input', function input() {
-        if (md._history.length > 100) {
-            md._history.shift();
-        }
-        md._history.push(md.getMarkdown());
-    });
+            if (window.getSelection().isCollapsed) {
+                var row = me.cursor.closestRow();
+                //  光标在编辑器内
+                if (row) {
 
-    md.on('rowchange', function rowchange(oldRow) {
-
-        if (oldRow) {
-
-            var text = oldRow.text();
-            var type = oldRow.attr('class');
-            if (text !== '') {
-                var tree = mdToTree(text);
-
-                var rows = this.htmlToRow(tree, oldRow.attr('row'));
-                if (rows.length === 1 && type && rows[0].className === type) {
-
-                    oldRow.text(rows[0].textContent);
+                    if (!me._lastRow && !row.textContent) {
+                        // 选择区域，删除时，如果鼠标停留的行没有内容了，则清空之前加的CSS
+                        row.setAttribute('class', '');
+                    } else if (me._lastRow && me._lastRow.getAttribute('row') !== row.getAttribute('row')) {
+                        // 行号发生变化计算才计算，提高性能
+                        setCls();
+                    }
                 } else {
-                    oldRow.replaceWith(rows);
+                    setCls();
                 }
-            }
-        }
-    });
-    document.addEventListener('selectionchange', function selectionchange() {
-        // 目前仅支持非选择区域
-        if (window.getSelection().isCollapsed) {
-            var row = md.cursor.closestRow();
-            if (row) {
-                if (md._lastRow && md._lastRow.attr('row') !== row.attr('row')) {
-                    // 光标所在行和之前行号不相等才触发rowchange
-                    md.trigger('rowchange', md._lastRow, row);
-                } else if (!md._lastRow) {
-                    // 首次换行
-                    md.trigger('rowchange', md._lastRow, row);
-                }
-            } else if (md._lastRow) {
-                // 离开编辑器，但是仍然触发了selectionchange，说明光标仍然在当前页面上
-                md.trigger('rowchange', md._lastRow);
-            }
-            md._lastRow = row;
-        } else {
-            md._lastRow = null;
-        }
-    });
-}
 
-/**
- * Created by qinsx on 2017/6/13.
- */
-function rowMixin(mdeditor) {
-
-    /**
-     * 给编辑器增加一行
-     */
-    mdeditor.prototype.addRow = function () {
-
-        var offset = this.cursor.offset;
-        var newRow;
-        var newRowData = ['div', {
-            attrs: {
-                'row': this._rowNo
-            },
-            innerHTML: '<br>'
-        }];
-
-        // 计算offset（主要是用了shift换行输入的情况）
-        var cursorNode = this.cursor.node;
-        var curRow = this.cursor.closestRow();
-
-        if (!cursorNode) {
-            // 在没光标的情况下添加行
-            newRow = this.el.append(newRowData);
-        } else if (!cursorNode.nextSibling && cursorNode.textContent.length === offset) {
-            // 光标在行尾时，在当前行后添加
-            newRow = curRow.insertAfter(newRowData);
-        } else if (!cursorNode.previousSibling && offset === 0) {
-            // 光标在行首时，在当前行前添加
-            newRow = curRow.insertBefore(newRowData);
-        } else {
-            // 光标在段落中间
-            var curRowText = curRow.text();
-            // 计算光标前的字符数
-            while (cursorNode.previousSibling) {
-                offset += cursorNode.previousSibling.textContent.length;
-                cursorNode = cursorNode.previousSibling;
-            }
-            curRow.text(curRowText.slice(0, offset));
-            newRowData[1].innerHTML = null;
-            newRowData[1].text = curRowText.slice(offset);
-            newRow = curRow.insertAfter(newRowData);
-        }
-
-        this.cursor.set(newRow, 0); // 设置光标到行首
-        this._rowNo++;
-    };
-
-    /**
-     * 将markdown解析成的html，转换成符合编辑器的行，保证每一行只有一个类型（p、pre、ul、li等）
-     * @param html 由mdToHtml返回的html数组
-     * @returns {Array}
-     */
-    mdeditor.prototype.htmlToRow = function (tree, firstRowNo) {
-        var rows = [];
-
-        for (var i = 0; i < tree.length; i++) {
-
-            var rowNo = i == 0 && firstRowNo ? firstRowNo : this._rowNo++;
-
-            var divConfig = {
-                attrs: {
-                    row: rowNo,
-                    class: tree[i].tag
-                }
-            };
-
-            if (tree[i].tag === 'pre') {
-                divConfig.innerHTML = tree[i].md; // < 和 > 被转码，用 text() 将不能正常显示 < 和 >
+                me._lastRow = row;
             } else {
-                divConfig.text = tree[i].md;
+                me._lastRow = null;
             }
-
-            rows.push(createElement(['div', divConfig]));
-            this._value[rowNo] = tree[i].md;
-        }
-
-        return rows;
+        });
     };
 }
-
-/**
- * 初始化mdeditor实例的行号为0
- * @param md mdeditor实例
- */
-function initRow(md) {
-    md._rowNo = 0;
-}
-
-/**
- * Created by qinsx on 2017/6/14.
- */
 
 var def = Object.defineProperty;
 
@@ -690,7 +434,7 @@ function Cursor(editor) {
 
     this.path = [];
 
-    def(this, 'sel', {
+    def(this, 'selection', {
         get: function get() {
             return window.getSelection();
         }
@@ -698,18 +442,15 @@ function Cursor(editor) {
     // 鼠标所在的 dom 节点
     def(this, 'node', {
         get: function get() {
-            /* if (me.sel.type === 'Range') {
-             return me.sel.baseNode
-             }*/
             if (this._inside()) {
-                return this.sel.baseNode;
+                return this.selection.baseNode;
             }
             return null;
         }
     });
     def(this, 'offset', {
         get: function get() {
-            return this.sel.baseOffset;
+            return this.selection.baseOffset;
         }
     });
 }
@@ -719,7 +460,7 @@ function Cursor(editor) {
  * @private
  */
 Cursor.prototype._inside = function () {
-    var node = this.sel.baseNode;
+    var node = this.selection.baseNode;
     var _path = [node];
     while (node && !node.isEqualNode(this.editor)) {
         node = node.parentNode;
@@ -743,7 +484,7 @@ Cursor.prototype.closest = function (selector) {
             }
         });
     }
-    return match ? new el(match) : match;
+    return match;
 };
 
 /**
@@ -753,71 +494,6 @@ Cursor.prototype.closest = function (selector) {
 Cursor.prototype.closestRow = function () {
     return this.closest('[row]');
 };
-
-/**
- * 光标是否在node中
- * @param nodeName HTMLElement nodeName，全大写
- * @returns {boolean}
- */
-Cursor.prototype.in = function (nodeName) {
-    if (this._inside()) {
-        var _path = this.path;
-        var i = _path.length;
-        while (i--) {
-            if (_path[i].nodeName === nodeName) {
-                return true;
-            }
-        }
-        return false;
-    }
-    return false;
-};
-
-/**
- * 设定光标位置
- * @param node 光标所在的节点
- * @param offset 光标偏移长度
- */
-Cursor.prototype.set = function (node, offset) {
-    var elm = node;
-    if (node instanceof el) {
-        elm = node[0];
-    }
-    var isTxtNode = node instanceof Text;
-    var selection = window.getSelection();
-    var range = document.createRange();
-    if (offset === undefined) {
-        offset = isTxtNode ? node.nodeValue.length : elm.textContent.length;
-    }
-    range.setStart(isTxtNode ? node : elm.childNodes[0], offset);
-    range.collapse(true);
-    selection.removeAllRanges();
-    selection.addRange(range);
-};
-
-function initMixin(mdeditor) {
-    mdeditor.prototype._init = function (id, options) {
-
-        var md = this;
-        if (id) {
-            this.el = new el(id);
-            this.el.attr('contenteditable', true);
-            this.cursor = new Cursor(this.el[0]);
-            initRow(md);
-            initEvent(md);
-            md.addRow();
-        }
-        this.options = options;
-    };
-}
-
-/**
- * Created by qinsx on 2017/6/13.
- */
-
-function initGlobalApi(mdeditor) {
-  mdeditor.extend = extend;
-}
 
 /**
  * 实例可用api
@@ -831,12 +507,7 @@ function apiMixin(mdeditor) {
      */
     mdeditor.prototype.getMarkdown = function () {
 
-        var rows = this.el.children();
-        var markdown = '';
-        for (var i = 0; i < rows.length; i++) {
-            markdown += rows[i].textContent + '\n\n'; // 用 innerText 会导致记录 _history 有空值情况
-        }
-        return markdown;
+        return this.elm.innerText;
     };
 
     /**
@@ -847,54 +518,51 @@ function apiMixin(mdeditor) {
         return mdToHtml(this.getMarkdown());
     };
 
-    /**
-     * 初始化markdown值，markdown转成html
-     * @param markdown
-     */
     mdeditor.prototype.setMarkdown = function (markdown) {
-        // 初始化行号
-        this._rowNo = 0;
-        this._value = [];
-        this.el.empty();
-        if (typeof markdown === 'string' && markdown.trim()) {
-            var tree = mdToTree(markdown);
-            var rows = this.htmlToRow(tree);
-            var me = this;
-            rows.forEach(function (row) {
-                me.el.append(row);
-            });
-        } else {
-            this.el.append(['div', {
-                attrs: {
-                    'row': this._rowNo++
-                },
-                innerHTML: '<br>'
-            }]);
-        }
+        var _this = this;
+
+        var tree = mdToTree(markdown);
+        var html = '';
+        tree.forEach(function (item) {
+            html += '<div row="' + _this._rowNo++ + '" class="' + item.tag + '">' + item.md.replace(/\n/g, '<br>') + '</div>';
+        });
+        this.elm.innerHTML = html;
     };
 
+    /**
+     * 插入 markdown
+     * @param {String} markdown 
+     */
     mdeditor.prototype.insertMarkdown = function (markdown) {
-        var row = this.cursor.closestRow();
-        if (row) {
-            var txt = row.text();
-            var offset = this.cursor.offset;
-            row.text(txt.slice(0, offset) + markdown + txt.slice(offset));
-        }
+        document.execCommand('insertText', false, markdown);
     };
 }
 
-/**
- * Created by qinsx on 2017/6/13.
- */
+function mdeditor(el, options) {
+    var _this = this;
 
-function mdeditor(id, options) {
-  this._init(id, options);
-  return this;
+    var elm = document.querySelector(el);
+    if (elm) {
+        this.elm = elm; // 编辑器dom
+        this._rowNo = 0; // 行号
+        elm.setAttribute('contenteditable', true);
+        var tree = void 0;
+        if (options && options.markdown && (tree = mdToTree(options.markdown)).length) {
+            var html = '';
+            tree.forEach(function (item) {
+                html += '<div row="' + _this._rowNo++ + '" class="' + item.tag + '">' + item.md + '</div>';
+            });
+            elm.innerHTML = html;
+        } else {
+            elm.innerHTML = '<div row="' + this._rowNo++ + '"><br></div>';
+        }
+        this._initEvent();
+        this.cursor = new Cursor(elm);
+    }
+    return this;
 }
-initGlobalApi(mdeditor);
-initMixin(mdeditor);
+
 eventsMixin(mdeditor);
-rowMixin(mdeditor);
 apiMixin(mdeditor);
 
 return mdeditor;
