@@ -12,6 +12,7 @@ var regLib = {
     b: /\*\*(.+?)\*\*/g,
     i: /\*(.+?)\*/g,
     inlineCode: /\`(.+?)\`/g
+
     /**
      *
      * @param tag  ul or li
@@ -186,11 +187,13 @@ function toTree(rows) {
         if (regLib.title.test(row)) {
             var hFlagReg = /^#{1,6}/;
             var hno = row.match(hFlagReg);
-            html.push({
-                tag: 'h' + hno[0].length,
-                md: row,
-                html: handleInlineSet(row.replace(hFlagReg, '').replace(/^\s*/, ''))
-            });
+            if (hno) {
+                html.push({
+                    tag: 'h' + hno[0].length,
+                    md: row,
+                    html: handleInlineSet(row.replace(hFlagReg, '').replace(/^\s*/, ''))
+                });
+            }
         } else if (regLib.hr.test(row)) {
             html.push({
                 tag: 'hr',
@@ -346,14 +349,13 @@ function eventsMixin(mdeditor) {
         var bind = this.elm.addEventListener;
 
         /*  bind('keyup', function keydown(e) {
-              // console.log(e.shiftKey)
+             // console.log(e.shiftKey)
              if (e.keyCode === 13 && !e.shiftKey) {
-                 
-                 var row = me.cursor.closestRow()
+                  var row = me.cursor.closestRow()
                  row.setAttribute('class', '')
                  row.setAttribute('row', me._rowNo++)
              }
-           }) */
+          }) */
         bind('paste', function paste(e) {
             e.preventDefault();
             var txt = e.clipboardData.getData('text/plain');
@@ -387,7 +389,9 @@ function eventsMixin(mdeditor) {
                     me._lastRow.setAttribute('class', root.tag);
                     if (root.attr) {
                         Object.keys(root.attr).forEach(function (key) {
-                            me._lastRow.setAttribute(key, root.attr[key]);
+                            if (root.attr && root.attr[key]) {
+                                me._lastRow.setAttribute(key, root.attr[key]);
+                            }
                         });
                     }
                 }
@@ -525,7 +529,7 @@ function apiMixin(mdeditor) {
 
     /**
      * 插入 markdown
-     * @param {String} markdown 
+     * @param {String} markdown
      */
     mdeditor.prototype.insertMarkdown = function (markdown) {
         document.execCommand('insertText', false, markdown);
@@ -539,12 +543,12 @@ function mdeditor(el, options) {
     if (elm) {
         this.elm = elm; // 编辑器dom
         this._rowNo = 0; // 行号
-        elm.setAttribute('contenteditable', true);
-        var tree = void 0;
+        elm.setAttribute('contenteditable', 'true');
+        var tree = [];
         if (options && options.markdown && (tree = mdToTree(options.markdown)).length) {
             var html = '';
             tree.forEach(function (item) {
-                html += '<div row="' + _this._rowNo++ + '" class="' + item.tag + '">' + item.md + '</div>';
+                html += '<div row="' + _this._rowNo++ + '" class="' + item.tag + '">' + (item.md || '') + '</div>';
             });
             elm.innerHTML = html;
         } else {

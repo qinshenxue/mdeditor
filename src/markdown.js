@@ -14,6 +14,7 @@ var regLib = {
     i: /\*(.+?)\*/g,
     inlineCode: /\`(.+?)\`/g
 }
+
 /**
  *
  * @param tag  ul or li
@@ -182,7 +183,7 @@ function toTable(rows: Array<string>) {
     return [thead].concat(tbody)
 }
 
-function toTree(rows: Array<string>) {
+function toTree(rows: Array<string>): Array<MdTree> {
     var html = []
     var rowsCount = rows.length
     var tag = ''
@@ -192,11 +193,14 @@ function toTree(rows: Array<string>) {
         if (regLib.title.test(row)) {
             var hFlagReg = /^#{1,6}/
             var hno = row.match(hFlagReg)
-            html.push({
-                tag: 'h' + hno[0].length,
-                md: row,
-                html: handleInlineSet(row.replace(hFlagReg, '').replace(/^\s*/, ''))
-            })
+            if (hno) {
+                html.push({
+                    tag: 'h' + hno[0].length,
+                    md: row,
+                    html: handleInlineSet(row.replace(hFlagReg, '').replace(/^\s*/, ''))
+                })
+            }
+
 
         } else if (regLib.hr.test(row)) {
             html.push({
@@ -266,7 +270,7 @@ function toTree(rows: Array<string>) {
             codeType = codeType ? codeType[0] : ''
             var _code = ''
             for (i++; i < rowsCount; i++) {
-                var _rawRow = replaceHtmlTag( rows[i])
+                var _rawRow = replaceHtmlTag(rows[i])
                 if (regLib.code.test(_rawRow)) {
                     break
                 }

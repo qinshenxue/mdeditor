@@ -4,8 +4,13 @@
         "semi": [0, "never"],
         "no-div-regex":0,
         "no-useless-escape":0,
-        "quotes": [0, "double"]
+        "quotes": [0, "double"],
+        "flowtype/define-flow-type": 1
     },
+    "parser": "babel-eslint",
+    "plugins": [
+        "flowtype"
+    ],
     "parserOptions": {
         "ecmaVersion": 7,
         "sourceType": "module"

@@ -7,7 +7,7 @@ import {
  * 实例可用api
  * @param mdeditor
  */
-export function apiMixin(mdeditor) {
+export default function apiMixin(mdeditor) {
 
 
     /**
@@ -38,7 +38,7 @@ export function apiMixin(mdeditor) {
 
     /**
      * 插入 markdown
-     * @param {String} markdown 
+     * @param {String} markdown
      */
     mdeditor.prototype.insertMarkdown = function (markdown) {
         document.execCommand('insertText', false, markdown)

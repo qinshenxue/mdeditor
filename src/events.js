@@ -1,8 +1,9 @@
+//@flow
 import {
     mdToTree
 } from './markdown'
 
-function eventsMixin(mdeditor) {
+function eventsMixin(mdeditor: Function) {
 
     mdeditor.prototype._initEvent = function () {
 
@@ -15,7 +16,7 @@ function eventsMixin(mdeditor) {
 
             // console.log(e.shiftKey)
              if (e.keyCode === 13 && !e.shiftKey) {
-                 
+
                  var row = me.cursor.closestRow()
                  row.setAttribute('class', '')
                  row.setAttribute('row', me._rowNo++)
@@ -55,7 +56,9 @@ function eventsMixin(mdeditor) {
                     me._lastRow.setAttribute('class', root.tag)
                     if (root.attr) {
                         Object.keys(root.attr).forEach(function (key) {
-                            me._lastRow.setAttribute(key, root.attr[key])
+                            if (root.attr && root.attr[key]) {
+                                me._lastRow.setAttribute(key, root.attr[key])
+                            }
                         })
                     }
                 }
@@ -85,7 +88,6 @@ function eventsMixin(mdeditor) {
                 me._lastRow = null
             }
         })
-
 
 
     }
