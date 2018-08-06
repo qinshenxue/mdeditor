@@ -1,4 +1,3 @@
-//@flow
 import eventsMixin from './events'
 import Cursor from './cursor'
 import apiMixin from './api'
@@ -15,9 +14,10 @@ function mdeditor(el: string, options?: Options) {
         let tree = []
         if (options && options.markdown && (tree = mdToTree(options.markdown)).length) {
             let html = ''
-            tree.forEach(item => {
+            for (let i = 0, j = tree.length; i < j; i++) {
+                let item = tree[i]
                 html += `<div row="${this._rowNo++}" class="${item.tag}">${item.md || ''}</div>`
-            });
+            }
             elm.innerHTML = html
         } else {
             elm.innerHTML = `<div row="${this._rowNo++}"><br></div>`

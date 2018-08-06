@@ -1,6 +1,11 @@
-declare interface  Mdeditor {
+declare interface Mdeditor {
+    // public methods
+    getMarkdown: () => string;
+    getHtml: () => string;
+    setMarkdown: (markdown: string) => void;
+    insertMarkdown: (markdown: string) => void;
+    // private methods
     _initEvent: Function;
-    [key: string]: any
 }
 
 
@@ -19,3 +24,4 @@ declare type MdTree = {
 declare type Options = {
     markdown?: string
 }
+

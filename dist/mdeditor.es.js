@@ -22,7 +22,7 @@ var regLib = {
 };function toLi(tag, rows) {
     var tree = [];
 
-    for (var i = 0; i < rows.length; i++) {
+    for (var i = 0, j = rows.length; i < j; i++) {
         var row = rows[i];
         if (/^\s+/.test(row)) {
 
@@ -218,39 +218,39 @@ function toTree(rows) {
             });
         } else if (regLib.table.test(row) && rows[i + 1] && regLib.align.test(rows[i + 1])) {
 
-            var _raw = [row, rows[i + 1]];
+            var _raw2 = [row, rows[i + 1]];
             i += 2;
             for (; i < rowsCount; i++) {
-                var _rawRow = rows[i];
-                if (!regLib.table.test(_rawRow)) {
+                var _rawRow2 = rows[i];
+                if (!regLib.table.test(_rawRow2)) {
                     i--;
                     break;
                 }
-                _raw.push(_rawRow);
+                _raw2.push(_rawRow2);
             }
 
             html.push({
                 tag: 'table',
-                children: toTable(_raw),
-                md: _raw.join('\n')
+                children: toTable(_raw2),
+                md: _raw2.join('\n')
             });
         } else if (regLib.blockquote.test(row)) {
-            var _raw = [row];
+            var _raw3 = [row];
             var _class = row.indexOf('!') == 0 ? 'warning' : '';
             i++;
             for (; i < rowsCount; i++) {
-                var _rawRow = rows[i];
-                if (!regLib.blockquote.test(_rawRow) && !/^\s+.+/.test(_rawRow)) {
+                var _rawRow3 = rows[i];
+                if (!regLib.blockquote.test(_rawRow3) && !/^\s+.+/.test(_rawRow3)) {
                     i--;
                     break;
                 }
-                _raw.push(_rawRow);
+                _raw3.push(_rawRow3);
             }
             html.push({
                 tag: 'blockquote',
                 class: _class,
-                children: toBlockquote(_raw),
-                md: _raw.join('\n')
+                children: toBlockquote(_raw3),
+                md: _raw3.join('\n')
             });
         } else if (regLib.code.test(row)) {
             // 代码块
@@ -259,12 +259,12 @@ function toTree(rows) {
             codeType = codeType ? codeType[0] : '';
             var _code = '';
             for (i++; i < rowsCount; i++) {
-                var _rawRow = replaceHtmlTag(rows[i]);
-                if (regLib.code.test(_rawRow)) {
+                var _rawRow4 = replaceHtmlTag(rows[i]);
+                if (regLib.code.test(_rawRow4)) {
                     break;
                 }
-                _code += _rawRow;
-                if (!/^\n/.test(_rawRow)) {
+                _code += _rawRow4;
+                if (!/^\n/.test(_rawRow4)) {
                     _code += '\n';
                 }
             }
@@ -294,7 +294,7 @@ function toTree(rows) {
 
 function treeToHtml(nodes) {
     var html = [];
-    for (var i = 0; i < nodes.length; i++) {
+    for (var i = 0, j = nodes.length; i < j; i++) {
         var node = nodes[i];
 
         if (node.tag == 'text') {
@@ -452,6 +452,7 @@ function Cursor(editor) {
         }
     });
 }
+
 /**
  * 鼠标是否在绑定的编辑器内
  * @returns {boolean}
@@ -493,51 +494,73 @@ Cursor.prototype.closestRow = function () {
     return this.closest('[row]');
 };
 
-/**
- * 实例可用api
- * @param mdeditor
- */
+// /**
+//  * 光标是否在node中
+//  * @param nodeName HTMLElement nodeName，全大写
+//  * @returns {boolean}
+//  */
+// Cursor.prototype.in = function (nodeName) {
+//     if (this._inside()) {
+//         var _path = this.path
+//         var i = _path.length
+//         while (i--) {
+//             if (_path[i].nodeName === nodeName) {
+//                 return true
+//             }
+//         }
+//         return false
+//     }
+//     return false
+// }
+
+// /**
+//  * 设定光标位置
+//  * @param node 光标所在的节点
+//  * @param offset 光标偏移长度
+//  */
+Cursor.prototype.set = function (node, offset) {
+    var elm = node;
+    /*  if (node instanceof el) {
+          elm = node[0]
+      }*/
+    var isTxtNode = node instanceof Text;
+    var selection = window.getSelection();
+    var range = document.createRange();
+    if (offset === undefined) {
+        offset = isTxtNode ? node.nodeValue.length : elm.textContent.length;
+    }
+    range.setStart(isTxtNode ? node : elm.childNodes[0], offset);
+    range.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(range);
+};
+
 function apiMixin(mdeditor) {
 
-    /**
-     * 返回markdown
-     * @returns {Array}
-     */
     mdeditor.prototype.getMarkdown = function () {
-
         return this.elm.innerText;
     };
 
-    /**
-     * 返回html
-     * @returns {Array}
-     */
     mdeditor.prototype.getHtml = function () {
         return mdToHtml(this.getMarkdown());
     };
 
     mdeditor.prototype.setMarkdown = function (markdown) {
-        var _this = this;
-
         var tree = mdToTree(markdown);
         var html = '';
-        tree.forEach(function (item) {
-            html += '<div row="' + _this._rowNo++ + '" class="' + item.tag + '">' + item.md.replace(/\n/g, '<br>') + '</div>';
-        });
+        for (var i = 0, j = tree.length; i < j; i++) {
+            var item = tree[i];
+            html += '<div row="' + this._rowNo++ + '" class="' + item.tag + '">' + (item.md || '').replace(/\n/g, '<br>') + '</div>';
+        }
         this.elm.innerHTML = html;
     };
 
-    /**
-     * 插入 markdown
-     * @param {String} markdown
-     */
     mdeditor.prototype.insertMarkdown = function (markdown) {
         document.execCommand('insertText', false, markdown);
     };
 }
 
 function mdeditor(el, options) {
-    var _this = this;
 
     var elm = document.querySelector(el);
     if (elm) {
@@ -547,9 +570,10 @@ function mdeditor(el, options) {
         var tree = [];
         if (options && options.markdown && (tree = mdToTree(options.markdown)).length) {
             var html = '';
-            tree.forEach(function (item) {
-                html += '<div row="' + _this._rowNo++ + '" class="' + item.tag + '">' + (item.md || '') + '</div>';
-            });
+            for (var i = 0, j = tree.length; i < j; i++) {
+                var item = tree[i];
+                html += '<div row="' + this._rowNo++ + '" class="' + item.tag + '">' + (item.md || '') + '</div>';
+            }
             elm.innerHTML = html;
         } else {
             elm.innerHTML = '<div row="' + this._rowNo++ + '"><br></div>';

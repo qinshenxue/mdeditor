@@ -1,5 +1,6 @@
-// @flow
-var regLib = {
+/* @flow */
+
+const regLib = {
     title: /^#{1,6}.+$/,
     ul: /^[\.\-\*]\s+.+$/,
     ol: /^\d+\.\s?.+$/,
@@ -22,13 +23,13 @@ var regLib = {
  * @returns {Array.<MdTree>}
  */
 function toLi(tag: string, rows: Array<string>): Array<MdTree> {
-    var tree: Array<MdTree> = []
+    const tree: Array<MdTree> = []
 
-    for (var i = 0; i < rows.length; i++) {
-        var row = rows[i]
+    for (let i = 0, j = rows.length; i < j; i++) {
+        const row = rows[i]
         if (/^\s+/.test(row)) {
 
-            var _blank = []
+            const _blank = []
             for (; i < rows.length; i++) {
                 if (/^\s+/.test(rows[i])) {
                     _blank.push(rows[i].replace(/^\s+/, ''))
@@ -89,13 +90,13 @@ function replaceHtmlTag(txt: string): string {
 }
 
 function toBlockquote(rows: Array<string>) {
-    var tree = []
+    const tree = []
 
-    for (var i = 0; i < rows.length; i++) {
-        var row = rows[i]
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i]
         if (/^\s+/.test(row)) {
 
-            var _blank = []
+            const _blank = []
             for (; i < rows.length; i++) {
                 if (/^\s+/.test(rows[i])) {
                     _blank.push(rows[i].replace(/^\s+/, ''))
@@ -121,10 +122,10 @@ function toBlockquote(rows: Array<string>) {
 
 function toTable(rows: Array<string>) {
 
-    var tdSplit = /[^|]+/g
+    const tdSplit = /[^|]+/g
 
-    var alignRaw = rows[1].match(tdSplit) || []
-    var align = []
+    const alignRaw = rows[1].match(tdSplit) || []
+    const align = []
 
     for (let i = 0, j = alignRaw.length; i < j; i++) {
         if (/^\s*-+:\s*$/.test(alignRaw[i])) {
@@ -136,7 +137,7 @@ function toTable(rows: Array<string>) {
         }
     }
 
-    var thead = {
+    const thead = {
         tag: 'tr',
         children: []
     }
@@ -149,8 +150,8 @@ function toTable(rows: Array<string>) {
         }
     }
 
-    var thRaw = rows[0].match(tdSplit) || []
-    var tdCount = thRaw.length
+    const thRaw = rows[0].match(tdSplit) || []
+    const tdCount = thRaw.length
     for (let i = 0; i < tdCount; i++) {
         thead.children.push({
             tag: 'th',
@@ -160,16 +161,16 @@ function toTable(rows: Array<string>) {
         })
     }
 
-    var tbody = []
+    const tbody = []
     for (let i = 2, j = rows.length; i < j; i++) {
-        var tbodyTr = {
+        const tbodyTr = {
             tag: 'tr',
             children: []
         }
-        var tdCountCopy = tdCount
-        var tbodyTds = rows[i].match(tdSplit) || []
+        let tdCountCopy = tdCount
+        const tbodyTds = rows[i].match(tdSplit) || []
         while (tdCountCopy--) {
-            var tdMd = tbodyTds[tdCountCopy]
+            const tdMd = tbodyTds[tdCountCopy]
             tbodyTr.children.unshift({
                 tag: 'td',
                 style: _tdStyle(tdCountCopy),
@@ -184,15 +185,15 @@ function toTable(rows: Array<string>) {
 }
 
 function toTree(rows: Array<string>): Array<MdTree> {
-    var html = []
-    var rowsCount = rows.length
-    var tag = ''
+    const html = []
+    const rowsCount = rows.length
+    let tag = ''
 
-    for (var i = 0; i < rowsCount; i++) {
-        var row = rows[i]
+    for (let i = 0; i < rowsCount; i++) {
+        const row = rows[i]
         if (regLib.title.test(row)) {
-            var hFlagReg = /^#{1,6}/
-            var hno = row.match(hFlagReg)
+            const hFlagReg = /^#{1,6}/
+            const hno = row.match(hFlagReg)
             if (hno) {
                 html.push({
                     tag: 'h' + hno[0].length,
@@ -209,10 +210,10 @@ function toTree(rows: Array<string>): Array<MdTree> {
             })
 
         } else if ((tag = regLib.ul.test(row) ? 'ul' : false) || (tag = regLib.ol.test(row) ? 'ol' : false)) {
-            var _raw = []
+            const _raw = []
 
             for (; i < rowsCount; i++) {
-                var _rawRow = rows[i]
+                const _rawRow = rows[i]
                 if (!regLib[tag].test(_rawRow) && !/^\s+.+/.test(_rawRow)) {
                     i--
                     break
@@ -228,10 +229,10 @@ function toTree(rows: Array<string>): Array<MdTree> {
 
         } else if (regLib.table.test(row) && rows[i + 1] && regLib.align.test(rows[i + 1])) {
 
-            var _raw = [row, rows[i + 1]]
+            const _raw = [row, rows[i + 1]]
             i += 2
             for (; i < rowsCount; i++) {
-                var _rawRow = rows[i]
+                const _rawRow = rows[i]
                 if (!regLib.table.test(_rawRow)) {
                     i--
                     break
@@ -246,11 +247,11 @@ function toTree(rows: Array<string>): Array<MdTree> {
             })
 
         } else if (regLib.blockquote.test(row)) {
-            var _raw = [row]
-            var _class = row.indexOf('!') == 0 ? 'warning' : ''
+            const _raw = [row]
+            const _class = row.indexOf('!') == 0 ? 'warning' : ''
             i++
             for (; i < rowsCount; i++) {
-                var _rawRow = rows[i]
+                const _rawRow = rows[i]
                 if (!regLib.blockquote.test(_rawRow) && !/^\s+.+/.test(_rawRow)) {
                     i--
                     break
@@ -266,11 +267,11 @@ function toTree(rows: Array<string>): Array<MdTree> {
 
         } else if (regLib.code.test(row)) {  // 代码块
 
-            var codeType = row.match(/[^`\s]+/)
+            let codeType = row.match(/[^`\s]+/)
             codeType = codeType ? codeType[0] : ''
-            var _code = ''
+            let _code = ''
             for (i++; i < rowsCount; i++) {
-                var _rawRow = replaceHtmlTag(rows[i])
+                const _rawRow = replaceHtmlTag(rows[i])
                 if (regLib.code.test(_rawRow)) {
                     break
                 }
@@ -305,9 +306,9 @@ function toTree(rows: Array<string>): Array<MdTree> {
 }
 
 function treeToHtml(nodes: Array<MdTree>): string {
-    var html = []
-    for (var i = 0; i < nodes.length; i++) {
-        var node = nodes[i]
+    const html = []
+    for (let i = 0, j = nodes.length; i < j; i++) {
+        const node = nodes[i]
 
         if (node.tag == 'text') {
             html.push(node.html)
@@ -321,13 +322,13 @@ function treeToHtml(nodes: Array<MdTree>): string {
             }
             if (node.style) {
                 html.push(' style="')
-                for (var p in node.style) {
+                for (let p in node.style) {
                     html.push(p + ':' + node.style[p] + ';')
                 }
                 html.push('" ')
             }
             if (node.attr) {
-                for (var a in node.attr) {
+                for (let a in node.attr) {
                     html.push(' ' + a + '="' + node.attr[a] + '" ')
                 }
             }
@@ -345,7 +346,7 @@ function treeToHtml(nodes: Array<MdTree>): string {
 }
 
 function mdToTree(md: string): Array<MdTree> {
-    var rows = md.match(/.+|^\n/mg) || [];
+    const rows = md.match(/.+|^\n/mg) || [];
     return toTree(rows)
 }
 

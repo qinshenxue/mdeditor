@@ -1,9 +1,10 @@
-//@flow
+/* @flow */
+
 import {
     mdToTree
 } from './markdown'
 
-function eventsMixin(mdeditor: Function) {
+function eventsMixin(mdeditor: Class<Mdeditor>) {
 
     mdeditor.prototype._initEvent = function () {
 

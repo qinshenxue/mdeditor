@@ -29,6 +29,7 @@ function Cursor(editor) {
     })
 
 }
+
 /**
  * 鼠标是否在绑定的编辑器内
  * @returns {boolean}
@@ -94,21 +95,21 @@ Cursor.prototype.closestRow = function () {
 //  * @param node 光标所在的节点
 //  * @param offset 光标偏移长度
 //  */
-// Cursor.prototype.set = function (node, offset) {
-//     var elm = node
-//     if (node instanceof el) {
-//         elm = node[0]
-//     }
-//     var isTxtNode = node instanceof Text
-//     var selection = window.getSelection()
-//     var range = document.createRange()
-//     if (offset === undefined) {
-//         offset = isTxtNode ? node.nodeValue.length : elm.textContent.length
-//     }
-//     range.setStart(isTxtNode ? node : elm.childNodes[0], offset)
-//     range.collapse(true)
-//     selection.removeAllRanges()
-//     selection.addRange(range)
-// }
+Cursor.prototype.set = function (node, offset) {
+    var elm = node
+  /*  if (node instanceof el) {
+        elm = node[0]
+    }*/
+    var isTxtNode = node instanceof Text
+    var selection = window.getSelection()
+    var range = document.createRange()
+    if (offset === undefined) {
+        offset = isTxtNode ? node.nodeValue.length : elm.textContent.length
+    }
+    range.setStart(isTxtNode ? node : elm.childNodes[0], offset)
+    range.collapse(true)
+    selection.removeAllRanges()
+    selection.addRange(range)
+}
 
 export default Cursor
