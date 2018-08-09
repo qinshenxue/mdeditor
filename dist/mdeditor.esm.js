@@ -390,7 +390,6 @@ function eventsMixin(mdeditor) {
                 var row = me.cursor.closestRow();
 
                 if (row) {
-
                     if (!me._lastRow && !row.textContent) {
                         row.setAttribute('class', '');
                     } else if (me._lastRow && me._lastRow.getAttribute('row') !== row.getAttribute('row')) {
@@ -472,8 +471,8 @@ Cursor.prototype.isAtEnd = function () {
         var childCount = childNodes.length;
         if (childCount) {
             var lastChild = childNodes[childCount - 1];
-            if (lastChild.nodeName === 'BR' && this.offset === childCount - 1) {
-                return true;
+            if (lastChild.nodeName === 'BR') {
+                return false;
             } else {
                 return lastChild.isEqualNode(this.node) && this.offset === lastChild.nodeValue.length;
             }
@@ -539,7 +538,7 @@ function mdeditor(el, options) {
             }
             elm.innerHTML = html;
         } else {
-            elm.innerHTML = '<div ><div row="' + this._rowNo++ + '"><br></div>&nbsp;</div>';
+            elm.innerHTML = '<div row="' + this._rowNo++ + '"><br></div>';
         }
         this._initEvent();
         this.cursor = new Cursor(elm);

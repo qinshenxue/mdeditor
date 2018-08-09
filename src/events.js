@@ -35,6 +35,7 @@ function eventsMixin(mdeditor: Class<Mdeditor>) {
             if (e.keyCode === 13 && !e.shiftKey) {
 
                 e.preventDefault()
+
                 // if (row.textContent && me.cursor.node === row.childNodes[row.childNodes.length - 1] && me.cursor.node.length === me.cursor.offset) {
                 if (me.cursor.isAtEnd()) {
                     document.execCommand("insertHTML", false, `<div row='${me._rowNo++}'><br></div>`)
@@ -71,7 +72,6 @@ function eventsMixin(mdeditor: Class<Mdeditor>) {
                 var row = me.cursor.closestRow()
                 //  光标在编辑器内
                 if (row) {
-
                     if (!me._lastRow && !row.textContent) {
                         // 选择区域，删除时，如果鼠标停留的行没有内容了，则清空之前加的CSS
                         row.setAttribute('class', '')
