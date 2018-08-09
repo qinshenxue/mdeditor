@@ -2,10 +2,10 @@
     "name": "mdeditor",
     "version": "1.0.0",
     "description": "简单markdown编辑器，用textarea编辑，同步预览html效果。不依赖任何插件，使用简单，原创，造轮子中。。。更新中。。。",
-    "homepage": "http://mdeditor.qinshenxue.com",
+    "homepage": "https://github.com/qinshenxue/mdeditor",
     "repository": {
         "type": "git",
-        "url": "https://git.oschina.net/qinshenxue/mdeditor"
+        "url": "https://github.com/qinshenxue/mdeditor"
     },
     "main": "",
     "scripts": {

@@ -31,7 +31,11 @@ gulp.task('rollup-umd', function () {
             babel({
                 exclude: 'node_modules/**'
             }),
-            uglify()  // 压缩
+            uglify({
+                output: {
+                    preamble: '/* https://github.com/qinshenxue/mdeditor */'
+                }
+            })  // 压缩
         ]
     }).then(function (bundle) {
         bundle.write({
@@ -54,6 +58,7 @@ gulp.task('rollup-es', function () {
     }).then(function (bundle) {
         bundle.write({
             format: 'es',
+            banner: '/* https://github.com/qinshenxue/mdeditor */',
             file: 'dist/mdeditor.esm.js'
         })
     })
