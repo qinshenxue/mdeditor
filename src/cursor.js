@@ -90,23 +90,43 @@ Cursor.prototype.closestRow = function () {
 //     return false
 // }
 
-// /**
-//  * 设定光标位置
-//  * @param node 光标所在的节点
-//  * @param offset 光标偏移长度
-//  */
+/**
+ * 判断光标是否在行末
+ * @returns {boolean}
+ */
+Cursor.prototype.isAtEnd = function () {
+    const row = this.closestRow()
+    if (row) {
+        const childNodes = row.childNodes
+        const childCount = childNodes.length
+        if (childCount) {
+            const lastChild = childNodes[childCount - 1]
+            if (lastChild.nodeName === 'BR' && this.offset === childCount - 1) {
+                return true
+            } else {
+                return lastChild.isEqualNode(this.node) && this.offset === lastChild.nodeValue.length
+            }
+        } else {
+            return false
+        }
+    }
+    return false
+}
+
+/**
+ * 设定光标位置
+ * @param node 光标所在的节点
+ * @param offset 光标偏移长度
+ */
 Cursor.prototype.set = function (node, offset) {
-    var elm = node
-  /*  if (node instanceof el) {
-        elm = node[0]
-    }*/
-    var isTxtNode = node instanceof Text
     var selection = window.getSelection()
     var range = document.createRange()
-    if (offset === undefined) {
-        offset = isTxtNode ? node.nodeValue.length : elm.textContent.length
+    if (node instanceof Text && typeof offset !== 'number') {
+        offset = node.nodeValue.length
+        range.setStart(node, offset)
+    } else if (node instanceof HTMLBRElement) {
+        range.setStart(node, 0)
     }
-    range.setStart(isTxtNode ? node : elm.childNodes[0], offset)
     range.collapse(true)
     selection.removeAllRanges()
     selection.addRange(range)

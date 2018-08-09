@@ -355,8 +355,7 @@ function eventsMixin(mdeditor) {
 
                 e.preventDefault();
 
-                var row = me.cursor.closestRow();
-                if (row.textContent && me.cursor.node === row.childNodes[row.childNodes.length - 1] && me.cursor.node.length === me.cursor.offset) {
+                if (me.cursor.isAtEnd()) {
                     document.execCommand("insertHTML", false, '<div row=\'' + me._rowNo++ + '\'><br></div>');
                 }
             } else if (e.keyCode === 8 && !me.elm.textContent) {
@@ -466,16 +465,34 @@ Cursor.prototype.closestRow = function () {
     return this.closest('[row]');
 };
 
-Cursor.prototype.set = function (node, offset) {
-    var elm = node;
+Cursor.prototype.isAtEnd = function () {
+    var row = this.closestRow();
+    if (row) {
+        var childNodes = row.childNodes;
+        var childCount = childNodes.length;
+        if (childCount) {
+            var lastChild = childNodes[childCount - 1];
+            if (lastChild.nodeName === 'BR' && this.offset === childCount - 1) {
+                return true;
+            } else {
+                return lastChild.isEqualNode(this.node) && this.offset === lastChild.nodeValue.length;
+            }
+        } else {
+            return false;
+        }
+    }
+    return false;
+};
 
-    var isTxtNode = node instanceof Text;
+Cursor.prototype.set = function (node, offset) {
     var selection = window.getSelection();
     var range = document.createRange();
-    if (offset === undefined) {
-        offset = isTxtNode ? node.nodeValue.length : elm.textContent.length;
+    if (node instanceof Text && typeof offset !== 'number') {
+        offset = node.nodeValue.length;
+        range.setStart(node, offset);
+    } else if (node instanceof HTMLBRElement) {
+        range.setStart(node, 0);
     }
-    range.setStart(isTxtNode ? node : elm.childNodes[0], offset);
     range.collapse(true);
     selection.removeAllRanges();
     selection.addRange(range);
@@ -522,7 +539,7 @@ function mdeditor(el, options) {
             }
             elm.innerHTML = html;
         } else {
-            elm.innerHTML = '<div row="' + this._rowNo++ + '"><br></div>';
+            elm.innerHTML = '<div ><div row="' + this._rowNo++ + '"><br></div>&nbsp;</div>';
         }
         this._initEvent();
         this.cursor = new Cursor(elm);

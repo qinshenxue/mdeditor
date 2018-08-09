@@ -39,14 +39,18 @@
     <div class="md" id="preview" style="display: none"></div>
     <script src="dist/mdeditor.js"></script>
     <script type="text/plain" id="md_test">
-        ``` xml
-        <div>
-            <div>
-                ```
+``` xml
+111111
+2222
+3333333
+
+444444444444
+55555555
+```
     </script>
     <script>
         var md = new mdeditor('#md', {
-            markdown: '## 初始化值\n###标题'
+          //  markdown: document.getElementById('md_test').innerText
         })
 
         var dom_preview = document.getElementById('preview')

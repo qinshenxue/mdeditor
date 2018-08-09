@@ -20,7 +20,7 @@ function mdeditor(el: string, options?: Options) {
             }
             elm.innerHTML = html
         } else {
-            elm.innerHTML = `<div row="${this._rowNo++}"><br></div>`
+            elm.innerHTML = `<div ><div row="${this._rowNo++}"><br></div>&nbsp;</div>`
         }
         this._initEvent()
         this.cursor = new Cursor(elm)
