@@ -471,7 +471,15 @@ Cursor.prototype.isAtEnd = function () {
         var childCount = childNodes.length;
         if (childCount) {
             var lastChild = childNodes[childCount - 1];
-            if (/\n/.test(this.node.nodeValue)) {
+
+            if (lastChild instanceof HTMLBRElement) {
+                if (childCount === 1) {
+                    return false;
+                }
+                lastChild = childNodes[childCount - 2];
+            }
+
+            if (/^\n$/.test(this.node.nodeValue)) {
                 return false;
             } else {
                 return lastChild.isEqualNode(this.node) && this.offset === lastChild.nodeValue.length;
