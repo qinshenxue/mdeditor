@@ -101,7 +101,7 @@ Cursor.prototype.isAtEnd = function () {
         const childCount = childNodes.length
         if (childCount) {
             const lastChild = childNodes[childCount - 1]
-            if (lastChild.nodeName === 'BR') {
+            if (/\n/.test(this.node.nodeValue)) {
                 return false
             } else {
                 return lastChild.isEqualNode(this.node) && this.offset === lastChild.nodeValue.length

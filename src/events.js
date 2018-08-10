@@ -29,7 +29,7 @@ function eventsMixin(mdeditor: Class<Mdeditor>) {
             var txt = e.clipboardData.getData('text/plain')
             var div = document.createElement('div')
             div.innerText = txt
-            document.execCommand("insertHTML", false, div.innerHTML.replace(/\s/g, '&nbsp;'))
+            document.execCommand("insertHTML", false, div.innerHTML.replace(/<br>/g, '\u000A'))
         })
         bind('keydown', function keydown(e) {
             if (e.keyCode === 13 && !e.shiftKey) {
@@ -38,7 +38,7 @@ function eventsMixin(mdeditor: Class<Mdeditor>) {
 
                 // if (row.textContent && me.cursor.node === row.childNodes[row.childNodes.length - 1] && me.cursor.node.length === me.cursor.offset) {
                 if (me.cursor.isAtEnd()) {
-                    document.execCommand("insertHTML", false, `<div row='${me._rowNo++}'><br></div>`)
+                    document.execCommand("insertHTML", false, `<div row='${me._rowNo++}'></div>`)
                 }
             } else if (e.keyCode === 8 && !me.elm.textContent) {
                 e.preventDefault()

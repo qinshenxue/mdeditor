@@ -348,7 +348,7 @@ function eventsMixin(mdeditor) {
             var txt = e.clipboardData.getData('text/plain');
             var div = document.createElement('div');
             div.innerText = txt;
-            document.execCommand("insertHTML", false, div.innerHTML.replace(/\s/g, '&nbsp;'));
+            document.execCommand("insertHTML", false, div.innerHTML.replace(/<br>/g, '\n'));
         });
         bind('keydown', function keydown(e) {
             if (e.keyCode === 13 && !e.shiftKey) {
@@ -356,7 +356,7 @@ function eventsMixin(mdeditor) {
                 e.preventDefault();
 
                 if (me.cursor.isAtEnd()) {
-                    document.execCommand("insertHTML", false, '<div row=\'' + me._rowNo++ + '\'><br></div>');
+                    document.execCommand("insertHTML", false, '<div row=\'' + me._rowNo++ + '\'></div>');
                 }
             } else if (e.keyCode === 8 && !me.elm.textContent) {
                 e.preventDefault();
@@ -471,7 +471,7 @@ Cursor.prototype.isAtEnd = function () {
         var childCount = childNodes.length;
         if (childCount) {
             var lastChild = childNodes[childCount - 1];
-            if (lastChild.nodeName === 'BR') {
+            if (/\n/.test(this.node.nodeValue)) {
                 return false;
             } else {
                 return lastChild.isEqualNode(this.node) && this.offset === lastChild.nodeValue.length;
@@ -538,7 +538,7 @@ function mdeditor(el, options) {
             }
             elm.innerHTML = html;
         } else {
-            elm.innerHTML = '<div row="' + this._rowNo++ + '"><br></div>';
+            elm.innerHTML = '<div row="' + this._rowNo++ + '"></div>';
         }
         this._initEvent();
         this.cursor = new Cursor(elm);
