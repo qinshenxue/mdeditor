@@ -5,6 +5,7 @@ const eslint = require('gulp-eslint')
 const uglify = require('rollup-plugin-uglify')
 const babel = require('rollup-plugin-babel')
 const rollup = require('rollup').rollup
+let env = 'dev'
 
 // 构建 CSS
 gulp.task('css', function () {
@@ -25,18 +26,20 @@ gulp.task('eslint', () => {
 
 // 生成 UMD 模块
 gulp.task('rollup-umd', function () {
+
+    const plugins = [babel({
+        exclude: 'node_modules/**'
+    })]
+    if (env === 'prod') {
+        plugins.push(uglify({
+            output: {
+                preamble: '/* https://github.com/qinshenxue/mdeditor */'
+            }
+        }))
+    }
     return rollup({
         input: 'src/index.js',
-        plugins: [
-            babel({
-                exclude: 'node_modules/**'
-            }),
-            uglify({
-                output: {
-                    preamble: '/* https://github.com/qinshenxue/mdeditor */'
-                }
-            })  // 压缩
-        ]
+        plugins: plugins
     }).then(function (bundle) {
         bundle.write({
             format: 'umd',
@@ -64,10 +67,16 @@ gulp.task('rollup-es', function () {
     })
 })
 
-// 构建
 gulp.task('build', ['eslint', 'css', 'rollup-umd', 'rollup-es'])
+
+// 构建
+gulp.task('prod', function () {
+    env = 'prod'
+    return ['build']
+})
 
 // 开发
 gulp.task('dev', function () {
+    env = 'dev'
     gulp.watch(['src/**.js', 'src/**.css'], ['build'])
 })
