@@ -100,8 +100,16 @@ Cursor.prototype.isAtEnd = function () {
         const childNodes = row.childNodes
         const childCount = childNodes.length
         if (childCount) {
-            const lastChild = childNodes[childCount - 1]
-            if (/\n/.test(this.node.nodeValue)) {
+            let lastChild = childNodes[childCount - 1]
+            // shift+enter 输入多行，然后删除最后一行，会出现<br>标签，但是最多会出现一个<br>标签
+            if (lastChild instanceof HTMLBRElement) {
+                if (childCount === 1) {
+                    return false
+                }
+                lastChild = childNodes[childCount - 2]
+            }
+
+            if (/^\n$/.test(this.node.nodeValue)) {
                 return false
             } else {
                 return lastChild.isEqualNode(this.node) && this.offset === lastChild.nodeValue.length
