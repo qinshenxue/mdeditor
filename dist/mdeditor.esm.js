@@ -347,7 +347,7 @@ function eventsMixin(mdeditor) {
             e.preventDefault();
             var txt = e.clipboardData.getData('text/plain');
             var div = document.createElement('div');
-            div.innerText = txt;
+            div.innerText = txt.replace(/\s+$/, '');
             document.execCommand("insertHTML", false, div.innerHTML.replace(/<br>/g, '\n'));
         });
         bind('keydown', function keydown(e) {
