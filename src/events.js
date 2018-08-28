@@ -28,7 +28,7 @@ function eventsMixin(mdeditor: Class<Mdeditor>) {
             e.preventDefault()
             var txt = e.clipboardData.getData('text/plain')
             var div = document.createElement('div')
-            div.innerText = txt
+            div.innerText = txt.replace(/\s+$/, '') // 移除末尾的换行
             document.execCommand("insertHTML", false, div.innerHTML.replace(/<br>/g, '\u000A'))
         })
         bind('keydown', function keydown(e) {
